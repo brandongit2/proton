@@ -1,0 +1,49 @@
+{
+    "workspace": {
+        "Toolbar": {
+            "properties": {
+                "xPos":        0,
+                "yPos":        0,
+                "width":       10,
+                "height":      100,
+                "orientation": "vertical"
+            },
+            "tiles": {
+                "toolbox": {
+                    "height": 100,
+                    "order":  1
+                }
+            }
+        },
+        "test1": {
+            "properties": {
+                "xPos":        10,
+                "yPos":        0,
+                "width":       70,
+                "height":      5,
+                "orientation": "horizontal"
+            },
+            "tiles": {
+                "toolbox": {
+                    "height": 100,
+                    "order":  1
+                }
+            }
+        },
+        "Properties": {
+            "properties": {
+                "xPos":        80,
+                "yPos":        0,
+                "width":       20,
+                "height":      100,
+                "orientation": "vertical"
+            },
+            "tiles": {
+                "toolbox": {
+                    "height": 100,
+                    "order":  1
+                }
+            }
+        }
+    }
+}

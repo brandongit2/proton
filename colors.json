@@ -1,0 +1,14 @@
+{
+    "light": {
+        "toolbar": {
+            "background": "#fafafa",
+            "text":       "#aaa",
+            "item": {
+                "hover": {
+                    "background": "#377ed2",
+                    "text":       "#fafafa"
+                }
+            }
+        }
+    }
+}

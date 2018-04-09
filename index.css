@@ -1,0 +1,109 @@
+body {
+    font-family:    'IBM Plex Sans Condensed', sans-serif;
+    margin:         0px;
+    height:         100vh;
+    display:        flex;
+    flex-direction: column;
+    overflow:       hidden;
+}
+
+#toolbar {
+    height:         1.5rem;
+    width:          100%;
+    display:        flex;
+    flex-direction: row;
+    align-items:    flex-start;
+    position:       relative;
+    z-index:        2;
+}
+
+#toolbar > * {
+    display: inline-block;
+}
+
+.toolbar-item {
+    height:              100%;
+    cursor:              default;
+    position:            relative;
+    user-select:         none;
+    -webkit-user-select: none;
+    -ms-user-select:     none;
+    -moz-user-select:    none;
+}
+
+.toolbar-item > span {
+    transition: all 0.3s;
+    padding:    0px 8px;
+    display:    inline-block;
+    height:     100%;
+}
+
+.toolbar-menu {
+    position:         absolute;
+    top:              100%;
+    left:             0px;
+    padding:          2px 0px;
+    background-color: white;
+    box-shadow:       2px 3px 3px rgba(0, 0, 0, 0.2);
+    opacity:          0;
+    max-height:       0px;
+    color:            black;
+    z-index:          -1;
+    overflow:         hidden;
+}
+
+@keyframes open-menu {
+    0% {
+        opacity:    0;
+        max-height: 0px;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity:    1;
+        max-height: 500px;
+    }
+}
+
+@keyframes close-menu {
+    100% {
+        opacity:    0;
+        max-height: 0px;
+    }
+    50% {
+        opacity: 1;
+    }
+    0% {
+        opacity:    1;
+        max-height: 100px;
+    }
+}
+
+.menu-open {
+    animation: 0.3s ease-in forwards open-menu;
+    z-index:   4;
+}
+
+.menu-close {
+    animation: 0.3s ease-out forwards close-menu;
+}
+
+.toolbar-menu-item {
+    white-space: nowrap;
+    padding:     0px 8px;
+    transition:  all 0.1s;
+}
+
+.toolbar-menu-item:hover {
+    background-color: #a4a4a4;
+}
+
+#workspace {
+    position: relative;
+    flex:     1;
+}
+
+math-panel {
+    position: absolute;
+}

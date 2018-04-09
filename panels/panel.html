@@ -1,0 +1,73 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="math-panel">
+    <template>
+        <style>
+            :host {
+                min-width:  30px;
+                min-height: 30px;
+                display:    flex;
+            }
+
+            :host[orientation="vertical"] {
+                flex-direction: column;
+            }
+
+            :host[orientation="horizontal"] {
+                flex-direction: row;
+            }
+
+            :host[orientation="vertical"] .handle {
+                height:           20px;
+                width:            100%;
+                background-color: #535353;
+            }
+
+            :host[orientation="horizontal"] .handle {
+                width:            20px;
+                height:           100%;
+                background-color: #535353;
+            }
+
+            .content {
+                background-color: white;
+            }
+
+            :host[orientation="vertical"] .content {
+                width:         calc(100% - 2px);
+                height:        calc(100% - 21px);
+                border-left:   1px solid #535353;
+                border-right:  1px solid #535353;
+                border-bottom: 1px solid #535353;
+            }
+
+            :host[orientation="horizontal"] .content {
+                height:        calc(100% - 2px);
+                width:         calc(100% - 21px);
+                border-top:    1px solid #535353;
+                border-bottom: 1px solid #535353;
+                border-right:  1px solid #535353;
+            }
+        </style>
+        <div class="handle"></div>
+        <div class="content">
+            {{orientation}}
+        </div>
+    </template>
+    <script>
+        class MathPanel extends Polymer.Element {
+            static get is() {
+                return "math-panel";
+            }
+
+            static get properties() {
+                return {
+                    orientation: {
+                        type: String
+                    }
+                }
+            }
+        }
+        customElements.define(MathPanel.is, MathPanel);
+    </script>
+</dom-module>
