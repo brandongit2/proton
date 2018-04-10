@@ -5,7 +5,6 @@
         <style>
             .edge {
                 position: absolute;
-                background: red;
             }
 
             .edge.left {
@@ -29,13 +28,23 @@
             }
 
             .edge.top.middle, .edge.bottom.middle {
-                width: calc(100% - 4px);
-                left:  2px;
+                width:  calc(100% - 4px);
+                left:   2px;
+                cursor: ns-resize;
             }
 
             .edge.left.middle, .edge.right.middle {
                 height: calc(100% - 4px);
                 top:    2px;
+                cursor: ew-resize;
+            }
+
+            .edge.top.left, .edge.bottom.right {
+                cursor: nwse-resize;
+            }
+
+            .edge.top.right, .edge.bottom.left {
+                cursor: nesw-resize;
             }
 
             :host {
