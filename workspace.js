@@ -57,7 +57,6 @@ $(function() {
                 var originalMouseY = mouseY;
                 if (scaleTop && mouseY > 0) {
                     var newHeight = originalHeight - (mouseY - originalMouseY);
-                    console.log(mouseY);
                     if (newHeight > 30) {
                         scaleObject.style.transform = "translate(" + originalxPos + "px, " + (mouseY - originalMouseY + "px") + ")";
                         scaleObject.style.height    = newHeight + "px";
