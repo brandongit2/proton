@@ -13,7 +13,7 @@ $(function() {
     request1.onload = function() {
         layout = request1.response;
         setLayout();
-        window.addEventListener("resize", function() {
+        window.addEventListener("resize", function(e) {
             var percentWidth  = document.getElementById("workspace").offsetWidth / 100;
             var percentHeight  = document.getElementById("workspace").offsetHeight / 100;
             for (var panel in layout.workspace) {
