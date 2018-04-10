@@ -3,6 +3,41 @@
 <dom-module id="math-panel">
     <template>
         <style>
+            .edge {
+                position: absolute;
+                background: red;
+            }
+
+            .edge.left {
+                left: -3px;
+                width: 5px;
+            }
+
+            .edge.right {
+                left:  calc(100% - 2px);
+                width: 5px;
+            }
+
+            .edge.top {
+                top:   -3px;
+                height: 5px;
+            }
+
+            .edge.bottom {
+                top:    calc(100% - 2px);
+                height: 5px;
+            }
+
+            .edge.top.middle, .edge.bottom.middle {
+                width: calc(100% - 4px);
+                left:  2px;
+            }
+
+            .edge.left.middle, .edge.right.middle {
+                height: calc(100% - 4px);
+                top:    2px;
+            }
+
             :host {
                 min-width:  30px;
                 min-height: 30px;
@@ -49,6 +84,14 @@
                 border-right:  1px solid #535353;
             }
         </style>
+        <div class="edge left middle"></div>
+        <div class="edge right middle"></div>
+        <div class="edge top middle"></div>
+        <div class="edge bottom middle"></div>
+        <div class="edge top left"></div>
+        <div class="edge top right"></div>
+        <div class="edge bottom left"></div>
+        <div class="edge bottom right"></div>
         <div class="handle"></div>
         <div class="content">
             {{orientation}}
@@ -68,6 +111,7 @@
                 }
             }
         }
+
         customElements.define(MathPanel.is, MathPanel);
     </script>
 </dom-module>

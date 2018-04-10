@@ -97,7 +97,6 @@ function populateToolbar() {
         });
 
         for (var menuItem in items[item]) {
-            console.log(menuItem);
             switch (items[item][menuItem]["type"]) {
                 case "button":
                     $(".toolbar-menu").last().append(`<div class="toolbar-menu-item">${menuItem}</div>`);
