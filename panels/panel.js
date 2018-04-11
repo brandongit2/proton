@@ -78,7 +78,7 @@ function panelClicked(event, clickables) {
             scaleObject.style.transform = "translate(" + (newXPos == null ? originalXPos : newXPos) + "px, " + (newYPos == null ? originalYPos : newYPos) + "px)";
         }
     }, 10);
-    event.target.addEventListener("mouseup", stopScale);
+    window.addEventListener("mouseup", stopScale);
 }
 
 var stopScale = function () {
