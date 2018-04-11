@@ -27,93 +27,9 @@ $(function() {
         });
     }
 
-    var scaleTop    = false;
-    var scaleRight  = false;
-    var scaleBottom = false;
-    var scaleLeft   = false;
-    var movePanel   = false;
-    var scaleObject = null;
-    var scaleLoop   = null; // A setInterval() used for resizing panels
-
-    var stopScale   = function() {
-        scaleTop = scaleRight = scaleBottom = scaleLeft = movePanel = false;
-        clearInterval(scaleLoop);
-        removeEventListener("mouseup", stopScale);
-    };
-
     window.addEventListener("mousemove", function(e) {
         mouseX = e.x;
         mouseY = e.y - 20; // 20 is the toolbar height
-    });
-
-    window.addEventListener("mousedown", function(e) {
-        if (e.originalTarget.matches(".edge") || e.originalTarget.matches(".handle")) {
-            if (e.originalTarget.matches(".edge.top")) {
-                scaleTop = true;
-            }
-            if (e.originalTarget.matches(".edge.right")) {
-                scaleRight = true;
-            }
-            if (e.originalTarget.matches(".edge.bottom")) {
-                scaleBottom = true;
-            }
-            if (e.originalTarget.matches(".edge.left")) {
-                scaleLeft = true;
-            }
-            if (e.originalTarget.matches(".handle")) {
-                movePanel = true;
-            }
-
-            scaleObject = document.getElementById(e.target.id);
-            var originalHeight = scaleObject.offsetHeight;
-            var originalWidth  = scaleObject.offsetWidth;
-            var originalXPos   = matrixToArray(scaleObject.style.transform)[0];
-            var originalYPos   = matrixToArray(scaleObject.style.transform)[1];
-            var originalMouseY = mouseY;
-            var originalMouseX = mouseX;
-
-            var newHeight = 0;
-            var newWidth  = 0;
-            var newXPos   = null;
-            var newYPos   = null;
-            scaleLoop = setInterval(function() {
-                if (mouseY > 0) {
-                    if (movePanel) {
-                        newXPos = mouseX - (originalMouseX - originalXPos);
-                        newYPos = mouseY - (originalMouseY - originalYPos);
-                    } else {
-                        if (scaleTop) {
-                            newHeight = originalHeight - (mouseY - originalMouseY);
-                            if (newHeight > 30) {
-                                newYPos = mouseY;
-                                scaleObject.style.height = newHeight + "px";
-                            }
-                        }
-                        if (scaleRight) {
-                            newWidth = mouseX - originalXPos;
-                            if (newWidth > 30) {
-                                scaleObject.style.width = newWidth + "px";
-                            }
-                        }
-                        if (scaleBottom) {
-                            newHeight = mouseY - originalYPos;
-                            if (newHeight > 30) {
-                                scaleObject.style.height = newHeight + "px";
-                            }
-                        }
-                        if (scaleLeft) {
-                            newWidth = originalWidth - (mouseX - originalMouseX);
-                            if (newWidth > 30) {
-                                newXPos = mouseX;
-                                scaleObject.style.width     = newWidth + "px";
-                            }
-                        }
-                    }
-                    scaleObject.style.transform = "translate(" + (newXPos == null ? originalXPos : newXPos) + "px, " + (newYPos == null ? originalYPos : newYPos) + "px)";
-                }
-            }, 10);
-            window.addEventListener("mouseup", stopScale);
-        }
     });
 });
 
