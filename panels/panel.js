@@ -2,7 +2,7 @@ var scaleLoop = null; // A setInterval() used for resizing panels
 
 function resizePanel(panel, directions, originals) {
     /* directions = [top, right, bottom, left]
-     * where each element is a boolean indicatin whether or not to scale the panel in that direction.
+     * where each element is a boolean indicating whether or not to scale the panel in that direction.
      */
 
     /*
@@ -34,6 +34,10 @@ function resizePanel(panel, directions, originals) {
             if (directions[3]) { // Scale left
                 newWidth = originals[2] - (mouseX - originals[0]);
                 newLeft  = mouseX - (originals[0] - originals[5]);
+                console.log(newLeft, parseInt(originals[2]) + parseInt(originals[5]) - parseInt($(panel).css("min-width")));
+                if (newLeft > parseInt(originals[2]) + parseInt(originals[5]) - parseInt($(panel).css("min-width"))) {
+                    console.log("TOO FAR!");
+                }
             }
         }
 
