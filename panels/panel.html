@@ -64,13 +64,13 @@
             :host([orientation="vertical"]) .handle {
                 height: 20px;
                 width: 100%;
-                background-color: #535353;
+                background-color: #444;
             }
 
             :host([orientation="horizontal"]) .handle {
                 width: 20px;
                 height: 100%;
-                background-color: #535353;
+                background-color: #444;
             }
 
             .content {
@@ -80,17 +80,17 @@
             :host([orientation="vertical"]) .content {
                 width: calc(100% - 2px);
                 height: calc(100% - 21px);
-                border-left: 1px solid #535353;
-                border-right: 1px solid #535353;
-                border-bottom: 1px solid #535353;
+                border-left: 1px solid #444;
+                border-right: 1px solid #444;
+                border-bottom: 1px solid #444;
             }
 
             :host([orientation="horizontal"]) .content {
                 height: calc(100% - 2px);
                 width: calc(100% - 21px);
-                border-top: 1px solid #535353;
-                border-bottom: 1px solid #535353;
-                border-right: 1px solid #535353;
+                border-top: 1px solid #444;
+                border-bottom: 1px solid #444;
+                border-right: 1px solid #444;
             }
         </style>
         <div class="edge left middle"></div>
@@ -124,61 +124,79 @@
             ready() {
                 super.ready();
 
+                var mouseX = 0;
+                var mouseY = 0;
+                window.addEventListener("mousemove", function(e) {
+                    mouseX = e.x;
+                    mouseY = e.y - 20; // 20 is the toolbar height
+                });
+
                 var children = this.shadowRoot.childNodes;
-                for (var i = children[0].nodeName == "#text" ? 1 : 2; i < children.length; i += 2) {
+                var callResizePanel = function(obj, directions) {
+                    resizePanel(obj, directions, [mouseX, mouseY, obj.offsetWidth, obj.offsetHeight, matrixToArray(obj.style.transform)[1], matrixToArray(obj.style.transform)[0]]);
+                };
+                for (var i = children[0].nodeName == "#text" ? 1 : 2; i < children.length; i += 2) { // The ternary operator is there because of a small difference between Firefox and Chrome
                     if (children[i].matches(".edge.top.left")) {
-                        children[i].addEventListener("mousedown", function() {
-                            resizePanel(this.offsetParent, [true, false, false, true]);
+                        children[i].addEventListener("mousedown", function(e) {
+                            callResizePanel(this.offsetParent, [true, false, false, true]);
+                            e.preventDefault();
                         });
                     }
                     if (children[i].matches(".edge.top.middle")) {
-                        children[i].addEventListener("mousedown", function() {
-                            resizePanel(this.offsetParent, [true, false, false, false]);
+                        children[i].addEventListener("mousedown", function(e) {
+                            callResizePanel(this.offsetParent, [true, false, false, false]);
+                            e.preventDefault();
                         });
                     }
                     if (children[i].matches(".edge.top.right")) {
-                        children[i].addEventListener("mousedown", function() {
-                            resizePanel(this.offsetParent, [true, true, false, false]);
+                        children[i].addEventListener("mousedown", function(e) {
+                            callResizePanel(this.offsetParent, [true, true, false, false]);
+                            e.preventDefault();
                         });
                     }
                     if (children[i].matches(".edge.right.middle")) {
-                        children[i].addEventListener("mousedown", function() {
-                            resizePanel(this.offsetParent, [false, true, false, false]);
+                        children[i].addEventListener("mousedown", function(e) {
+                            callResizePanel(this.offsetParent, [false, true, false, false]);
+                            e.preventDefault();
                         });
                     }
                     if (children[i].matches(".edge.right.bottom")) {
-                        children[i].addEventListener("mousedown", function() {
-                            resizePanel(this.offsetParent, [false, true, true, false]);
+                        children[i].addEventListener("mousedown", function(e) {
+                            callResizePanel(this.offsetParent, [false, true, true, false]);
+                            e.preventDefault();
                         });
                     }
                     if (children[i].matches(".edge.bottom.middle")) {
-                        children[i].addEventListener("mousedown", function() {
-                            resizePanel(this.offsetParent, [false, false, true, false]);
+                        children[i].addEventListener("mousedown", function(e) {
+                            callResizePanel(this.offsetParent, [false, false, true, false]);
+                            e.preventDefault();
                         });
-                    }if (children[i].matches(".edge.bottom.left")) {
-                        children[i].addEventListener("mousedown", function() {
-                            resizePanel(this.offsetParent, [false, false, true, true]);
+                    }
+                    if (children[i].matches(".edge.bottom.left")) {
+                        children[i].addEventListener("mousedown", function(e) {
+                            callResizePanel(this.offsetParent, [false, false, true, true]);
+                            e.preventDefault();
                         });
                     }
                     if (children[i].matches(".edge.left.middle")) {
-                        children[i].addEventListener("mousedown", function() {
-                            resizePanel(this.offsetParent, [false, false, false, true]);
+                        children[i].addEventListener("mousedown", function(e) {
+                            callResizePanel(this.offsetParent, [false, false, false, true]);
+                            e.preventDefault();
                         });
                     }
                     if (children[i].matches(".handle")) {
-                        children[i].addEventListener("mousedown", function() {
-                            resizePanel(this.offsetParent, [true, true, true, true]);
+                        children[i].addEventListener("mousedown", function(e) {
+                            callResizePanel(this.offsetParent, [true, true, true, true]);
+                            e.preventDefault();
                         });
                     }
                 }
 
-
-
-                this.addEventListener('mousedown', function(e) {
-                    console.log("clicked " + e.target.id);
-                    panelClicked(e, this.shadowRoot.childNodes);
-                    e.preventDefault();
-                });
+                // this.addEventListener('mousedown', function(e) {
+                //     console.log("clicked " + e.target.id);
+                //     panelClicked(e, this.shadowRoot.childNodes);
+                //     e.preventDefault();
+                // });
             }
         }
 

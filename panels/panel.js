@@ -1,118 +1,54 @@
 var scaleLoop = null; // A setInterval() used for resizing panels
 
-function resizePanel(panel, directions) {
-    /*
-     * directions = [top, right, bottom, left]
+function resizePanel(panel, directions, originals) {
+    /* directions = [top, right, bottom, left]
      * where each element is a boolean indicatin whether or not to scale the panel in that direction.
+     */
+
+    /*
+     * originals = [mouseX, mouseY, panelWidth, panelHeight, panelTop, panelLeft]
+     * where all elements are set to their respective values at the beginning of the click.
      */
 
     window.addEventListener("mouseup", stopScale);
 
-    var newTop    = 0;
-    var newLeft   = 0;
-    var newWidth  = 0;
-    var newHeight = 0;
+    var newTop    = originals[4];
+    var newLeft   = originals[5];
+    var newWidth  = originals[2];
+    var newHeight = originals[3];
+    var prevTop = mouseY - (originals[1] - originals[4]);
+    var prevLeft = mouseX - (originals[0] - originals[5]);
     scaleLoop = setInterval(function() {
-        if (directions[0]) {
-            console.log("scale top");
-        }
-        if (directions[1]) {
-            console.log("scale right");
-        }
-        if (directions[2]) {
-            console.log("scale bottom");
-        }
-        if (directions[3]) {
-            console.log("scale left");
+        if (directions[0] == directions[1] && directions[1] == directions[2] && directions[2] == directions[3]) { // Move panel
+            newTop  = mouseY - (originals[1] - originals[4]);
+            newLeft = mouseX - (originals[0] - originals[5]);
+        } else {
+            if (directions[0]) { // Scale top
+                newHeight = originals[3] - (mouseY - originals[1]);
+                newTop    = newHeight >= 30 ? mouseY - (originals[1] - originals[4]) : prevTop;
+            }
+            if (directions[1]) { // Scale right
+                newWidth = mouseX - originals[0] + originals[2];
+            }
+            if (directions[2]) { // Scale bottom
+                newHeight = mouseY - originals[1] + originals[3];
+            }
+            if (directions[3]) { // Scale left
+                newWidth = originals[2] - (mouseX - originals[0]);
+                newLeft  = newWidth >= 30 ? mouseX - (originals[0] - originals[5]) : prevLeft;
+            }
         }
 
-        // panel.style.transform = whatever;
-        // panel.style.width     = whatever;
-        // panel.style.height    = whatever;
+        panel.style.transform = "translate(" + (newLeft > window.innerWidth - 10 ? window.innerWidth - 10 : newLeft) + "px, " + (newTop > window.innerHeight - 30 ? window.innerHeight - 30 : newTop) + "px)";
+        panel.style.width     = (newWidth < 30 ? 30 : newWidth) + "px";
+        panel.style.height    = (newHeight < 30 ? 30 : newHeight) + "px";
+
+        prevTop  = newTop;
+        prevLeft = newLeft;
     }, 10);
 }
-//
-// function panelClicked(e, clickables) {
-//     scaleObject = e.target.id;
-//     console.log(scaleObject);
-//     for (var clickable of clickables) {
-//         if (clickable.tagName === "DIV") {
-//             clickableRect = clickable.getBoundingClientRect();
-//             if (e.clientX >= clickableRect.left && e.clientX <= clickableRect.right && e.clientY >= clickableRect.top && e.clientY <= clickableRect.bottom) {
-//                 if ($(clickable).hasClass("edge top")) {
-//                     scaleTop = true;
-//                 }
-//                 if ($(clickable).hasClass("edge right")) {
-//                     scaleRight = true;
-//                 }
-//                 if ($(clickable).hasClass("edge bottom")) {
-//                     scaleBottom = true;
-//                 }
-//                 if ($(clickable).hasClass("edge left")) {
-//                     scaleLeft = true;
-//                 }
-//                 if ($(clickable).hasClass("handle")) {
-//                     movePanel = true;
-//                 }
-//             }
-//         }
-//     }
-//     scaleObject = document.getElementById(e.target.id);
-//     var originalHeight = scaleObject.offsetHeight;
-//     var originalWidth = scaleObject.offsetWidth;
-//     var originalXPos = matrixToArray(scaleObject.style.transform)[0];
-//     var originalYPos = matrixToArray(scaleObject.style.transform)[1];
-//     var originalMouseY = mouseY;
-//     var originalMouseX = mouseX;
-//
-//     var newHeight = 0;
-//     var newWidth = 0;
-//     var newXPos = null;
-//     var newYPos = null;
-//     console.log("SET INTERVAL");
-//     scaleLoop = setInterval(function() {
-//         if (mouseY > 0) {
-//             newXPos = null;
-//             newYPos = null;
-//             if (movePanel) {
-//                 newXPos = mouseX - (originalMouseX - originalXPos);
-//                 newYPos = mouseY - (originalMouseY - originalYPos);
-//             } else {
-//                 if (scaleTop) {
-//                     newHeight = originalHeight - (mouseY - originalMouseY);
-//                     if (newHeight > 30) {
-//                         newYPos = mouseY;
-//                         scaleObject.style.height = newHeight + "px";
-//                     }
-//                 }
-//                 if (scaleRight) {
-//                     newWidth = mouseX - originalXPos;
-//                     if (newWidth > 30) {
-//                         scaleObject.style.width = newWidth + "px";
-//                     }
-//                 }
-//                 if (scaleBottom) {
-//                     newHeight = mouseY - originalYPos;
-//                     if (newHeight > 30) {
-//                         scaleObject.style.height = newHeight + "px";
-//                     }
-//                 }
-//                 if (scaleLeft) {
-//                     newWidth = originalWidth - (mouseX - originalMouseX);
-//                     if (newWidth > 30) {
-//                         newXPos = mouseX;
-//                         scaleObject.style.width = newWidth + "px";
-//                     }
-//                 }
-//             }
-//             scaleObject.style.transform = "translate(" + (newXPos == null ? originalXPos : newXPos) + "px, " + (newYPos == null ? originalYPos : newYPos) + "px)";
-//         }
-//     }, 10);
-//     window.addEventListener("mouseup", stopScale);
-// }
-//
+
 var stopScale = function () {
-    console.log("CLEARED");
     clearInterval(scaleLoop);
     removeEventListener("mouseup", stopScale);
 };
