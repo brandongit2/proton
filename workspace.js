@@ -13,18 +13,6 @@ $(function() {
     request1.onload = function() {
         layout = request1.response;
         setLayout();
-        window.addEventListener("resize", function(e) {
-            var percentWidth  = document.getElementById("workspace").offsetWidth / 100;
-            var percentHeight  = document.getElementById("workspace").offsetHeight / 100;
-            for (var panel in layout.workspace) {
-                var properties   = layout.workspace[panel]["properties"];
-                var panelElement = document.getElementById(panel);
-                panelElement.style.height = properties["height"] * percentHeight + "px";
-                panelElement.style.width  = properties["width"] * percentWidth + "px";
-                panelElement.style.top    = properties["yPos"] * percentHeight + "px";
-                panelElement.style.left   = properties["xPos"] * percentWidth + "px";
-            }
-        });
     }
 
     window.addEventListener("mousemove", function(e) {

@@ -9,22 +9,22 @@
 
             .edge.left {
                 left: -3px;
-                width: 5px;
+                width: 7px;
             }
 
             .edge.right {
-                left: calc(100% - 2px);
-                width: 5px;
+                left: calc(100% - 3px);
+                width: 7px;
             }
 
             .edge.top {
                 top: -3px;
-                height: 5px;
+                height: 7px;
             }
 
             .edge.bottom {
-                top: calc(100% - 2px);
-                height: 5px;
+                top: calc(100% - 3px);
+                height: 7px;
             }
 
             .edge.top.middle, .edge.bottom.middle {
@@ -34,8 +34,8 @@
             }
 
             .edge.left.middle, .edge.right.middle {
-                height: calc(100% - 4px);
-                top: 2px;
+                height: calc(100% - 8px);
+                top: 4px;
                 cursor: ew-resize;
             }
 
@@ -106,7 +106,6 @@
             {{orientation}}
         </div>
     </template>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="panel.js"></script>
     <script>
         class MathPanel extends Polymer.Element {
@@ -125,8 +124,58 @@
             ready() {
                 super.ready();
 
-                this.addEventListener('mousedown', function (e) {
-                    console.log("CLICKED");
+                var children = this.shadowRoot.childNodes;
+                for (var i = children[0].nodeName == "#text" ? 1 : 2; i < children.length; i += 2) {
+                    if (children[i].matches(".edge.top.left")) {
+                        children[i].addEventListener("mousedown", function() {
+                            resizePanel(this.offsetParent, [true, false, false, true]);
+                        });
+                    }
+                    if (children[i].matches(".edge.top.middle")) {
+                        children[i].addEventListener("mousedown", function() {
+                            resizePanel(this.offsetParent, [true, false, false, false]);
+                        });
+                    }
+                    if (children[i].matches(".edge.top.right")) {
+                        children[i].addEventListener("mousedown", function() {
+                            resizePanel(this.offsetParent, [true, true, false, false]);
+                        });
+                    }
+                    if (children[i].matches(".edge.right.middle")) {
+                        children[i].addEventListener("mousedown", function() {
+                            resizePanel(this.offsetParent, [false, true, false, false]);
+                        });
+                    }
+                    if (children[i].matches(".edge.right.bottom")) {
+                        children[i].addEventListener("mousedown", function() {
+                            resizePanel(this.offsetParent, [false, true, true, false]);
+                        });
+                    }
+                    if (children[i].matches(".edge.bottom.middle")) {
+                        children[i].addEventListener("mousedown", function() {
+                            resizePanel(this.offsetParent, [false, false, true, false]);
+                        });
+                    }if (children[i].matches(".edge.bottom.left")) {
+                        children[i].addEventListener("mousedown", function() {
+                            resizePanel(this.offsetParent, [false, false, true, true]);
+                        });
+                    }
+                    if (children[i].matches(".edge.left.middle")) {
+                        children[i].addEventListener("mousedown", function() {
+                            resizePanel(this.offsetParent, [false, false, false, true]);
+                        });
+                    }
+                    if (children[i].matches(".handle")) {
+                        children[i].addEventListener("mousedown", function() {
+                            resizePanel(this.offsetParent, [true, true, true, true]);
+                        });
+                    }
+                }
+
+
+
+                this.addEventListener('mousedown', function(e) {
+                    console.log("clicked " + e.target.id);
                     panelClicked(e, this.shadowRoot.childNodes);
                     e.preventDefault();
                 });
