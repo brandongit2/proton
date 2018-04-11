@@ -50,7 +50,6 @@ function setColors() {
 function populateToolbar() {
     var toolbar = document.getElementById("toolbar");
     var items   = ui.toolbar;
-    console.log(ui);
     for (var item in items) {
         $("#toolbar").append(`
             <div class="toolbar-item">
