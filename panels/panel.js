@@ -24,22 +24,52 @@ function resizePanel(panel, directions, originals) {
         if (directions[0] == directions[1] && directions[1] == directions[2] && directions[2] == directions[3]) { // Move panel
             newTop  = mouseY - (originals[1] - originals[4]);
             newLeft = mouseX - (originals[0] - originals[5]);
+
+            newTop  = newTop < 20 ? 0 : newTop;
+            newLeft = newLeft < 20 ? 0 : newLeft;
+            if (newTop + newHeight + 20 > window.innerHeight - 20 && newTop + newHeight + 20 < window.innerHeight + 20) {
+                newTop = window.innerHeight - 20 - newHeight;
+            }
+            if (newLeft + newWidth > window.innerWidth - 20 && newLeft + newWidth < window.innerWidth + 20) {
+                newLeft = window.innerWidth - newWidth;
+            }
         } else {
             if (directions[0]) { // Scale top
-                newHeight       = originals[3] - (mouseY - originals[1]);
                 potentialNewTop = mouseY - (originals[1] - originals[4]);
                 newTop          = potentialNewTop > originals[4] + originals[3] - 30 ? originals[4] + originals[3] - 30 : potentialNewTop;
+
+                if (newTop < 20) {
+                    newHeight = originals[3] - (mouseY - originals[1]) + newTop;
+                    newTop = 0;
+                } else {
+                    newHeight = originals[3] - (mouseY - originals[1]);
+                }
             }
             if (directions[1]) { // Scale right
                 newWidth = mouseX - originals[0] + originals[2];
+
+                if (newWidth + newLeft > window.innerWidth - 20) {
+                    newWidth = window.innerWidth - newLeft;
+                    console.log(newLeft);
+                }
             }
             if (directions[2]) { // Scale bottom
                 newHeight = mouseY - originals[1] + originals[3];
+
+                if (newHeight + newTop + 20 > window.innerHeight - 20) {
+                    newHeight = window.innerHeight - 20 - newTop;
+                }
             }
             if (directions[3]) { // Scale left
-                newWidth         = originals[2] - (mouseX - originals[0]);
                 potentialNewLeft = mouseX - (originals[0] - originals[5]);
                 newLeft          = potentialNewLeft > originals[5] + originals[2] - 30 ? originals[5] + originals[2] - 30 : potentialNewLeft;
+
+                if (newLeft < 20) {
+                    newWidth = originals[2] - (mouseX - originals[0]) + newLeft;
+                    newLeft = 0;
+                } else {
+                    newWidth = originals[2] - (mouseX - originals[0]);
+                }
             }
         }
 
