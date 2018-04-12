@@ -6,7 +6,7 @@ function resizePanel(panel, directions, originals) {
     }
 
     /* directions = [top, right, bottom, left]
-     * where each element is a boolean indicatin whether or not to scale the panel in that direction.
+     * where each element is a boolean indicating whether or not to scale the panel in that direction.
      */
 
     /*
