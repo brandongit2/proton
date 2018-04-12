@@ -1,4 +1,7 @@
 var scaleLoop = null; // A setInterval() used for resizing panels
+const SNAP_RADIUS    = 20;
+const TOOLBAR_HEIGHT = 20;
+const MIN_PANEL_SIZE = 30;
 
 function resizePanel(panel, directions, originals) {
     for (var i = 0; i < originals.length; i++) {
@@ -25,30 +28,30 @@ function resizePanel(panel, directions, originals) {
             newTop  = mouseY - (originals[1] - originals[4]);
             newLeft = mouseX - (originals[0] - originals[5]);
 
-        
+
             // snap to top edge
-            newTop  = newTop < 20 && newTop > -20 ? 0 : newTop;
-            
+            newTop  = newTop < SNAP_RADIUS && newTop > -SNAP_RADIUS ? 0 : newTop;
+
             // snap to left edge
-            newLeft = newLeft < 20 && newLeft > -20 ? 0 : newLeft;
-            
+            newLeft = newLeft < SNAP_RADIUS && newLeft > -SNAP_RADIUS ? 0 : newLeft;
+
             // snap to bottom edge
-            if (newTop + newHeight + 20 > window.innerHeight - 20 && newTop + newHeight + 20 < window.innerHeight + 20) {
-                newTop = window.innerHeight - 20 - newHeight;
+            if (newTop + newHeight + TOOLBAR_HEIGHT > window.innerHeight - SNAP_RADIUS && newTop + newHeight + TOOLBAR_HEIGHT < window.innerHeight + SNAP_RADIUS) {
+                newTop = window.innerHeight - TOOLBAR_HEIGHT - newHeight;
             }
 
             // snap to right edge
-            if (newLeft + newWidth > window.innerWidth - 20 && newLeft + newWidth < window.innerWidth + 20) {
+            if (newLeft + newWidth > window.innerWidth - SNAP_RADIUS && newLeft + newWidth < window.innerWidth + SNAP_RADIUS) {
                 newLeft = window.innerWidth - newWidth;
             }
 
         } else {
             if (directions[0]) { // Scale top
                 potentialNewTop = mouseY - (originals[1] - originals[4]);
-                newTop          = potentialNewTop > originals[4] + originals[3] - 30 ? originals[4] + originals[3] - 30 : potentialNewTop;
+                newTop          = potentialNewTop > originals[4] + originals[3] - MIN_PANEL_SIZE ? originals[4] + originals[3] - MIN_PANEL_SIZE : potentialNewTop;
 
                 // snap to top edge
-                if (newTop < 20 && newTop > -20) {
+                if (newTop < SNAP_RADIUS && newTop > -SNAP_RADIUS) {
                     newHeight = originals[3] - (mouseY - originals[1]) + newTop;
                     newTop = 0;
                 } else {
@@ -59,7 +62,7 @@ function resizePanel(panel, directions, originals) {
                 newWidth = mouseX - originals[0] + originals[2];
 
                 // snap to right edge
-                if (newWidth + newLeft > window.innerWidth - 20 && newWidth + newLeft < window.innerWidth + 20) {
+                if (newWidth + newLeft > window.innerWidth - SNAP_RADIUS && newWidth + newLeft < window.innerWidth + SNAP_RADIUS) {
                     newWidth = window.innerWidth - newLeft;
                 }
             }
@@ -67,16 +70,16 @@ function resizePanel(panel, directions, originals) {
                 newHeight = mouseY - originals[1] + originals[3];
 
                 // snap to bottom edge
-                if (newHeight + newTop + 20 > window.innerHeight - 20 && newHeight + newTop + 20 < window.innerHeight + 20) {
-                    newHeight = window.innerHeight - 20 - newTop;
+                if (newHeight + newTop + TOOLBAR_HEIGHT > window.innerHeight - SNAP_RADIUS && newHeight + newTop + TOOLBAR_HEIGHT < window.innerHeight + SNAP_RADIUS) {
+                    newHeight = window.innerHeight - TOOLBAR_HEIGHT - newTop;
                 }
             }
             if (directions[3]) { // Scale left
                 potentialNewLeft = mouseX - (originals[0] - originals[5]);
-                newLeft          = potentialNewLeft > originals[5] + originals[2] - 30 ? originals[5] + originals[2] - 30 : potentialNewLeft;
+                newLeft          = potentialNewLeft > originals[5] + originals[2] - MIN_PANEL_SIZE ? originals[5] + originals[2] - MIN_PANEL_SIZE : potentialNewLeft;
 
                 // snap to left edge
-                if (newLeft < 20 && newLeft > -20) {
+                if (newLeft < SNAP_RADIUS && newLeft > -SNAP_RADIUS) {
                     newWidth = originals[2] - (mouseX - originals[0]) + newLeft;
                     newLeft = 0;
                 } else {
@@ -85,7 +88,18 @@ function resizePanel(panel, directions, originals) {
             }
         }
 
-        panel.style.transform = "translate(" + (newLeft > window.innerWidth - 10 ? window.innerWidth - 10 : newLeft) + "px, " + (newTop > window.innerHeight - 30 ? window.innerHeight - 30 : newTop) + "px)";
+        // Keep panels from going off the edge of the screen
+        if (newLeft > window.innerWidth - 10) {
+            newLeft = window.innerWidth - 10;
+        } else if (newLeft + newWidth < 10) {
+            newLeft = 10 - newWidth;
+        }
+        if (newTop > window.innerHeight - 30) {
+            newTop = window.innerHeight - 30;
+        } else if (newTop < TOOLBAR_HEIGHT - 20) {
+            newTop = TOOLBAR_HEIGHT - 20;
+        }
+        panel.style.transform = "translate(" + newLeft + "px, " + newTop + "px)";
         panel.style.width     = newWidth + "px";
         panel.style.height    = newHeight + "px";
     }, 10);
