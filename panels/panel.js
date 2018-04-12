@@ -6,7 +6,7 @@ function resizePanel(panel, directions, originals) {
     }
 
     /* directions = [top, right, bottom, left]
-     * where each element is a boolean indicatin whether or not to scale the panel in that direction.
+     * where each element is a boolean indicating whether or not to scale the panel in that direction.
      */
 
     /*
@@ -25,8 +25,8 @@ function resizePanel(panel, directions, originals) {
             newTop  = mouseY - (originals[1] - originals[4]);
             newLeft = mouseX - (originals[0] - originals[5]);
 
-            newTop  = newTop < 20 ? 0 : newTop;
-            newLeft = newLeft < 20 ? 0 : newLeft;
+            newTop  = newTop < 20 && newTop > -20 ? 0 : newTop;
+            newLeft = newLeft < 20 && newLeft > -20 ? 0 : newLeft;
             if (newTop + newHeight + 20 > window.innerHeight - 20 && newTop + newHeight + 20 < window.innerHeight + 20) {
                 newTop = window.innerHeight - 20 - newHeight;
             }
@@ -38,7 +38,7 @@ function resizePanel(panel, directions, originals) {
                 potentialNewTop = mouseY - (originals[1] - originals[4]);
                 newTop          = potentialNewTop > originals[4] + originals[3] - 30 ? originals[4] + originals[3] - 30 : potentialNewTop;
 
-                if (newTop < 20) {
+                if (newTop < 20 && newTop > -20) {
                     newHeight = originals[3] - (mouseY - originals[1]) + newTop;
                     newTop = 0;
                 } else {
@@ -48,15 +48,14 @@ function resizePanel(panel, directions, originals) {
             if (directions[1]) { // Scale right
                 newWidth = mouseX - originals[0] + originals[2];
 
-                if (newWidth + newLeft > window.innerWidth - 20) {
+                if (newWidth + newLeft > window.innerWidth - 20 && newWidth + newLeft < window.innerWidth + 20) {
                     newWidth = window.innerWidth - newLeft;
-                    console.log(newLeft);
                 }
             }
             if (directions[2]) { // Scale bottom
                 newHeight = mouseY - originals[1] + originals[3];
 
-                if (newHeight + newTop + 20 > window.innerHeight - 20) {
+                if (newHeight + newTop + 20 > window.innerHeight - 20 && newHeight + newTop + 20 < window.innerHeight + 20) {
                     newHeight = window.innerHeight - 20 - newTop;
                 }
             }
@@ -64,7 +63,7 @@ function resizePanel(panel, directions, originals) {
                 potentialNewLeft = mouseX - (originals[0] - originals[5]);
                 newLeft          = potentialNewLeft > originals[5] + originals[2] - 30 ? originals[5] + originals[2] - 30 : potentialNewLeft;
 
-                if (newLeft < 20) {
+                if (newLeft < 20 && newLeft > -20) {
                     newWidth = originals[2] - (mouseX - originals[0]) + newLeft;
                     newLeft = 0;
                 } else {
