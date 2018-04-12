@@ -25,19 +25,29 @@ function resizePanel(panel, directions, originals) {
             newTop  = mouseY - (originals[1] - originals[4]);
             newLeft = mouseX - (originals[0] - originals[5]);
 
+        
+            // snap to top edge
             newTop  = newTop < 20 && newTop > -20 ? 0 : newTop;
+            
+            // snap to left edge
             newLeft = newLeft < 20 && newLeft > -20 ? 0 : newLeft;
+            
+            // snap to bottom edge
             if (newTop + newHeight + 20 > window.innerHeight - 20 && newTop + newHeight + 20 < window.innerHeight + 20) {
                 newTop = window.innerHeight - 20 - newHeight;
             }
+
+            // snap to right edge
             if (newLeft + newWidth > window.innerWidth - 20 && newLeft + newWidth < window.innerWidth + 20) {
                 newLeft = window.innerWidth - newWidth;
             }
+
         } else {
             if (directions[0]) { // Scale top
                 potentialNewTop = mouseY - (originals[1] - originals[4]);
                 newTop          = potentialNewTop > originals[4] + originals[3] - 30 ? originals[4] + originals[3] - 30 : potentialNewTop;
 
+                // snap to top edge
                 if (newTop < 20 && newTop > -20) {
                     newHeight = originals[3] - (mouseY - originals[1]) + newTop;
                     newTop = 0;
@@ -48,6 +58,7 @@ function resizePanel(panel, directions, originals) {
             if (directions[1]) { // Scale right
                 newWidth = mouseX - originals[0] + originals[2];
 
+                // snap to right edge
                 if (newWidth + newLeft > window.innerWidth - 20 && newWidth + newLeft < window.innerWidth + 20) {
                     newWidth = window.innerWidth - newLeft;
                 }
@@ -55,6 +66,7 @@ function resizePanel(panel, directions, originals) {
             if (directions[2]) { // Scale bottom
                 newHeight = mouseY - originals[1] + originals[3];
 
+                // snap to bottom edge
                 if (newHeight + newTop + 20 > window.innerHeight - 20 && newHeight + newTop + 20 < window.innerHeight + 20) {
                     newHeight = window.innerHeight - 20 - newTop;
                 }
@@ -63,6 +75,7 @@ function resizePanel(panel, directions, originals) {
                 potentialNewLeft = mouseX - (originals[0] - originals[5]);
                 newLeft          = potentialNewLeft > originals[5] + originals[2] - 30 ? originals[5] + originals[2] - 30 : potentialNewLeft;
 
+                // snap to left edge
                 if (newLeft < 20 && newLeft > -20) {
                     newWidth = originals[2] - (mouseX - originals[0]) + newLeft;
                     newLeft = 0;
