@@ -2,6 +2,7 @@
 
 <dom-module id="math-panel">
     <template>
+        
         <style>
             .edge {
                 position: absolute;
@@ -103,7 +104,6 @@
         <div class="edge bottom right"></div>
         <div class="handle"></div>
         <div class="content">
-            {{orientation}}
         </div>
     </template>
     <script src="panel.js"></script>
@@ -124,6 +124,7 @@
             ready() {
                 super.ready();
 
+                // Update mouse coordinates
                 var mouseX = 0;
                 var mouseY = 0;
                 window.addEventListener("mousemove", function(e) {
@@ -131,6 +132,7 @@
                     mouseY = e.y - 20; // 20 is the toolbar height
                 });
 
+                // Call callResizePanel() for panel resize
                 var children = this.shadowRoot.childNodes;
                 var callResizePanel = function(obj, directions) {
                     resizePanel(obj, directions, [mouseX, mouseY, obj.offsetWidth, obj.offsetHeight, matrixToArray(obj.style.transform)[1], matrixToArray(obj.style.transform)[0]]);
@@ -192,11 +194,9 @@
                     }
                 }
 
-                // this.addEventListener('mousedown', function(e) {
-                //     console.log("clicked " + e.target.id);
-                //     panelClicked(e, this.shadowRoot.childNodes);
-                //     e.preventDefault();
-                // });
+                var panel = document.createElement("math-panel-toolbar");
+                var content = children[19].nodeName == "#text" ? children[20] : children[19];
+                content.appendChild(panel);
             }
         }
 
