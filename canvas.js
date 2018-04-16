@@ -11,7 +11,10 @@ const DEFAULT_CENTRE_POINT = new Point(0, 0);
 const DEFAULT_X_SCALE = 1;
 const DEFAULT_Y_SCALE = 1;
 const PIXELS_BETWEEN_INTERVALS = 30;
-const GRIDLINE_WIDTH = 0.3;
+const MINOR_GRIDLINE_WIDTH = 0.3;
+const MAJOR_GRIDLINE_WIDTH = 0.5;
+const MAJOR_GRIDLINE_INTERVAL = 5;
+const AXIS_GRIDLINE_WIDTH = 0.9;
 
 // colours
 const GREY = "#C0C0C0"
@@ -60,10 +63,14 @@ function drawCanvas() {
 
     // set up gridlines
     ctx2d.strokeStyle = BLACK;
-    ctx2d.lineWidth = GRIDLINE_WIDTH;
 
     // vertical gridlines right of centre
     for (var x=centrePosOfCanvas.x; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS) {
+        if (((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
+            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+        } else {
+            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
+        }
         ctx2d.beginPath();
         ctx2d.moveTo(x, 0);
         ctx2d.lineTo(x, canvas.height);
@@ -72,6 +79,11 @@ function drawCanvas() {
 
     // vertical gridlines left of centre
     for (var x=centrePosOfCanvas.x; x>0; x-=PIXELS_BETWEEN_INTERVALS) {
+        if (((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
+            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+        } else {
+            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
+        }
         ctx2d.beginPath();
         ctx2d.moveTo(x, 0);
         ctx2d.lineTo(x, canvas.height);
@@ -80,6 +92,11 @@ function drawCanvas() {
 
     // horizontal gridlines below centre
     for (var y=centrePosOfCanvas.y; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS) {
+        if (((y - centrePosOfCanvas.y) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
+            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+        } else {
+            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
+        }
         ctx2d.beginPath();
         ctx2d.moveTo(0, y);
         ctx2d.lineTo(canvas.width, y);
@@ -88,11 +105,30 @@ function drawCanvas() {
 
     // horizontal gridlines above centre
     for (var y=centrePosOfCanvas.y; y>0; y-=PIXELS_BETWEEN_INTERVALS) {
+        if (((y - centrePosOfCanvas.y) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
+            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+        } else {
+            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
+        }
         ctx2d.beginPath();
         ctx2d.moveTo(0, y);
         ctx2d.lineTo(canvas.width, y);
         ctx2d.stroke();
     }
+
+    // darker vertical axis lines
+    ctx2d.lineWidth = AXIS_GRIDLINE_WIDTH;
+    ctx2d.beginPath();
+    ctx2d.moveTo(centrePosOfCanvas.x, 0);
+    ctx2d.lineTo(centrePosOfCanvas.x, canvas.width);
+    ctx2d.stroke();
+
+    // darker horizontal axis lines
+    ctx2d.lineWidth = AXIS_GRIDLINE_WIDTH;
+    ctx2d.beginPath();
+    ctx2d.moveTo(0, centrePosOfCanvas.y);
+    ctx2d.lineTo(canvas.width, centrePosOfCanvas.y);
+    ctx2d.stroke();
 
     // draw circle in the centre of the canvas
     ctx2d.beginPath();
