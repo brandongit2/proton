@@ -17,13 +17,14 @@ const MAJOR_GRIDLINE_INTERVAL = 5;
 const AXIS_GRIDLINE_WIDTH = 0.9;
 
 // colours
-const GREY = "#C0C0C0"
+const GREY = "#F0F0F0"
 const BLACK = "#000000";
 const RED = "#FF0000";
 const WHITE = "#FFFFFF"
+const BACKGROUND_COLOUR = GREY;
 
 // font
-const MAJOR_GRIDLINE_NUMBERS_FONT = "10px Calibri";
+const MAJOR_GRIDLINE_NUMBERS_FONT = "12px Arial";
 
 var canvas;
 var ctx2d;
@@ -35,6 +36,22 @@ var centrePosOfCanvas;
 var centrePoint = DEFAULT_CENTRE_POINT;
 var xScale = DEFAULT_X_SCALE;
 var yScale = DEFAULT_Y_SCALE;
+
+function drawNumberLabelsWithBackground(text, x, y, axis, font, background, textColour) {
+    ctx2d.font = font;
+    ctx2d.fillStyle = background;
+    if (axis == "horizontal") {
+        ctx2d.textAlign = "center";
+        ctx2d.textBaseline = "top";
+        ctx2d.fillRect(x-(ctx2d.measureText(text).width/2), y, ctx2d.measureText(text).width+2, parseInt(ctx2d.font)+2);
+    } else {
+        ctx2d.textAlign = "right";
+        ctx2d.textBaseline = "middle";
+        ctx2d.fillRect(x-ctx2d.measureText(text).width-1, y-(parseInt(ctx2d.font)/2), ctx2d.measureText(text).width+2, parseInt(ctx2d.font)+2);
+    }
+    ctx2d.fillStyle = textColour;
+    ctx2d.fillText(text, x, y);
+}
 
 function setUpCanvas() {
 
@@ -55,7 +72,7 @@ function setUpCanvas() {
 function drawCanvas() {
 
     // fill background of canvas
-    ctx2d.fillStyle = GREY;
+    ctx2d.fillStyle = BACKGROUND_COLOUR;
     ctx2d.fillRect(0,0,canvas.width,canvas.height);
 
     // rectangles at the four corner of the canvas
@@ -135,30 +152,34 @@ function drawCanvas() {
     ctx2d.stroke();
 
     // number labels for horizontal
-    ctx2d.fillStyle = BLACK;
-    ctx2d.strokeStyle = WHITE;
     ctx2d.font = MAJOR_GRIDLINE_NUMBERS_FONT;
-    for (var x=centrePosOfCanvas.x; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        ctx2d.fillText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
-        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
-    }
-    for (var x=centrePosOfCanvas.x - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x>0; x-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        ctx2d.fillText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
-        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
-    }
-    for (var y=centrePosOfCanvas.y; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        ctx2d.fillText((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS, centrePosOfCanvas.x+2, y);
-        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
-    }
-    for (var y=centrePosOfCanvas.y - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y>0; y-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        ctx2d.fillText((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS, centrePosOfCanvas.x+2, y);
-        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
-    }
-    
 
-    // number lables for vertical
+    // horizontal right of centre
+    for (var x=centrePosOfCanvas.x + PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        drawNumberLabelsWithBackground(((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) * xScale, x, centrePosOfCanvas.y+5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+    }
+
+    // horizontal left of centre
+    for (var x=centrePosOfCanvas.x - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x>0; x-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        drawNumberLabelsWithBackground(((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) * xScale, x, centrePosOfCanvas.y+5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+    }
+
+    // vertical below centre
+    ctx2d.textAlign = "right";
+    ctx2d.textBaseline = "middle";
+    for (var y=centrePosOfCanvas.y + PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        drawNumberLabelsWithBackground(((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS) * yScale, centrePosOfCanvas.x-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+    }
+
+    // vertical above centre
+    ctx2d.textAlign = "right";
+    ctx2d.textBaseline = "middle";
+    for (var y=centrePosOfCanvas.y - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y>0; y-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        drawNumberLabelsWithBackground(((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS) * yScale, centrePosOfCanvas.x-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+    }
 
     // draw circle in the centre of the canvas
+    ctx2d.fillStyle = RED;
     ctx2d.beginPath();
     ctx2d.arc(centrePosOfCanvas.x, centrePosOfCanvas.y, 2, 0, 2*Math.PI);
     ctx2d.fill();
