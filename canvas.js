@@ -20,6 +20,10 @@ const AXIS_GRIDLINE_WIDTH = 0.9;
 const GREY = "#C0C0C0"
 const BLACK = "#000000";
 const RED = "#FF0000";
+const WHITE = "#FFFFFF"
+
+// font
+const MAJOR_GRIDLINE_NUMBERS_FONT = "10px Calibri";
 
 var canvas;
 var ctx2d;
@@ -129,6 +133,30 @@ function drawCanvas() {
     ctx2d.moveTo(0, centrePosOfCanvas.y);
     ctx2d.lineTo(canvas.width, centrePosOfCanvas.y);
     ctx2d.stroke();
+
+    // number labels for horizontal
+    ctx2d.fillStyle = BLACK;
+    ctx2d.strokeStyle = WHITE;
+    ctx2d.font = MAJOR_GRIDLINE_NUMBERS_FONT;
+    for (var x=centrePosOfCanvas.x; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        ctx2d.fillText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+    }
+    for (var x=centrePosOfCanvas.x - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x>0; x-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        ctx2d.fillText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+    }
+    for (var y=centrePosOfCanvas.y; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        ctx2d.fillText((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS, centrePosOfCanvas.x+2, y);
+        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+    }
+    for (var y=centrePosOfCanvas.y - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y>0; y-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        ctx2d.fillText((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS, centrePosOfCanvas.x+2, y);
+        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+    }
+    
+
+    // number lables for vertical
 
     // draw circle in the centre of the canvas
     ctx2d.beginPath();
