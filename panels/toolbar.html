@@ -3,11 +3,45 @@
 <dom-module id="math-panel-toolbar">
     <template>
         <style>
+            :host {
+                width: 100%;
+            }
+
+            #root {
+                position: absolute;
+                left:     50%;
+                transform: translate(-50%, 0%);
+                text-align: justify;
+            }
+
             p {
                 margin: 0px;
             }
+
+            .item {
+                height:      38px;
+                width:       38px;
+                border:      1px solid black;
+                display:     inline-block;
+            }
         </style>
-        <p>Toolbar</p>
+        <div id="root">
+            <div class="item">
+                hey
+            </div>
+            <div class="item">
+                hey
+            </div>
+            <div class="item">
+                hey
+            </div>
+            <div class="item">
+                hey
+            </div>
+            <div class="item">
+                hey
+            </div>
+        </div>
     </template>
     <script>
         class MathPanelToolbar extends Polymer.Element {
