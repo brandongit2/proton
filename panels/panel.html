@@ -2,7 +2,6 @@
 
 <dom-module id="math-panel">
     <template>
-
         <style>
             .edge {
                 position: absolute;
@@ -194,7 +193,12 @@ console.log(this.properties());
                     }
                 }
 
-                var panel = document.createElement("math-panel-toolbar");
+                if (this.id.search(/^test[0-9]+?/) == -1) {
+                    var panel = document.createElement("math-panel-" + this.id.toLowerCase());
+                } else {
+                    var panel = document.createElement("math-panel-test");
+                }
+
                 var content = children[19].nodeName == "#text" ? children[20] : children[19]; // Handles discrepancies between Chrome and Firefox
                 content.appendChild(panel);
             }
