@@ -6,7 +6,7 @@ class Point {
 }
 
 // constants
-const DEFAULT_CENTRE_POINT = new Point(0, 0);
+const DEFAULT_CENTRE_POINT = new Point(5, 5);
 const DEFAULT_X_SCALE = 1;
 const DEFAULT_Y_SCALE = 1;
 const PIXELS_BETWEEN_INTERVALS = 30;
@@ -14,6 +14,7 @@ const MINOR_GRIDLINE_WIDTH = 0.2;
 const MAJOR_GRIDLINE_WIDTH = 0.7;
 const MAJOR_GRIDLINE_INTERVAL = 5;
 const AXIS_GRIDLINE_WIDTH = 1.5;
+const SCROLL_MULTIPLIER = 2;
 
 // colours
 const GREY = "#F0F0F0"
@@ -54,6 +55,12 @@ function drawNumberLabelsWithBackground(text, x, y, axis, font, background, text
     ctx2d.fillText(text, x, y);
 }
 
+function resizeCanvas(xTimes, yTimes) {
+    xScale *= xTimes;
+    yScale *= yTimes;
+    drawCanvas();
+}
+
 function setUpCanvas() {
 
     workspace = $("#workspace")[0];
@@ -66,6 +73,14 @@ function setUpCanvas() {
 
     // get context of canvas
     ctx2d = canvas.getContext("2d");
+
+    window.addEventListener("wheel", function(event) {
+        if (event.deltaY > 0) {
+            resizeCanvas(2,2);
+        } else {
+            resizeCanvas(0.5, 0.5);
+        }
+    });
 
     drawCanvas();
 }
@@ -143,7 +158,7 @@ function drawCanvas() {
         } else {
             ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
         }
-        ctx2d.beginPath();
+        ctx2d.beginPath();centrePosOfCanvas.x - centrePoint.x * PIXELS_BETWEEN_INTERVALS
         ctx2d.moveTo(0, y);
         ctx2d.lineTo(canvas.width, y);
         ctx2d.stroke();
@@ -168,14 +183,14 @@ function drawCanvas() {
     // draw numbers on horizontal axis
     for (var x = originPosOfCanvas.x + Math.floor((0 - originPosOfCanvas.x)/PIXELS_BETWEEN_INTERVALS/MAJOR_GRIDLINE_INTERVAL)*PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x <canvas.width; x += MAJOR_GRIDLINE_INTERVAL*PIXELS_BETWEEN_INTERVALS) {
         if ((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale != 0) {
-            drawNumberLabelsWithBackground((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale, x, centrePosOfCanvas.y + centrePoint.y * PIXELS_BETWEEN_INTERVALS+5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale, x, originPosOfCanvas.y+5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
     // draw numbers on vertical axis
     for (var y = originPosOfCanvas.y + Math.floor((0 - originPosOfCanvas.y)/PIXELS_BETWEEN_INTERVALS/MAJOR_GRIDLINE_INTERVAL)*PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y <canvas.height; y += MAJOR_GRIDLINE_INTERVAL*PIXELS_BETWEEN_INTERVALS) {
         if ((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale != 0) {
-            drawNumberLabelsWithBackground((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale, centrePosOfCanvas.x - centrePoint.x * PIXELS_BETWEEN_INTERVALS-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale, originPosOfCanvas.x-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
