@@ -11,16 +11,18 @@ const DEFAULT_CENTRE_POINT = new Point(0, 0);
 const DEFAULT_X_SCALE = 1;
 const DEFAULT_Y_SCALE = 1;
 const PIXELS_BETWEEN_INTERVALS = 30;
-const MINOR_GRIDLINE_WIDTH = 0.3;
-const MAJOR_GRIDLINE_WIDTH = 0.5;
+const MINOR_GRIDLINE_WIDTH = 0.2;
+const MAJOR_GRIDLINE_WIDTH = 0.7;
 const MAJOR_GRIDLINE_INTERVAL = 5;
-const AXIS_GRIDLINE_WIDTH = 0.9;
+const AXIS_GRIDLINE_WIDTH = 1.5;
 
 // colours
 const GREY = "#F0F0F0"
 const BLACK = "#000000";
 const RED = "#FF0000";
-const WHITE = "#FFFFFF"
+const WHITE = "#FFFFFF";
+const GREEN = "#008000";
+
 const BACKGROUND_COLOUR = GREY;
 
 // font
@@ -71,6 +73,17 @@ function setUpCanvas() {
 
 function drawCanvas() {
 
+    // point where the gridlines should be drawn from
+    wholeCentrePoint = new Point();
+    wholeCentrePoint.x = (Math.floor(centrePoint.x/xScale)*xScale);
+    wholeCentrePoint.y = (Math.floor(centrePoint.y/yScale)*yScale);
+    wholeCentrePosOfCanvas = new Point();
+    wholeCentrePosOfCanvas.x = centrePosOfCanvas.x + ((wholeCentrePoint.x - centrePoint.x)/xScale) * PIXELS_BETWEEN_INTERVALS;
+    wholeCentrePosOfCanvas.y = centrePosOfCanvas.y - ((wholeCentrePoint.y - centrePoint.y)/yScale) * PIXELS_BETWEEN_INTERVALS;
+    originPosOfCanvas = new Point();
+    originPosOfCanvas.x = wholeCentrePosOfCanvas.x - (wholeCentrePoint.x/xScale)*PIXELS_BETWEEN_INTERVALS;
+    originPosOfCanvas.y = wholeCentrePosOfCanvas.y + (wholeCentrePoint.y/yScale)*PIXELS_BETWEEN_INTERVALS;
+
     // fill background of canvas
     ctx2d.fillStyle = BACKGROUND_COLOUR;
     ctx2d.fillRect(0,0,canvas.width,canvas.height);
@@ -86,8 +99,8 @@ function drawCanvas() {
     ctx2d.strokeStyle = BLACK;
 
     // vertical gridlines right of centre
-    for (var x=centrePosOfCanvas.x; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS) {
-        if (((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
+    for (var x=wholeCentrePosOfCanvas.x; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS) {
+        if (Math.floor((originPosOfCanvas.x - x) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
             ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
         } else {
             ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
@@ -99,8 +112,8 @@ function drawCanvas() {
     }
 
     // vertical gridlines left of centre
-    for (var x=centrePosOfCanvas.x; x>0; x-=PIXELS_BETWEEN_INTERVALS) {
-        if (((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
+    for (var x=wholeCentrePosOfCanvas.x-PIXELS_BETWEEN_INTERVALS; x>0; x-=PIXELS_BETWEEN_INTERVALS) {
+        if (Math.floor((originPosOfCanvas.x - x) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
             ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
         } else {
             ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
@@ -112,8 +125,8 @@ function drawCanvas() {
     }
 
     // horizontal gridlines below centre
-    for (var y=centrePosOfCanvas.y; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS) {
-        if (((y - centrePosOfCanvas.y) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
+    for (var y=wholeCentrePosOfCanvas.y; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS) {
+        if (Math.floor((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
             ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
         } else {
             ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
@@ -125,8 +138,8 @@ function drawCanvas() {
     }
 
     // horizontal gridlines above centre
-    for (var y=centrePosOfCanvas.y; y>0; y-=PIXELS_BETWEEN_INTERVALS) {
-        if (((y - centrePosOfCanvas.y) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
+    for (var y=wholeCentrePosOfCanvas.y-PIXELS_BETWEEN_INTERVALS; y>0; y-=PIXELS_BETWEEN_INTERVALS) {
+        if (Math.floor((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS) % MAJOR_GRIDLINE_INTERVAL == 0) {
             ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
         } else {
             ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
@@ -140,48 +153,44 @@ function drawCanvas() {
     // darker vertical axis lines
     ctx2d.lineWidth = AXIS_GRIDLINE_WIDTH;
     ctx2d.beginPath();
-    ctx2d.moveTo(centrePosOfCanvas.x, 0);
-    ctx2d.lineTo(centrePosOfCanvas.x, canvas.width);
+    ctx2d.moveTo(originPosOfCanvas.x, 0);
+    ctx2d.lineTo(originPosOfCanvas.x, canvas.width);
     ctx2d.stroke();
 
     // darker horizontal axis lines
     ctx2d.lineWidth = AXIS_GRIDLINE_WIDTH;
     ctx2d.beginPath();
-    ctx2d.moveTo(0, centrePosOfCanvas.y);
-    ctx2d.lineTo(canvas.width, centrePosOfCanvas.y);
+    ctx2d.moveTo(0, originPosOfCanvas.y);
+    ctx2d.lineTo(canvas.width, originPosOfCanvas.y);
     ctx2d.stroke();
 
-    // number labels for horizontal
-    ctx2d.font = MAJOR_GRIDLINE_NUMBERS_FONT;
+    // draw numbers
 
-    // horizontal right of centre
-    for (var x=centrePosOfCanvas.x + PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        drawNumberLabelsWithBackground(((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) * xScale, x, centrePosOfCanvas.y+5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+    // draw numbers on horizontal axis
+    for (var x = originPosOfCanvas.x + Math.floor((0 - originPosOfCanvas.x)/PIXELS_BETWEEN_INTERVALS/MAJOR_GRIDLINE_INTERVAL)*PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x <canvas.width; x += MAJOR_GRIDLINE_INTERVAL*PIXELS_BETWEEN_INTERVALS) {
+        if ((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale != 0) {
+            drawNumberLabelsWithBackground((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale, x, centrePosOfCanvas.y + centrePoint.y * PIXELS_BETWEEN_INTERVALS+5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+        }
     }
 
-    // horizontal left of centre
-    for (var x=centrePosOfCanvas.x - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x>0; x-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        drawNumberLabelsWithBackground(((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) * xScale, x, centrePosOfCanvas.y+5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
-    }
-
-    // vertical below centre
-    ctx2d.textAlign = "right";
-    ctx2d.textBaseline = "middle";
-    for (var y=centrePosOfCanvas.y + PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        drawNumberLabelsWithBackground(((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS) * yScale, centrePosOfCanvas.x-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
-    }
-
-    // vertical above centre
-    ctx2d.textAlign = "right";
-    ctx2d.textBaseline = "middle";
-    for (var y=centrePosOfCanvas.y - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y>0; y-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        drawNumberLabelsWithBackground(((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS) * yScale, centrePosOfCanvas.x-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+    // draw numbers on vertical axis
+    for (var y = originPosOfCanvas.y + Math.floor((0 - originPosOfCanvas.y)/PIXELS_BETWEEN_INTERVALS/MAJOR_GRIDLINE_INTERVAL)*PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y <canvas.height; y += MAJOR_GRIDLINE_INTERVAL*PIXELS_BETWEEN_INTERVALS) {
+        if ((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale != 0) {
+            drawNumberLabelsWithBackground((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale, centrePosOfCanvas.x - centrePoint.x * PIXELS_BETWEEN_INTERVALS-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+        }
     }
 
     // draw circle in the centre of the canvas
     ctx2d.fillStyle = RED;
     ctx2d.beginPath();
-    ctx2d.arc(centrePosOfCanvas.x, centrePosOfCanvas.y, 2, 0, 2*Math.PI);
+    ctx2d.arc(centrePosOfCanvas.x, centrePosOfCanvas.y, 3, 0, 2*Math.PI);
     ctx2d.fill();
+
+    // draw circle in closest whole point in centre of canvas
+    ctx2d.fillStyle = GREEN;
+    ctx2d.beginPath();
+    ctx2d.arc(wholeCentrePosOfCanvas.x, wholeCentrePosOfCanvas.y, 3, 0, 2*Math.PI);
+    ctx2d.fill();
+
 
 }
