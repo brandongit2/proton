@@ -13,7 +13,7 @@ function resizePanel(panel, directions, originals) {
      */
 
     /*
-     * originals = {mouseX, mouseY, panelWidth, panelHeight, panelTop, panelLeft}
+     * originals = [mouseX, mouseY, panelWidth, panelHeight, panelTop, panelLeft]
      * where all elements are set to their respective values at the beginning of the click.
      */
 
@@ -27,7 +27,6 @@ function resizePanel(panel, directions, originals) {
         if (directions[0] == directions[1] && directions[1] == directions[2] && directions[2] == directions[3]) { // Move panel
             newTop  = mouseY - (originals[1] - originals[4]);
             newLeft = mouseX - (originals[0] - originals[5]);
-
 
             // snap to top edge
             newTop  = newTop < SNAP_RADIUS && newTop > -SNAP_RADIUS ? 0 : newTop;
