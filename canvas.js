@@ -44,7 +44,7 @@ function setUpCanvas() {
 
     // get context of canvas
     ctx2d = canvas.getContext("2d");
-    
+
     drawCanvas();
 }
 

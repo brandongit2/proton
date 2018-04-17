@@ -2,7 +2,7 @@
 
 <dom-module id="math-panel">
     <template>
-        
+
         <style>
             .edge {
                 position: absolute;
@@ -123,7 +123,7 @@
 
             ready() {
                 super.ready();
-
+console.log(this.properties());
                 // Update mouse coordinates
                 var mouseX = 0;
                 var mouseY = 0;
@@ -195,7 +195,7 @@
                 }
 
                 var panel = document.createElement("math-panel-toolbar");
-                var content = children[19].nodeName == "#text" ? children[20] : children[19];
+                var content = children[19].nodeName == "#text" ? children[20] : children[19]; // Handles discrepancies between Chrome and Firefox
                 content.appendChild(panel);
             }
         }
