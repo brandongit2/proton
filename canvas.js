@@ -15,7 +15,6 @@ const MAJOR_GRIDLINE_WIDTH = 0.7;
 const MAJOR_GRIDLINE_INTERVAL = 5;
 const AXIS_GRIDLINE_WIDTH = 1.5;
 const SCROLL_MULTIPLIER = 2;
-const PAN_SENSITIVITY_MULTIPLIER = 0.04;
 
 // colours
 const GREY = "#F0F0F0"
@@ -85,10 +84,10 @@ function setUpCanvas() {
     canvas.addEventListener("wheel", function (wheel) {
         if (wheel.deltaY > 0) {
             canvas.style.cursor = "zoom-out";
-            resizeCanvas(2, 2);
+            resizeCanvas(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER);
         } else {
             canvas.style.cursor = "zoom-in";
-            resizeCanvas(0.5, 0.5);
+            resizeCanvas(1/SCROLL_MULTIPLIER, 1/SCROLL_MULTIPLIER);
         }
     });
 
@@ -97,7 +96,7 @@ function setUpCanvas() {
         var lastX = mousedown.x;
         var lastY = mousedown.y;
         var mousemoveListener = function (mousemove) {
-            panCanvas((lastX - mousemove.x) * PAN_SENSITIVITY_MULTIPLIER, (mousemove.y - lastY) * PAN_SENSITIVITY_MULTIPLIER);
+            panCanvas((lastX - mousemove.x) * 1/PIXELS_BETWEEN_INTERVALS, (mousemove.y - lastY) * 1/PIXELS_BETWEEN_INTERVALS);
             lastX = mousemove.x;
             lastY = mousemove.y;
         };
@@ -221,14 +220,14 @@ function drawCanvas() {
     // draw numbers on horizontal axis
     for (var x = originPosOfCanvas.x + Math.floor((0 - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS / MAJOR_GRIDLINE_INTERVAL) * PIXELS_BETWEEN_INTERVALS * MAJOR_GRIDLINE_INTERVAL; x < canvas.width; x += MAJOR_GRIDLINE_INTERVAL * PIXELS_BETWEEN_INTERVALS) {
         if ((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale != 0) {
-            drawNumberLabelsWithBackground((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale, x, originPosOfCanvas.y + 5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground(((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale), x, originPosOfCanvas.y + 5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
     // draw numbers on vertical axis
     for (var y = originPosOfCanvas.y + Math.floor((0 - originPosOfCanvas.y) / PIXELS_BETWEEN_INTERVALS / MAJOR_GRIDLINE_INTERVAL) * PIXELS_BETWEEN_INTERVALS * MAJOR_GRIDLINE_INTERVAL; y < canvas.height; y += MAJOR_GRIDLINE_INTERVAL * PIXELS_BETWEEN_INTERVALS) {
         if ((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale != 0) {
-            drawNumberLabelsWithBackground((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale, originPosOfCanvas.x - 5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground(((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale), originPosOfCanvas.x - 5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
