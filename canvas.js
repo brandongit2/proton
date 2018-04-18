@@ -181,29 +181,38 @@ function drawCanvas() {
     }
 =======
     // number labels for horizontal
-    ctx2d.fillStyle = BLACK;
-    ctx2d.strokeStyle = WHITE;
     ctx2d.font = MAJOR_GRIDLINE_NUMBERS_FONT;
-    for (var x=centrePosOfCanvas.x; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        ctx2d.fillText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
-        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+
+    // horizontal right of centre
+    for (var x=centrePosOfCanvas.x + PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        drawNumberLabelsWithBackground(((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) * xScale, x, centrePosOfCanvas.y+5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
     }
+
+    // horizontal left of centre
     for (var x=centrePosOfCanvas.x - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x>0; x-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        ctx2d.fillText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
-        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+        drawNumberLabelsWithBackground(((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS) * xScale, x, centrePosOfCanvas.y+5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
     }
-    for (var y=centrePosOfCanvas.y; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        ctx2d.fillText((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS, centrePosOfCanvas.x+2, y);
-        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+
+    // vertical below centre
+    ctx2d.textAlign = "right";
+    ctx2d.textBaseline = "middle";
+    for (var y=centrePosOfCanvas.y + PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        drawNumberLabelsWithBackground(((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS) * yScale, centrePosOfCanvas.x-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
     }
+
+    // vertical above centre
+    ctx2d.textAlign = "right";
+    ctx2d.textBaseline = "middle";
     for (var y=centrePosOfCanvas.y - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y>0; y-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
-        ctx2d.fillText((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS, centrePosOfCanvas.x+2, y);
-        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+        drawNumberLabelsWithBackground(((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS) * yScale, centrePosOfCanvas.x-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
     }
+<<<<<<< HEAD
     
 
     // number lables for vertical
 >>>>>>> 359d2c7... added gridline numbers
+=======
+>>>>>>> 06fe54a... fixed background for number labels
 
     // draw circle in the centre of the canvas
     ctx2d.fillStyle = RED;
