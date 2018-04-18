@@ -163,6 +163,7 @@ function drawCanvas() {
     ctx2d.lineTo(canvas.width, originPosOfCanvas.y);
     ctx2d.stroke();
 
+<<<<<<< HEAD
     // draw numbers
 
     // draw numbers on horizontal axis
@@ -178,6 +179,31 @@ function drawCanvas() {
             drawNumberLabelsWithBackground((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale, centrePosOfCanvas.x - centrePoint.x * PIXELS_BETWEEN_INTERVALS-5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
+=======
+    // number labels for horizontal
+    ctx2d.fillStyle = BLACK;
+    ctx2d.strokeStyle = WHITE;
+    ctx2d.font = MAJOR_GRIDLINE_NUMBERS_FONT;
+    for (var x=centrePosOfCanvas.x; x<canvas.width; x+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        ctx2d.fillText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+    }
+    for (var x=centrePosOfCanvas.x - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; x>0; x-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        ctx2d.fillText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+    }
+    for (var y=centrePosOfCanvas.y; y<canvas.height; y+=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        ctx2d.fillText((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS, centrePosOfCanvas.x+2, y);
+        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+    }
+    for (var y=centrePosOfCanvas.y - PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL; y>0; y-=PIXELS_BETWEEN_INTERVALS*MAJOR_GRIDLINE_INTERVAL) {
+        ctx2d.fillText((centrePosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS, centrePosOfCanvas.x+2, y);
+        //ctx2d.strokeText((x - centrePosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS, x, centrePosOfCanvas.y+10);
+    }
+    
+
+    // number lables for vertical
+>>>>>>> 359d2c7... added gridline numbers
 
     // draw circle in the centre of the canvas
     ctx2d.fillStyle = RED;
