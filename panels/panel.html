@@ -199,6 +199,9 @@
                 } else {
                     var panel = document.createElement("math-panel-test");
                 }
+                panel.style.display = "block";
+                panel.style.width   = "100%";
+                panel.style.height  = "100%";
 
                 var content = children[19].nodeName == "#text" ? children[20] : children[19]; // Handles discrepancies between Chrome and Firefox
                 content.appendChild(panel);

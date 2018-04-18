@@ -8,10 +8,11 @@
             }
 
             #root {
-                position: absolute;
-                left:     50%;
+                position:  absolute;
+                left:      50%;
                 transform: translate(-50%, 0%);
-                text-align: justify;
+                display:   flex;
+                flex-wrap: wrap;
             }
 
             p {
@@ -19,10 +20,10 @@
             }
 
             .item {
-                height:      38px;
-                width:       38px;
-                border:      1px solid black;
-                display:     inline-block;
+                height:  38px;
+                width:   38px;
+                border:  1px solid black;
+                margin:  5px;
             }
         </style>
         <div id="root">
@@ -44,9 +45,22 @@
         </div>
     </template>
     <script>
+        const TOOLBAR_ITEM_WIDTH   = 40;
+        const TOOLBAR_ITEM_SPACING = 10;
+
         class MathPanelToolbar extends Polymer.Element {
             static get is() {
                 return "math-panel-toolbar";
+            }
+
+            ready() {
+                super.ready();
+
+                console.log(this);
+                this.addEventListener("resize", function(e) {
+                    console.log("yuh");
+                });
+                (this.shadowRoot.childNodes[0].nodeName == "#text" ? this.shadowRoot.childNodes[1] : this.shadowRoot.childNodes[2]).style.width = Math.floor(this.offsetWidth / (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING)) * (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING) + "px";
             }
         }
 
