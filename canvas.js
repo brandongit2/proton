@@ -14,7 +14,7 @@ const MINOR_GRIDLINE_WIDTH = 0.2;
 const MAJOR_GRIDLINE_WIDTH = 0.7;
 const MAJOR_GRIDLINE_INTERVAL = 5;
 const AXIS_GRIDLINE_WIDTH = 1.5;
-const SCROLL_MULTIPLIER = 2;
+const SCROLL_MULTIPLIER = 1.3;
 
 // colours
 const GREY = "#F0F0F0"
@@ -41,7 +41,7 @@ var xScale = DEFAULT_X_SCALE;
 var yScale = DEFAULT_Y_SCALE;
 
 function getScientificNotation(num, percision) {
-    if (Number.isInteger(num) && Math.log10(num) <= percision) {
+    if (Number.isInteger(num) && Math.log10(Math.abs(num)) <= percision) {
         return num;
     }
     return Number.parseFloat(num).toPrecision(percision);
