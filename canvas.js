@@ -27,6 +27,7 @@ const BACKGROUND_COLOUR = GREY;
 
 // font
 const MAJOR_GRIDLINE_NUMBERS_FONT = "12px Arial";
+const MAJOR_GRIDLINE_NUMBERS_PERCISION = 5;
 
 var canvas;
 var ctx2d;
@@ -38,6 +39,13 @@ var centrePosOfCanvas;
 var centrePoint = DEFAULT_CENTRE_POINT;
 var xScale = DEFAULT_X_SCALE;
 var yScale = DEFAULT_Y_SCALE;
+
+function getScientificNotation(num, percision) {
+    if (Number.isInteger(num) && Math.log10(num) <= percision) {
+        return num;
+    }
+    return Number.parseFloat(num).toPrecision(percision);
+}
 
 function drawNumberLabelsWithBackground(text, x, y, axis, font, background, textColour) {
     ctx2d.font = font;
@@ -218,14 +226,14 @@ function drawCanvas() {
     // draw numbers on horizontal axis
     for (var x = originPosOfCanvas.x + Math.floor((0 - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS / MAJOR_GRIDLINE_INTERVAL) * PIXELS_BETWEEN_INTERVALS * MAJOR_GRIDLINE_INTERVAL; x < canvas.width; x += MAJOR_GRIDLINE_INTERVAL * PIXELS_BETWEEN_INTERVALS) {
         if ((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale != 0) {
-            drawNumberLabelsWithBackground(((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale), x, originPosOfCanvas.y + 5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground(getScientificNotation((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), x, originPosOfCanvas.y + 5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
     // draw numbers on vertical axis
     for (var y = originPosOfCanvas.y + Math.floor((0 - originPosOfCanvas.y) / PIXELS_BETWEEN_INTERVALS / MAJOR_GRIDLINE_INTERVAL) * PIXELS_BETWEEN_INTERVALS * MAJOR_GRIDLINE_INTERVAL; y < canvas.height; y += MAJOR_GRIDLINE_INTERVAL * PIXELS_BETWEEN_INTERVALS) {
         if ((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale != 0) {
-            drawNumberLabelsWithBackground(((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale), originPosOfCanvas.x - 5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground(getScientificNotation((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), originPosOfCanvas.x - 5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
