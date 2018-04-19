@@ -15,6 +15,7 @@ const MAJOR_GRIDLINE_WIDTH = 0.7;
 const MAJOR_GRIDLINE_INTERVAL = 5;
 const AXIS_GRIDLINE_WIDTH = 1.5;
 const SCROLL_MULTIPLIER = 1.3;
+const MAJOR_GRIDLINE_SCALE_MULTIPLE = 5;
 
 // colours
 const GREY = "#F0F0F0"
@@ -95,7 +96,7 @@ function setUpCanvas() {
             resizeCanvas(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER);
         } else {
             canvas.style.cursor = "zoom-in";
-            resizeCanvas(1/SCROLL_MULTIPLIER, 1/SCROLL_MULTIPLIER);
+            resizeCanvas(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER);
         }
     });
 
@@ -104,7 +105,7 @@ function setUpCanvas() {
         var lastX = mousedown.x;
         var lastY = mousedown.y;
         var mousemoveListener = function (mousemove) {
-            panCanvas((lastX - mousemove.x) * 1/PIXELS_BETWEEN_INTERVALS, (mousemove.y - lastY) * 1/PIXELS_BETWEEN_INTERVALS);
+            panCanvas((lastX - mousemove.x) * 1 / PIXELS_BETWEEN_INTERVALS, (mousemove.y - lastY) * 1 / PIXELS_BETWEEN_INTERVALS);
             lastX = mousemove.x;
             lastY = mousemove.y;
         };
@@ -130,7 +131,72 @@ function setUpCanvas() {
     drawCanvas();
 }
 
+function getNearestMultiple(curScale, multiple) {
+
+    if (Number.isInteger(curScale)) {
+        var changeExponent = 0;
+        var wholeNumber = curScale;
+    } else {
+
+        const INTEGER_VERSION_REGEX_MATCH = /(.+)e/g;
+        const INTEGER_VERSION_PERCISION = 8;
+
+        var roundedDecimal = parseFloat(INTEGER_VERSION_REGEX_MATCH.exec(parseFloat(curScale.toPrecision(INTEGER_VERSION_PERCISION)).toExponential())[1]);
+        var decimalExponent = Math.sign(Math.log10(curScale)) * Math.ceil(Math.abs(Math.log10(curScale)));
+        if (decimalExponent < 0) {
+            decimalExponent++;
+        }
+
+        var wholeNumber = parseInt(roundedDecimal.toString().replace(".", ""));
+        var wholeExponent = Math.sign(Math.log10(wholeNumber)) * Math.ceil(Math.abs(Math.log10(wholeNumber)));
+
+        var changeExponent = decimalExponent - wholeExponent;
+    }
+    var higher = Math.ceil(wholeNumber / multiple) * multiple;
+        var lower = Math.floor(wholeNumber / multiple) * multiple;
+        if (Math.abs(higher - wholeNumber) < Math.abs(lower - wholeNumber)) {
+            return higher * Math.pow(10, changeExponent);
+        } else {
+            return lower * Math.pow(10, changeExponent);
+        }
+}
+
 function drawCanvas() {
+    wholeCentrePoint = new Point();
+    wholeCentrePoint.x = (Math.floor(centrePoint.x / xScale) * xScale);
+    wholeCentrePoint.y = (Math.floor(centrePoint.y / yScale) * yScale);
+    wholeCentrePosOfCanvas = new Point();
+    wholeCentrePosOfCanvas.x = centrePosOfCanvas.x + ((wholeCentrePoint.x - centrePoint.x) / xScale) * PIXELS_BETWEEN_INTERVALS;
+    wholeCentrePosOfCanvas.y = centrePosOfCanvas.y - ((wholeCentrePoint.y - centrePoint.y) / yScale) * PIXELS_BETWEEN_INTERVALS;
+    originPosOfCanvas = new Point();
+    originPosOfCanvas.x = wholeCentrePosOfCanvas.x - (wholeCentrePoint.x / xScale) * PIXELS_BETWEEN_INTERVALS;
+    originPosOfCanvas.y = wholeCentrePosOfCanvas.y + (wholeCentrePoint.y / yScale) * PIXELS_BETWEEN_INTERVALS;
+
+    // fill background of canvas
+    ctx2d.fillStyle = BACKGROUND_COLOUR;
+    ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+
+    // rectangles at the four corner of the canvas
+    ctx2d.fillStyle = RED;
+    ctx2d.fillRect(0, 0, 5, 5);
+    ctx2d.fillRect(canvas.width - 5, 0, 5, 5);
+    ctx2d.fillRect(0, canvas.height - 5, 5, 5);
+    ctx2d.fillRect(canvas.width - 5, canvas.height - 5, 5, 5);
+
+    // draw circle in the centre of the canvas
+    ctx2d.fillStyle = RED;
+    ctx2d.beginPath();
+    ctx2d.arc(centrePosOfCanvas.x, centrePosOfCanvas.y, 3, 0, 2 * Math.PI);
+    ctx2d.fill();
+
+    // draw circle in closest whole point in centre of canvas
+    ctx2d.fillStyle = GREEN;
+    ctx2d.beginPath();
+    ctx2d.arc(wholeCentrePosOfCanvas.x, wholeCentrePosOfCanvas.y, 3, 0, 2 * Math.PI);
+    ctx2d.fill();
+}
+
+function drawCanvas2() {
 
     // point where the gridlines should be drawn from
     wholeCentrePoint = new Point();
