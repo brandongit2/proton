@@ -131,34 +131,51 @@ function setUpCanvas() {
     drawCanvas();
 }
 
-function getNearestMultiple(curScale, multiple) {
+/*
+* If the multiple specified is "n", returns the nearest number that is a of n * 10^x, where "x" is any integer.
+*/
+function getNearestMultiple(number, multiple) {
 
-    if (Number.isInteger(curScale)) {
+    if (Number.isInteger(number)) {
+
         var changeExponent = 0;
-        var wholeNumber = curScale;
+        var integerMantissa = number;
+
     } else {
 
+        // match the mantissa 
         const INTEGER_VERSION_REGEX_MATCH = /(.+)e/g;
+        // number of decimal places for mantissa
         const INTEGER_VERSION_PERCISION = 8;
 
-        var roundedDecimal = parseFloat(INTEGER_VERSION_REGEX_MATCH.exec(parseFloat(curScale.toPrecision(INTEGER_VERSION_PERCISION)).toExponential())[1]);
-        var decimalExponent = Math.sign(Math.log10(curScale)) * Math.ceil(Math.abs(Math.log10(curScale)));
-        if (decimalExponent < 0) {
-            decimalExponent++;
+        var roundedMantissa = parseFloat(INTEGER_VERSION_REGEX_MATCH.exec(parseFloat(number.toPrecision(INTEGER_VERSION_PERCISION)).toExponential())[1]);
+        var exponent = Math.sign(Math.log10(number)) * Math.ceil(Math.abs(Math.log10(number)));
+
+        // if the exponent is negative: 10^-1 = 0.1 (decimal place is not moved)
+        if (exponent < 0) {
+            exponent++;
         }
 
-        var wholeNumber = parseInt(roundedDecimal.toString().replace(".", ""));
-        var wholeExponent = Math.sign(Math.log10(wholeNumber)) * Math.ceil(Math.abs(Math.log10(wholeNumber)));
+        // mantissa with the decimal place removed
+        var integerMantissa = parseInt(roundedMantissa.toString().replace(".", ""));
 
-        var changeExponent = decimalExponent - wholeExponent;
+        // exponent of mantissa with the decimal place removed
+        var integerMantissaExponent = Math.sign(Math.log10(integerMantissa)) * Math.ceil(Math.abs(Math.log10(integerMantissa)));
+
+        // change in the position of the decimal place from the original exponent to the mantissa with the decimal place removed
+        var changeExponent = exponent - integerMantissaExponent;
     }
-    var higher = Math.ceil(wholeNumber / multiple) * multiple;
-        var lower = Math.floor(wholeNumber / multiple) * multiple;
-        if (Math.abs(higher - wholeNumber) < Math.abs(lower - wholeNumber)) {
-            return higher * Math.pow(10, changeExponent);
-        } else {
-            return lower * Math.pow(10, changeExponent);
-        }
+
+    // multiple that is higher than the currrent number
+    var higher = Math.ceil(integerMantissa / multiple) * multiple;
+    // multiple that is lower than the current number
+    var lower = Math.floor(integerMantissa / multiple) * multiple;
+    // check which one is closer to the current number and return it
+    if (Math.abs(higher - integerMantissa) < Math.abs(lower - integerMantissa)) {
+        return higher * Math.pow(10, changeExponent);
+    } else {
+        return lower * Math.pow(10, changeExponent);
+    }
 }
 
 function drawCanvas() {
