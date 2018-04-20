@@ -1,0 +1,61 @@
+diff --git a/canvas.js b/canvas.js
+index 2aeb883..a892917 100644
+--- a/canvas.js
++++ b/canvas.js
+@@ -69,7 +69,6 @@ function panCanvas(xMove, yMove) {
+ }
+ 
+ function setUpCanvas() {
+-
+     workspace = $("#workspace")[0];
+     canvas = $("#canvas")[0];
+ 
+@@ -240,4 +239,4 @@ function drawCanvas() {
+     ctx2d.beginPath();
+     ctx2d.arc(wholeCentrePosOfCanvas.x, wholeCentrePosOfCanvas.y, 3, 0, 2 * Math.PI);
+     ctx2d.fill();
+-}
+\ No newline at end of file
++}
+diff --git a/panels/panel.js b/panels/panel.js
+index d2fa4f7..44ee829 100644
+--- a/panels/panel.js
++++ b/panels/panel.js
+@@ -45,6 +45,7 @@ function resizePanel(panel, directions, originals) {
+             }
+ 
+         } else {
++            reflowItems();
+             if (directions[0]) { // Scale top
+                 potentialNewTop = mouseY - (originals[1] - originals[4]);
+                 newTop          = potentialNewTop > originals[4] + originals[3] - MIN_PANEL_SIZE ? originals[4] + originals[3] - MIN_PANEL_SIZE : potentialNewTop;
+diff --git a/panels/toolbar.html b/panels/toolbar.html
+index 8b1e153..44d44a5 100644
+--- a/panels/toolbar.html
++++ b/panels/toolbar.html
+@@ -56,12 +56,20 @@
+             ready() {
+                 super.ready();
+ 
+-                console.log(this);
+-                this.addEventListener("resize", function(e) {
+-                    console.log("yuh");
+-                });
+-                (this.shadowRoot.childNodes[0].nodeName == "#text" ? this.shadowRoot.childNodes[1] : this.shadowRoot.childNodes[2]).style.width = Math.floor(this.offsetWidth / (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING)) * (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING) + "px";
++                reflowItems();
+             }
++
++            yuh() {
++                console.log("yuh");
++            }
++        }
++
++        //var toolbarPanel = new MathPanelToolbar();
++
++        function reflowItems() {
++            console.log(window.customElements);
++            //toolbarPanel.yuh()
++            //(this.shadowRoot.childNodes[0].nodeName == "#text" ? this.shadowRoot.childNodes[1] : this.shadowRoot.childNodes[2]).style.width = Math.floor(this.offsetWidth / (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING)) * (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING) + "px";
+         }
+ 
+         customElements.define(MathPanelToolbar.is, MathPanelToolbar);

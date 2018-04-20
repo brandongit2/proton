@@ -45,6 +45,7 @@ function resizePanel(panel, directions, originals) {
             }
 
         } else {
+            reflowItems();
             if (directions[0]) { // Scale top
                 potentialNewTop = mouseY - (originals[1] - originals[4]);
                 newTop          = potentialNewTop > originals[4] + originals[3] - MIN_PANEL_SIZE ? originals[4] + originals[3] - MIN_PANEL_SIZE : potentialNewTop;

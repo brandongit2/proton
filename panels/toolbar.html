@@ -8,11 +8,10 @@
             }
 
             #root {
-                position:  absolute;
-                left:      50%;
-                transform: translate(-50%, 0%);
-                display:   flex;
-                flex-wrap: wrap;
+                position:   absolute;
+                left:       50%;
+                transform:  translate(-50%, 0%);
+                text-align: justify;
             }
 
             p {
@@ -61,7 +60,20 @@
                     console.log("yuh");
                 });
                 (this.shadowRoot.childNodes[0].nodeName == "#text" ? this.shadowRoot.childNodes[1] : this.shadowRoot.childNodes[2]).style.width = Math.floor(this.offsetWidth / (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING)) * (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING) + "px";
+                reflowItems();
             }
+
+            yuh() {
+                console.log("yuh");
+            }
+        }
+
+        //var toolbarPanel = new MathPanelToolbar();
+
+        function reflowItems() {
+            console.log(window.customElements);
+            //toolbarPanel.yuh()
+            //(this.shadowRoot.childNodes[0].nodeName == "#text" ? this.shadowRoot.childNodes[1] : this.shadowRoot.childNodes[2]).style.width = Math.floor(this.offsetWidth / (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING)) * (TOOLBAR_ITEM_WIDTH + TOOLBAR_ITEM_SPACING) + "px";
         }
 
         customElements.define(MathPanelToolbar.is, MathPanelToolbar);
