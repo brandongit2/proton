@@ -46,60 +46,9 @@ var yScale = DEFAULT_Y_SCALE;
 // current pixels between intervals
 var curPixelInterval;
 
-function getScientificNotation(num, percision) {
-    if (Number.isInteger(num) && Math.log10(Math.abs(num)) <= percision) {
-        return num;
-    }
+function getGridlineNumber(num, percision) {
+
     return Number.parseFloat(num).toPrecision(percision);
-}
-
-/*
-* If the multiple specified is "n", returns the nearest number that is a of n * 10^x, where "x" is any integer.
-*/
-function getNearestMultiple(number, multiple) {
-
-    if (Number.isInteger(number) && number > multiple) {
-
-        var changeExponent = 0;
-        var integerMantissa = number;
-
-    } else {
-
-        // match the mantissa 
-        const INTEGER_VERSION_REGEX_MATCH = /(.+)e/g;
-        // number of decimal places for mantissa
-        const INTEGER_VERSION_PERCISION = 8;
-
-        var roundedMantissa = parseFloat(INTEGER_VERSION_REGEX_MATCH.exec(parseFloat(number.toPrecision(INTEGER_VERSION_PERCISION)).toExponential())[1]);
-        var exponent = Math.sign(Math.log10(number)) * Math.ceil(Math.abs(Math.log10(number)));
-
-        // if the exponent is negative: 10^-1 = 0.1 (decimal place is not moved)
-        if (exponent < 0) {
-            exponent++;
-        }
-
-        // mantissa with the decimal place removed
-        var integerMantissa = parseInt(roundedMantissa.toString().replace(".", ""));
-
-        // exponent of mantissa with the decimal place removed
-        var integerMantissaExponent = Math.sign(Math.log10(integerMantissa)) * Math.ceil(Math.abs(Math.log10(integerMantissa)));
-
-        // change in the position of the decimal place from the original exponent to the mantissa with the decimal place removed
-        var changeExponent = exponent - integerMantissaExponent;
-    }
-
-    var minMultipleExponent = exponent > 1 ? 1 : Math.abs(exponent);
-
-    // multiple that is higher than the currrent number
-    var higher = Math.ceil(integerMantissa / multiple).toPrecision(minMultipleExponent) * multiple;
-    // multiple that is lower than the current number
-    var lower = Math.floor(integerMantissa / multiple).toPrecision(minMultipleExponent) * multiple;
-    // check which one is closer to the current number and return it
-    if (Math.abs(higher - integerMantissa) < Math.abs(lower - integerMantissa)) {
-        return higher * Math.pow(10, changeExponent);
-    } else {
-        return lower * Math.pow(10, changeExponent);
-    }
 }
 
 function drawNumberLabelsWithBackground(text, x, y, axis, font, background, textColour) {
@@ -118,19 +67,11 @@ function drawNumberLabelsWithBackground(text, x, y, axis, font, background, text
     ctx2d.fillText(text, x, y);
 }
 
-function getMantissa(number) {
-    /*
-    const MANTISSA_REGEX_MATCH = /(.+)e/g;
-    return parseFloat(MANTISSA_REGEX_MATCH.exec(number.toExponential())[1]);
-    */
-   return number/(Math.pow(10, Math.floor(Math.log10(number))));
-}
-
 function getOptimalScale(curScale) {
 
     var minInterval = 0;
     var minIntervalDifference = Number.MAX_VALUE;
-    var mantissa = getMantissa(curScale);
+    var mantissa = Util.getMantissa(curScale);
 
     for (interval of GOOD_INTERVALS) {
         if (Math.abs(interval - mantissa) <= minIntervalDifference) {
@@ -216,8 +157,6 @@ function drawCanvas() {
     var optimalXScale = getOptimalScale(xScale, MAJOR_GRIDLINE_SCALE_MULTIPLE);
     var optimalYScale = getOptimalScale(yScale, MAJOR_GRIDLINE_SCALE_MULTIPLE);
 
-    console.log(xScale, optimalXScale, yScale, optimalYScale);
-
     curPixelInterval = new Point();
     curPixelInterval.x = OPTIMAL_PIXELS_BETWEEN_INTERVALS * (optimalXScale/xScale);
     curPixelInterval.y = OPTIMAL_PIXELS_BETWEEN_INTERVALS * (optimalYScale/yScale);
@@ -247,59 +186,43 @@ function drawCanvas() {
 
     // set up gridlines
     ctx2d.strokeStyle = BLACK;
+    ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
 
-    /*
-    // vertical gridlines right of centre
-    for (var x = wholeCentrePos.x; x < canvas.width; x += curPixelInterval.x) {
-        if (Math.floor((originPos.x - x) / curPixelInterval.x) % MAJOR_GRIDLINE_INTERVAL == 0) {
+    // draw gridlines on horizontal axis
+    var majorIntervalCount = Math.abs(Math.round(Math.ceil((0 - originPos.x) / curPixelInterval.x))) % MAJOR_GRIDLINE_INTERVAL;
+
+    for (var x = originPos.x + (Math.ceil((0 - originPos.x) / curPixelInterval.x) * curPixelInterval.x); x < canvas.width; x += curPixelInterval.x) {
+        var roundedX = Math.round(x);
+        if (majorIntervalCount == 0) {
             ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+            majorIntervalCount = MAJOR_GRIDLINE_INTERVAL;
         } else {
             ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
         }
+        majorIntervalCount--;
         ctx2d.beginPath();
-        ctx2d.moveTo(x, 0);
-        ctx2d.lineTo(x, canvas.height);
+        ctx2d.moveTo(roundedX, 0);
+        ctx2d.lineTo(roundedX, canvas.height);
         ctx2d.stroke();
     }
 
-    // vertical gridlines left of centre
-    for (var x = wholeCentrePos.x - curPixelInterval.x; x > 0; x -= curPixelInterval.x) {
-        if (Math.floor((originPos.x - x) / curPixelInterval.x) % MAJOR_GRIDLINE_INTERVAL == 0) {
+    // draw gridlines on horizontal axis
+    var majorIntervalCount = Math.abs(Math.round(Math.ceil((0 - originPos.y) / curPixelInterval.y))) % MAJOR_GRIDLINE_INTERVAL;
+
+    for (var y = originPos.y + (Math.ceil((0 - originPos.y) / curPixelInterval.y) * curPixelInterval.y); y < canvas.height; y += curPixelInterval.y) {
+        var roundedY = Math.round(y);
+        if (majorIntervalCount == 0) {
             ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+            majorIntervalCount = MAJOR_GRIDLINE_INTERVAL;
         } else {
             ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
         }
+        majorIntervalCount--;
         ctx2d.beginPath();
-        ctx2d.moveTo(x, 0);
-        ctx2d.lineTo(x, canvas.height);
+        ctx2d.moveTo(0, roundedY);
+        ctx2d.lineTo(canvas.width, roundedY);
         ctx2d.stroke();
     }
-
-    // horizontal gridlines below centre
-    for (var y = wholeCentrePos.y; y < canvas.height; y += curPixelInterval.y) {
-        if (Math.floor((originPos.y - y) / curPixelInterval.y) % MAJOR_GRIDLINE_INTERVAL == 0) {
-            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
-        } else {
-            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
-        }
-        ctx2d.beginPath();
-        ctx2d.moveTo(0, y);
-        ctx2d.lineTo(canvas.width, y);
-        ctx2d.stroke();
-    }
-
-    // horizontal gridlines above centre
-    for (var y = wholeCentrePos.y - curPixelInterval.y; y > 0; y -= curPixelInterval.y) {
-        if (Math.floor((originPos.y - y) / curPixelInterval.y) % MAJOR_GRIDLINE_INTERVAL == 0) {
-            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
-        } else {
-            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
-        }
-        ctx2d.beginPath();
-        ctx2d.moveTo(0, y);
-        ctx2d.lineTo(canvas.width, y);
-        ctx2d.stroke();
-    }*/
 
     // darker vertical axis lines
     ctx2d.lineWidth = AXIS_GRIDLINE_WIDTH;
@@ -318,14 +241,14 @@ function drawCanvas() {
     // draw numbers on horizontal axis
     for (var x = originPos.x + Math.floor((0 - originPos.x) / curPixelInterval.x / MAJOR_GRIDLINE_INTERVAL) * curPixelInterval.x * MAJOR_GRIDLINE_INTERVAL; x < canvas.width; x += MAJOR_GRIDLINE_INTERVAL * curPixelInterval.x) {
         if (Math.abs((x - originPos.x) / curPixelInterval.x * optimalXScale) >= 1e-10) {
-            drawNumberLabelsWithBackground(getScientificNotation((x - originPos.x) / curPixelInterval.x * optimalXScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), x, originPos.y + 5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground(getGridlineNumber((x - originPos.x) / curPixelInterval.x * optimalXScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), x, originPos.y + 5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
     // draw numbers on vertical axis
     for (var y = originPos.y + Math.floor((0 - originPos.y) / curPixelInterval.y / MAJOR_GRIDLINE_INTERVAL) * curPixelInterval.y * MAJOR_GRIDLINE_INTERVAL; y < canvas.height; y += MAJOR_GRIDLINE_INTERVAL * curPixelInterval.y) {
         if (Math.abs((originPos.y - y) / curPixelInterval.y * optimalYScale) >= 1e-10) {
-            drawNumberLabelsWithBackground(getScientificNotation((originPos.y - y) / curPixelInterval.y * optimalYScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), originPos.x - 5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground(getGridlineNumber((originPos.y - y) / curPixelInterval.y * optimalYScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), originPos.x - 5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
@@ -438,14 +361,14 @@ function drawCanvas2() {
     // draw numbers on horizontal axis
     for (var x = originPosOfCanvas.x + Math.floor((0 - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS / MAJOR_GRIDLINE_INTERVAL) * PIXELS_BETWEEN_INTERVALS * MAJOR_GRIDLINE_INTERVAL; x < canvas.width; x += MAJOR_GRIDLINE_INTERVAL * PIXELS_BETWEEN_INTERVALS) {
         if ((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale != 0) {
-            drawNumberLabelsWithBackground(getScientificNotation((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), x, originPosOfCanvas.y + 5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground(getGridlineNumber((x - originPosOfCanvas.x) / PIXELS_BETWEEN_INTERVALS * xScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), x, originPosOfCanvas.y + 5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
     // draw numbers on vertical axis
     for (var y = originPosOfCanvas.y + Math.floor((0 - originPosOfCanvas.y) / PIXELS_BETWEEN_INTERVALS / MAJOR_GRIDLINE_INTERVAL) * PIXELS_BETWEEN_INTERVALS * MAJOR_GRIDLINE_INTERVAL; y < canvas.height; y += MAJOR_GRIDLINE_INTERVAL * PIXELS_BETWEEN_INTERVALS) {
         if ((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale != 0) {
-            drawNumberLabelsWithBackground(getScientificNotation((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), originPosOfCanvas.x - 5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawNumberLabelsWithBackground(getGridlineNumber((originPosOfCanvas.y - y) / PIXELS_BETWEEN_INTERVALS * yScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), originPosOfCanvas.x - 5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
