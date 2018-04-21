@@ -162,7 +162,7 @@ function panGraph(xMove, yMove) {
 /**
  * Sets up variables for the graph.
  */
-function setupGraph() {
+function setUpGraph() {
     workspace = $("#workspace")[0];
     canvas    = $("#canvas")[0];
 

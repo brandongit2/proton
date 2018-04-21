@@ -16,7 +16,7 @@ $(function() {
 
     $("#tools").css("width", "200px");
 
-    setUpCanvas();
+    setUpGraph();
 
     window.addEventListener("mousemove", function(e) {
         mouseX = e.x;
