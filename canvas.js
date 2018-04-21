@@ -9,7 +9,6 @@ class Point {
 const DEFAULT_CENTRE_POINT = new Point(5, 5);
 const DEFAULT_X_SCALE = 1;
 const DEFAULT_Y_SCALE = 1;
-const PIXELS_BETWEEN_INTERVALS = 30;
 const MINOR_GRIDLINE_WIDTH = 0.2;
 const MAJOR_GRIDLINE_WIDTH = 0.7;
 const MAJOR_GRIDLINE_INTERVAL = 5;
@@ -35,11 +34,15 @@ var ctx2d;
 var workspace;
 
 // coordinates inside the canvas that is the centre of the canvas
-var centrePosOfCanvas;
+var centrePos;
 // coordinates of the point at the centre of the canvas
 var centrePoint = DEFAULT_CENTRE_POINT;
+// scale for the x axis
 var xScale = DEFAULT_X_SCALE;
+// scale for the y axis
 var yScale = DEFAULT_Y_SCALE;
+// current pixels between intervals
+var curPixelInterval;
 
 function getScientificNotation(num, percision) {
     if (Number.isInteger(num) && Math.log10(Math.abs(num)) <= percision) {
@@ -48,95 +51,12 @@ function getScientificNotation(num, percision) {
     return Number.parseFloat(num).toPrecision(percision);
 }
 
-function drawNumberLabelsWithBackground(text, x, y, axis, font, background, textColour) {
-    ctx2d.font = font;
-    ctx2d.fillStyle = background;
-    if (axis == "horizontal") {
-        ctx2d.textAlign = "center";
-        ctx2d.textBaseline = "top";
-        ctx2d.fillRect(x - (ctx2d.measureText(text).width / 2), y, ctx2d.measureText(text).width + 2, parseInt(ctx2d.font) + 2);
-    } else {
-        ctx2d.textAlign = "right";
-        ctx2d.textBaseline = "middle";
-        ctx2d.fillRect(x - ctx2d.measureText(text).width - 1, y - (parseInt(ctx2d.font) / 2), ctx2d.measureText(text).width + 2, parseInt(ctx2d.font) + 2);
-    }
-    ctx2d.fillStyle = textColour;
-    ctx2d.fillText(text, x, y);
-}
-
-function resizeCanvas(xTimes, yTimes) {
-    xScale *= xTimes;
-    yScale *= yTimes;
-    drawCanvas();
-    canvas.style.cursor = "default";
-}
-
-function panCanvas(xMove, yMove) {
-    centrePoint.x += xMove * xScale;
-    centrePoint.y += yMove * yScale;
-    drawCanvas();
-}
-
-function setUpCanvas() {
-
-    workspace = $("#workspace")[0];
-    canvas = $("#canvas")[0];
-
-    // get dimensions of canvas
-    canvas.height = workspace.getBoundingClientRect().height;
-    canvas.width = workspace.getBoundingClientRect().width;
-    centrePosOfCanvas = new Point(canvas.width / 2, canvas.height / 2);
-
-    // get context of canvas
-    ctx2d = canvas.getContext("2d");
-
-    canvas.addEventListener("wheel", function (wheel) {
-        if (wheel.deltaY > 0) {
-            canvas.style.cursor = "zoom-out";
-            resizeCanvas(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER);
-        } else {
-            canvas.style.cursor = "zoom-in";
-            resizeCanvas(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER);
-        }
-    });
-
-    canvas.addEventListener("mousedown", function (mousedown) {
-        canvas.style.cursor = "move";
-        var lastX = mousedown.x;
-        var lastY = mousedown.y;
-        var mousemoveListener = function (mousemove) {
-            panCanvas((lastX - mousemove.x) * 1 / PIXELS_BETWEEN_INTERVALS, (mousemove.y - lastY) * 1 / PIXELS_BETWEEN_INTERVALS);
-            lastX = mousemove.x;
-            lastY = mousemove.y;
-        };
-        var mouseupListener = function mouseupListener(event) {
-            canvas.style.cursor = "default";
-            canvas.removeEventListener("mousemove", mousemoveListener);
-            canvas.removeEventListener("mouseup", mouseupListener);
-        };
-        canvas.addEventListener("mousemove", mousemoveListener);
-        canvas.addEventListener("mouseup", mouseupListener);
-    });
-
-    window.addEventListener("keypress", function (keypress) {
-        switch (keypress.key) {
-            case 'c':
-                centrePoint.x = 0;
-                centrePoint.y = 0;
-                drawCanvas();
-                break;
-        }
-    })
-
-    drawCanvas();
-}
-
 /*
 * If the multiple specified is "n", returns the nearest number that is a of n * 10^x, where "x" is any integer.
 */
 function getNearestMultiple(number, multiple) {
 
-    if (Number.isInteger(number)) {
+    if (Number.isInteger(number) && number > multiple) {
 
         var changeExponent = 0;
         var integerMantissa = number;
@@ -178,16 +98,119 @@ function getNearestMultiple(number, multiple) {
     }
 }
 
+function drawNumberLabelsWithBackground(text, x, y, axis, font, background, textColour) {
+    ctx2d.font = font;
+    ctx2d.fillStyle = background;
+    if (axis == "horizontal") {
+        ctx2d.textAlign = "center";
+        ctx2d.textBaseline = "top";
+        ctx2d.fillRect(x - (ctx2d.measureText(text).width / 2), y, ctx2d.measureText(text).width + 2, parseInt(ctx2d.font) + 2);
+    } else {
+        ctx2d.textAlign = "right";
+        ctx2d.textBaseline = "middle";
+        ctx2d.fillRect(x - ctx2d.measureText(text).width - 1, y - (parseInt(ctx2d.font) / 2), ctx2d.measureText(text).width + 2, parseInt(ctx2d.font) + 2);
+    }
+    ctx2d.fillStyle = textColour;
+    ctx2d.fillText(text, x, y);
+}
+
+function getOptimalScale(curScale) {
+    if (curScale == 1 || curScale == 2) {
+        return curScale;
+    } else {
+        return getNearestMultiple(curScale, 5);
+    }
+}
+
+function resizeCanvas(xTimes, yTimes) {
+    xScale *= xTimes;
+    yScale *= yTimes;
+    drawCanvas();
+    canvas.style.cursor = "default";
+}
+
+function panCanvas(xMove, yMove) {
+    centrePoint.x += xMove * xScale;
+    centrePoint.y += yMove * yScale;
+    drawCanvas();
+}
+
+function setUpCanvas() {
+
+    workspace = $("#workspace")[0];
+    canvas = $("#canvas")[0];
+
+    // get dimensions of canvas
+    canvas.height = workspace.getBoundingClientRect().height;
+    canvas.width = workspace.getBoundingClientRect().width;
+    centrePos = new Point(canvas.width / 2, canvas.height / 2);
+
+    // get context of canvas
+    ctx2d = canvas.getContext("2d");
+
+    canvas.addEventListener("wheel", function (wheel) {
+        if (wheel.deltaY > 0) {
+            canvas.style.cursor = "zoom-out";
+            resizeCanvas(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER);
+        } else {
+            canvas.style.cursor = "zoom-in";
+            resizeCanvas(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER);
+        }
+    });
+
+    canvas.addEventListener("mousedown", function (mousedown) {
+        canvas.style.cursor = "move";
+        var lastX = mousedown.x;
+        var lastY = mousedown.y;
+        var mousemoveListener = function (mousemove) {
+            panCanvas((lastX - mousemove.x) * 1 / curPixelInterval.x, (mousemove.y - lastY) * 1 / curPixelInterval.y);
+            lastX = mousemove.x;
+            lastY = mousemove.y;
+        };
+        var mouseupListener = function mouseupListener(event) {
+            canvas.style.cursor = "default";
+            canvas.removeEventListener("mousemove", mousemoveListener);
+            canvas.removeEventListener("mouseup", mouseupListener);
+        };
+        canvas.addEventListener("mousemove", mousemoveListener);
+        canvas.addEventListener("mouseup", mouseupListener);
+    });
+
+    window.addEventListener("keypress", function (keypress) {
+        switch (keypress.key) {
+            case 'c':
+                centrePoint.x = 0;
+                centrePoint.y = 0;
+                drawCanvas();
+                break;
+        }
+    })
+
+    drawCanvas();
+}
+
 function drawCanvas() {
-    wholeCentrePoint = new Point();
-    wholeCentrePoint.x = (Math.floor(centrePoint.x / xScale) * xScale);
-    wholeCentrePoint.y = (Math.floor(centrePoint.y / yScale) * yScale);
-    wholeCentrePosOfCanvas = new Point();
-    wholeCentrePosOfCanvas.x = centrePosOfCanvas.x + ((wholeCentrePoint.x - centrePoint.x) / xScale) * PIXELS_BETWEEN_INTERVALS;
-    wholeCentrePosOfCanvas.y = centrePosOfCanvas.y - ((wholeCentrePoint.y - centrePoint.y) / yScale) * PIXELS_BETWEEN_INTERVALS;
-    originPosOfCanvas = new Point();
-    originPosOfCanvas.x = wholeCentrePosOfCanvas.x - (wholeCentrePoint.x / xScale) * PIXELS_BETWEEN_INTERVALS;
-    originPosOfCanvas.y = wholeCentrePosOfCanvas.y + (wholeCentrePoint.y / yScale) * PIXELS_BETWEEN_INTERVALS;
+
+    var optimalXScale = getOptimalScale(xScale, MAJOR_GRIDLINE_SCALE_MULTIPLE);
+    var optimalYScale = getOptimalScale(yScale, MAJOR_GRIDLINE_SCALE_MULTIPLE);
+
+    console.log(xScale, optimalXScale, yScale, optimalYScale);
+
+    curPixelInterval = new Point();
+    curPixelInterval.x = 40;
+    curPixelInterval.y = 40;
+
+    var wholeCentrePoint = new Point();
+    wholeCentrePoint.x = (Math.floor(centrePoint.x / optimalXScale) * optimalXScale);
+    wholeCentrePoint.y = (Math.floor(centrePoint.y / optimalYScale) * optimalYScale);
+
+    var wholeCentrePos = new Point();
+    wholeCentrePos.x = centrePos.x + ((wholeCentrePoint.x - centrePoint.x) / xScale) * curPixelInterval.x;
+    wholeCentrePos.y = centrePos.y - ((wholeCentrePoint.y - centrePoint.y) / yScale) * curPixelInterval.y;
+
+    var originPos = new Point();
+    originPos.x = wholeCentrePos.x - (wholeCentrePoint.x / xScale) * curPixelInterval.x;
+    originPos.y = wholeCentrePos.y + (wholeCentrePoint.y / yScale) * curPixelInterval.y;
 
     // fill background of canvas
     ctx2d.fillStyle = BACKGROUND_COLOUR;
@@ -200,16 +223,99 @@ function drawCanvas() {
     ctx2d.fillRect(0, canvas.height - 5, 5, 5);
     ctx2d.fillRect(canvas.width - 5, canvas.height - 5, 5, 5);
 
+    // set up gridlines
+    ctx2d.strokeStyle = BLACK;
+
+    // vertical gridlines right of centre
+    for (var x = wholeCentrePos.x; x < canvas.width; x += curPixelInterval.x) {
+        if (Math.floor((originPos.x - x) / curPixelInterval.x) % MAJOR_GRIDLINE_INTERVAL == 0) {
+            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+        } else {
+            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
+        }
+        ctx2d.beginPath();
+        ctx2d.moveTo(x, 0);
+        ctx2d.lineTo(x, canvas.height);
+        ctx2d.stroke();
+    }
+
+    // vertical gridlines left of centre
+    for (var x = wholeCentrePos.x - curPixelInterval.x; x > 0; x -= curPixelInterval.x) {
+        if (Math.floor((originPos.x - x) / curPixelInterval.x) % MAJOR_GRIDLINE_INTERVAL == 0) {
+            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+        } else {
+            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
+        }
+        ctx2d.beginPath();
+        ctx2d.moveTo(x, 0);
+        ctx2d.lineTo(x, canvas.height);
+        ctx2d.stroke();
+    }
+
+    // horizontal gridlines below centre
+    for (var y = wholeCentrePos.y; y < canvas.height; y += curPixelInterval.y) {
+        if (Math.floor((originPos.y - y) / curPixelInterval.y) % MAJOR_GRIDLINE_INTERVAL == 0) {
+            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+        } else {
+            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
+        }
+        ctx2d.beginPath();
+        ctx2d.moveTo(0, y);
+        ctx2d.lineTo(canvas.width, y);
+        ctx2d.stroke();
+    }
+
+    // horizontal gridlines above centre
+    for (var y = wholeCentrePos.y - curPixelInterval.y; y > 0; y -= curPixelInterval.y) {
+        if (Math.floor((originPos.y - y) / curPixelInterval.y) % MAJOR_GRIDLINE_INTERVAL == 0) {
+            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
+        } else {
+            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
+        }
+        ctx2d.beginPath();
+        ctx2d.moveTo(0, y);
+        ctx2d.lineTo(canvas.width, y);
+        ctx2d.stroke();
+    }
+
+    // darker vertical axis lines
+    ctx2d.lineWidth = AXIS_GRIDLINE_WIDTH;
+    ctx2d.beginPath();
+    ctx2d.moveTo(originPos.x, 0);
+    ctx2d.lineTo(originPos.x, canvas.width);
+    ctx2d.stroke();
+
+    // darker horizontal axis lines
+    ctx2d.lineWidth = AXIS_GRIDLINE_WIDTH;
+    ctx2d.beginPath();
+    ctx2d.moveTo(0, originPos.y);
+    ctx2d.lineTo(canvas.width, originPos.y);
+    ctx2d.stroke();
+
+    // draw numbers on horizontal axis
+    for (var x = originPos.x + Math.floor((0 - originPos.x) / curPixelInterval.x / MAJOR_GRIDLINE_INTERVAL) * curPixelInterval.x * MAJOR_GRIDLINE_INTERVAL; x < canvas.width; x += MAJOR_GRIDLINE_INTERVAL * curPixelInterval.x) {
+        if ((x - originPos.x) / curPixelInterval.x * xScale != 0) {
+            drawNumberLabelsWithBackground(getScientificNotation((x - originPos.x) / curPixelInterval.x * xScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), x, originPos.y + 5, "horizontal", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+        }
+    }
+
+    // draw numbers on vertical axis
+    for (var y = originPos.y + Math.floor((0 - originPos.y) / curPixelInterval.y / MAJOR_GRIDLINE_INTERVAL) * curPixelInterval.y * MAJOR_GRIDLINE_INTERVAL; y < canvas.height; y += MAJOR_GRIDLINE_INTERVAL * curPixelInterval.y) {
+        if ((originPos.y - y) / curPixelInterval.y * yScale != 0) {
+            drawNumberLabelsWithBackground(getScientificNotation((originPos.y - y) / curPixelInterval.y * yScale, MAJOR_GRIDLINE_NUMBERS_PERCISION), originPos.x - 5, y, "vertical", MAJOR_GRIDLINE_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+        }
+    }
+
     // draw circle in the centre of the canvas
     ctx2d.fillStyle = RED;
     ctx2d.beginPath();
-    ctx2d.arc(centrePosOfCanvas.x, centrePosOfCanvas.y, 3, 0, 2 * Math.PI);
+    ctx2d.arc(centrePos.x, centrePos.y, 3, 0, 2 * Math.PI);
     ctx2d.fill();
 
     // draw circle in closest whole point in centre of canvas
     ctx2d.fillStyle = GREEN;
     ctx2d.beginPath();
-    ctx2d.arc(wholeCentrePosOfCanvas.x, wholeCentrePosOfCanvas.y, 3, 0, 2 * Math.PI);
+    ctx2d.arc(wholeCentrePos.x, wholeCentrePos.y, 3, 0, 2 * Math.PI);
     ctx2d.fill();
 }
 
@@ -220,8 +326,8 @@ function drawCanvas2() {
     wholeCentrePoint.x = (Math.floor(centrePoint.x / xScale) * xScale);
     wholeCentrePoint.y = (Math.floor(centrePoint.y / yScale) * yScale);
     wholeCentrePosOfCanvas = new Point();
-    wholeCentrePosOfCanvas.x = centrePosOfCanvas.x + ((wholeCentrePoint.x - centrePoint.x) / xScale) * PIXELS_BETWEEN_INTERVALS;
-    wholeCentrePosOfCanvas.y = centrePosOfCanvas.y - ((wholeCentrePoint.y - centrePoint.y) / yScale) * PIXELS_BETWEEN_INTERVALS;
+    wholeCentrePosOfCanvas.x = centrePos.x + ((wholeCentrePoint.x - centrePoint.x) / xScale) * PIXELS_BETWEEN_INTERVALS;
+    wholeCentrePosOfCanvas.y = centrePos.y - ((wholeCentrePoint.y - centrePoint.y) / yScale) * PIXELS_BETWEEN_INTERVALS;
     originPosOfCanvas = new Point();
     originPosOfCanvas.x = wholeCentrePosOfCanvas.x - (wholeCentrePoint.x / xScale) * PIXELS_BETWEEN_INTERVALS;
     originPosOfCanvas.y = wholeCentrePosOfCanvas.y + (wholeCentrePoint.y / yScale) * PIXELS_BETWEEN_INTERVALS;
@@ -286,7 +392,7 @@ function drawCanvas2() {
         } else {
             ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
         }
-        ctx2d.beginPath(); centrePosOfCanvas.x - centrePoint.x * PIXELS_BETWEEN_INTERVALS
+        ctx2d.beginPath(); centrePos.x - centrePoint.x * PIXELS_BETWEEN_INTERVALS
         ctx2d.moveTo(0, y);
         ctx2d.lineTo(canvas.width, y);
         ctx2d.stroke();
@@ -323,7 +429,7 @@ function drawCanvas2() {
     // draw circle in the centre of the canvas
     ctx2d.fillStyle = RED;
     ctx2d.beginPath();
-    ctx2d.arc(centrePosOfCanvas.x, centrePosOfCanvas.y, 3, 0, 2 * Math.PI);
+    ctx2d.arc(centrePos.x, centrePos.y, 3, 0, 2 * Math.PI);
     ctx2d.fill();
 
     // draw circle in closest whole point in centre of canvas
