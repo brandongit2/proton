@@ -75,7 +75,6 @@ function getScaleNumber(num) {
         if (Math.abs(Math.log10(Math.abs(num))) > AXIS_NUMBERS_MAX_PLACES) {
             return num.toExponential(AXIS_NUMBERS_PERCISION);
         } else {
-            console.log(num);
             return parseFloat(num.toPrecision(AXIS_NUMBERS_PERCISION));
         }
     }
