@@ -42,5 +42,5 @@ function setLayout() {
         panelElement.setAttribute("orientation", properties["orientation"]);
         workspaceElement.appendChild(panelElement);
     }
-    setUpCanvas();
+    setupGraph();
 }

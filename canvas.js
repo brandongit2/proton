@@ -5,16 +5,22 @@ class Point {
     }
 }
 
-// constants
 const DEFAULT_CENTRE_POINT = new Point(5, 5);
 const DEFAULT_X_SCALE = 1;
 const DEFAULT_Y_SCALE = 1;
+
+// line widths
 const MINOR_GRIDLINE_WIDTH = 0.2;
 const MAJOR_GRIDLINE_WIDTH = 0.7;
 const AXIS_GRIDLINE_WIDTH = 1.5;
+
+// multipler for each scroll
 const SCROLL_MULTIPLIER = 1.3;
+
 const OPTIMAL_PIXELS_BETWEEN_INTERVALS = 30;
-const GOOD_INTERVALS = {1:5, 2:4, 5:5};
+
+// list of optimal intervals {multiple: number of minor gridlines between each major gridline}
+const OPTIMAL_INTERVALS = { 1: 5, 2: 4, 5: 5 };
 
 // colours
 const GREY = "#F0F0F0"
@@ -28,26 +34,37 @@ const BACKGROUND_COLOUR = GREY;
 // font
 const AXIS_NUMBERS_FONT = "12px Arial";
 const AXIS_NUMBERS_MAX_PLACES = 4;
-const AXIS_NUMBERS_PERCISION = 4;
+const AXIS_NUMBERS_PERCISION = 3;
 
 var canvas;
 var ctx2d;
 var workspace;
 
-// coordinates inside the canvas that is the centre of the canvas
+/*
+Any variables ending in "Pos" represent acutal canvas coordiantes.
+Any variables ending in "Point" represent graph coordiantes.
+*/
+
+// centre of the canvas
 var centrePos;
-// coordinates of the point at the centre of the canvas
 var centrePoint = DEFAULT_CENTRE_POINT;
-// per 1000 pixels 
+
+// scales for horizontal and vertical axises
 var xScale = DEFAULT_X_SCALE;
-// scale for the y axis
 var yScale = DEFAULT_Y_SCALE;
-// current pixels between intervals
+
+// current number of pixels between intervals
 var curPixelInterval;
-// current gridline interval
+
+// current number of minor gridlines between major gridlines
 var curGridlineInterval;
 
-function getGridlineNumber(num) {
+/**
+ * Returns the formatted value to be displayed on the scale.
+ * 
+ * @param {number} num - the raw value to be displayed
+ */
+function getScaleNumber(num) {
     if (Util.isIntegerPosition(num)) {
         if (Math.log10(Math.abs(num)) > AXIS_NUMBERS_MAX_PLACES) {
             return num.toExponential(AXIS_NUMBERS_PERCISION);
@@ -58,12 +75,24 @@ function getGridlineNumber(num) {
         if (Math.abs(Math.log10(Math.abs(num))) > AXIS_NUMBERS_MAX_PLACES) {
             return num.toExponential(AXIS_NUMBERS_PERCISION);
         } else {
-            return num.toPrecision(AXIS_NUMBERS_PERCISION);
+            console.log(num);
+            return parseFloat(num.toPrecision(AXIS_NUMBERS_PERCISION));
         }
     }
 }
 
-function drawNumberLabelsWithBackground(text, x, y, axis, font, background, textColour) {
+/**
+ * Draws labels on the axis.
+ * 
+ * @param {string} text - text to be displayed
+ * @param {number} x - x position of the label
+ * @param {number} y - y position of the label
+ * @param {string} axis - axis the label will be positioend on
+ * @param {string} font - font of the label
+ * @param {string} background - background colour of the label
+ * @param {string} textColour - colour of the text
+ */
+function drawScaleNumbersWithBackground(text, x, y, axis, font, background, textColour) {
     ctx2d.font = font;
     ctx2d.fillStyle = background;
     if (axis == "horizontal") {
@@ -79,38 +108,61 @@ function drawNumberLabelsWithBackground(text, x, y, axis, font, background, text
     ctx2d.fillText(text, x, y);
 }
 
+/**
+ * Returns the optimal scale set for the scale specified. The optimal scale set will be a multiple of the scales specified in {@link OPTIMAL_INTERVALS}.
+ * 
+ * @param {number} curScale - the current scale
+ * @returns {number[]} - [number of pixels for the optimal interval, the optimal interval]
+ */
 function getOptimalScaleSet(curScale) {
 
     var minInterval = 0;
     var minIntervalDifference = Number.MAX_VALUE;
     var mantissa = Util.getMantissa(curScale);
 
-    for (var interval in GOOD_INTERVALS) {
+    // loop through optimal intervals and select the one that is the closest to the current scale
+    for (var interval in OPTIMAL_INTERVALS) {
         if (Math.abs(interval - mantissa) <= minIntervalDifference) {
             minIntervalDifference = Math.abs(interval - mantissa);
             minInterval = interval;
         }
     }
 
+    // convert the closest interval to number of pixels
     var optiminalInterval = minInterval * Math.pow(10, Math.floor(Math.log10(curScale)));
 
     return [optiminalInterval, minInterval];
 }
 
-function resizeCanvas(xTimes, yTimes) {
+/**
+ * Resizes the graph.
+ * 
+ * @param {number} xTimes 
+ * @param {number} yTimes 
+ */
+function resizeGraph(xTimes, yTimes) {
     xScale *= xTimes;
     yScale *= yTimes;
-    drawCanvas();
+    drawGraph();
     canvas.style.cursor = "default";
 }
 
-function panCanvas(xMove, yMove) {
+/**
+ * Pans the graph.
+ * 
+ * @param {number} xMove 
+ * @param {number} yMove 
+ */
+function panGraph(xMove, yMove) {
     centrePoint.x += xMove * xScale;
     centrePoint.y += yMove * yScale;
-    drawCanvas();
+    drawGraph();
 }
 
-function setUpCanvas() {
+/**
+ * Sets up variables for the graph.
+ */
+function setupGraph() {
 
     workspace = $("#workspace")[0];
     canvas = $("#canvas")[0];
@@ -123,22 +175,24 @@ function setUpCanvas() {
     // get context of canvas
     ctx2d = canvas.getContext("2d");
 
+    // handle zooming
     canvas.addEventListener("wheel", function (wheel) {
         if (wheel.deltaY > 0) {
             canvas.style.cursor = "zoom-out";
-            resizeCanvas(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER);
+            resizeGraph(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER);
         } else {
             canvas.style.cursor = "zoom-in";
-            resizeCanvas(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER);
+            resizeGraph(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER);
         }
     });
 
+    // handle panning
     canvas.addEventListener("mousedown", function (mousedown) {
         canvas.style.cursor = "move";
         var lastX = mousedown.x;
         var lastY = mousedown.y;
         var mousemoveListener = function (mousemove) {
-            panCanvas((lastX - mousemove.x) * 1 / curPixelInterval.x, (mousemove.y - lastY) * 1 / curPixelInterval.y);
+            panGraph((lastX - mousemove.x) * 1 / curPixelInterval.x, (mousemove.y - lastY) * 1 / curPixelInterval.y);
             lastX = mousemove.x;
             lastY = mousemove.y;
         };
@@ -151,21 +205,27 @@ function setUpCanvas() {
         canvas.addEventListener("mouseup", mouseupListener);
     });
 
+    // handle key presses
     window.addEventListener("keypress", function (keypress) {
         switch (keypress.key) {
             case 'c':
+                // center on (0, 0)
                 centrePoint.x = 0;
                 centrePoint.y = 0;
-                drawCanvas();
+                drawGraph();
                 break;
         }
     })
 
-    drawCanvas();
+    drawGraph();
 }
 
-function drawCanvas() {
+/**
+ * Clears the graph and redraws everything.
+ */
+function drawGraph() {
 
+    // get optimal scales and the number of pixels in between for the optimal scale
     var optimalXScaleSet = getOptimalScaleSet(xScale);
     var optimalXScale = optimalXScaleSet[0];
     var optimalXInterval = optimalXScaleSet[1];
@@ -173,22 +233,25 @@ function drawCanvas() {
     var optimalYScale = optimalYScaleSet[0];
     var optimalYInterval = optimalYScaleSet[1];
 
+    // sets the current scale interval in terms of pixels
     curPixelInterval = new Point();
-    curPixelInterval.x = OPTIMAL_PIXELS_BETWEEN_INTERVALS * (optimalXScale/xScale);
-    curPixelInterval.y = OPTIMAL_PIXELS_BETWEEN_INTERVALS * (optimalYScale/yScale);
+    curPixelInterval.x = OPTIMAL_PIXELS_BETWEEN_INTERVALS * (optimalXScale / xScale);
+    curPixelInterval.y = OPTIMAL_PIXELS_BETWEEN_INTERVALS * (optimalYScale / yScale);
 
+    // sets the current number of minor gridlines between major gridlines
     curGridlineInterval = new Point();
-    curGridlineInterval.x = GOOD_INTERVALS[optimalXInterval];
-    curGridlineInterval.y = GOOD_INTERVALS[optimalYInterval];
+    curGridlineInterval.x = OPTIMAL_INTERVALS[optimalXInterval];
+    curGridlineInterval.y = OPTIMAL_INTERVALS[optimalYInterval];
 
+    // sets up the point on a gridline that will be the closest to the centre of the graph 
     var wholeCentrePoint = new Point();
     wholeCentrePoint.x = (Math.floor(centrePoint.x / optimalXScale) * optimalXScale);
     wholeCentrePoint.y = (Math.floor(centrePoint.y / optimalYScale) * optimalYScale);
-
     var wholeCentrePos = new Point();
     wholeCentrePos.x = centrePos.x + ((wholeCentrePoint.x - centrePoint.x) / xScale) * curPixelInterval.x;
     wholeCentrePos.y = centrePos.y - ((wholeCentrePoint.y - centrePoint.y) / yScale) * curPixelInterval.y;
 
+    // sets up the position of the origin of the graph
     var originPos = new Point();
     originPos.x = wholeCentrePos.x - (wholeCentrePoint.x / xScale) * curPixelInterval.x;
     originPos.y = wholeCentrePos.y + (wholeCentrePoint.y / yScale) * curPixelInterval.y;
@@ -226,7 +289,7 @@ function drawCanvas() {
         ctx2d.stroke();
     }
 
-    // draw gridlines on horizontal axis
+    // draw gridlines on vertical axis
     var majorIntervalCount = Math.abs(Math.round(Math.ceil((0 - originPos.y) / curPixelInterval.y))) % curGridlineInterval.y;
 
     for (var y = originPos.y + (Math.ceil((0 - originPos.y) / curPixelInterval.y) * curPixelInterval.y); y < canvas.height; y += curPixelInterval.y) {
@@ -261,14 +324,14 @@ function drawCanvas() {
     // draw numbers on horizontal axis          
     for (var x = originPos.x + Math.floor((0 - originPos.x) / curPixelInterval.x / curGridlineInterval.x) * curPixelInterval.x * curGridlineInterval.x; x < canvas.width; x += curGridlineInterval.x * curPixelInterval.x) {
         if (!Util.isSamePosition(x, originPos.x)) {
-            drawNumberLabelsWithBackground(getGridlineNumber((x - originPos.x) / curPixelInterval.x * optimalXScale), x, originPos.y + 5, "horizontal", AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawScaleNumbersWithBackground(getScaleNumber((x - originPos.x) / curPixelInterval.x * optimalXScale), x, originPos.y + 5, "horizontal", AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
     // draw numbers on vertical axis
     for (var y = originPos.y + Math.floor((0 - originPos.y) / curPixelInterval.y / curGridlineInterval.y) * curPixelInterval.y * curGridlineInterval.y; y < canvas.height; y += curGridlineInterval.y * curPixelInterval.y) {
         if (!Util.isSamePosition(y, originPos.y)) {
-            drawNumberLabelsWithBackground(getGridlineNumber((originPos.y - y) / curPixelInterval.y * optimalYScale), originPos.x - 5, y, "vertical", AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawScaleNumbersWithBackground(getScaleNumber((originPos.y - y) / curPixelInterval.y * optimalYScale), originPos.x - 5, y, "vertical", AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
