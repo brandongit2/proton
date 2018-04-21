@@ -45,6 +45,9 @@ function setColors() {
             color:            ${theme.toolbar.item.hover.text};
         }
     `;
+
+    var tools = $("#tools");
+    tools.css("background-color", theme.panels.background);
 }
 
 function populateToolbar() {

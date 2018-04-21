@@ -1,14 +1,21 @@
 {
     "light": {
         "toolbar": {
-            "background": "#fafafa",
-            "text":       "#aaa",
+            "background": "#e3e3e3",
+            "text":       "#4b4b4b",
             "item": {
                 "hover": {
                     "background": "#377ed2",
                     "text":       "#fafafa"
                 }
             }
+        },
+        "canvas": {
+            "background": "#ffffff"
+        },
+        "panels": {
+            "background": "#4b4b4b",
+            "foreground": "#e3e3e3"
         }
     }
 }

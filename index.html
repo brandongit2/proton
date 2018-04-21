@@ -9,21 +9,25 @@
         <script src="workspace.js"></script>
         <script src="canvas.js"></script>
         <script src="bower_components/webcomponentsjs/webcomponents-hi-sd-ce.js"></script>
-        <link rel="import" href="panels/panel.html">
-        <link rel="import" href="panels/test.html">
-        <link rel="import" href="panels/toolbar.html">
-        <link rel="import" href="panels/properties.html">
 
         <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans+Condensed:400" rel="stylesheet">
         <link rel="stylesheet" href="index.css">
+
+        <!-- For styling elements with pseudo classes -->
         <style id="extra-styling"></style>
     </head>
     <body>
         <div id="toolbar">
-            <p style="color:#a8a8a8; margin:0px 5px; position:absolute; right:0px">Made by Brandon Tsang and Michael Pu. v.0.0.1dev | Apr. 11, 2018</p>
+            <p style="color:#828282; margin:0px 5px; position:absolute; right:0px;">Made by Brandon Tsang and Michael Pu. v.0.0.1dev | Apr. 11, 2018</p>
         </div>
         <div id="workspace">
-            <canvas id="canvas" style="position:absolute"></canvas>
+            <div id="tools">
+
+            </div>
+            <canvas id="canvas"></canvas>
+            <div id="properties">
+
+            </div>
         </div>
     </body>
 </html>
