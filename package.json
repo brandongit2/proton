@@ -2,16 +2,18 @@
   "name": "math",
   "version": "0.0.1",
   "description": "A math notebook.",
-  "main": "ui.js",
+  "main": "src/js/ui.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Brandon Tsang",
-  "license": "ISC",
-  "dependencies": {
-    "http-server": "^0.11.1"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brandongit2/math.git"
   },
-  "devDependencies": {
-    "resize-observer-polyfill": "^1.5.0"
-  }
+  "author": "Brandon Tsang, Michael Pu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/brandongit2/math/issues"
+  },
+  "homepage": "https://github.com/brandongit2/math#readme"
 }
