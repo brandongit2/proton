@@ -164,7 +164,11 @@ function resizeGraph(xTimes, yTimes) {
     resizeAnimationStart = null;
     
     // set cursor image
-    canvas.style.cursor = "zoom-in";
+    if (xTimes * yTimes < 1) {
+        canvas.style.cursor = "zoom-in";
+    } else {
+        canvas.style.cursor = "zoom-out";
+    }
 
     // start resize animation
     window.requestAnimationFrame(animateResize);
