@@ -100,7 +100,7 @@ body {
     background-color: #a4a4a4;
 }
 
-#workspace {
+#content {
     position:       relative;
     flex-grow:      1;
     display:        flex;

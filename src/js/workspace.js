@@ -1,27 +1,60 @@
-var layout = null;
-var panels = null;
+const SPACE_BETWEEN_DOTS = 50;
+var workspace   = null;
+var dots        = [];
+var totalChange = [0, 0];
 
-var mouseX = 0;
-var mouseY = 0;
+function createWorkspace() {
+    workspace = document.getElementById('workspace');
+    var ctx       = workspace.getContext('2d');
 
-$(function() {
-    // Obtain JSON files
-    var request1 = new XMLHttpRequest();
-    request1.responseType = "json";
-    request1.open("GET", "default.math");
-    request1.send();
-    request1.onload = function() {
-        layout = request1.response;
+    workspace.width  = document.getElementById('content').offsetWidth - document.getElementById('tools').offsetWidth;
+    workspace.height = document.getElementById('content').offsetHeight;
+
+    var origin = new Point(workspace.width / 2, workspace.height / 2);
+
+    // Create small dots over the workspace
+    for (var i = 0; i < workspace.height; i += SPACE_BETWEEN_DOTS) {
+        for (var j = 0; j < workspace.width; j += SPACE_BETWEEN_DOTS) {
+            dots.push(new Point(Math.round(j), Math.round(i)));
+        }
     }
 
-    setUpGraph();
-
-    window.addEventListener("mousemove", function(e) {
-        mouseX = e.x;
-        mouseY = e.y - 20; // 20 is the toolbar height
+    var panLoop = null;
+    workspace.addEventListener("mousedown", function() {
+        panLoop = setInterval(function() {
+            origin.x += deltaX;
+            origin.y += deltaY;
+            ctx.translate(deltaX, deltaY);
+            renderDots(ctx);
+        }, 10);
     });
-});
 
-function matrixToArray(str) {
-    return str.match(/(-?[0-9\.]+)/g);
+    window.addEventListener("mouseup", function() {
+        if (panLoop != null) {
+            clearInterval(panLoop);
+        }
+    });
+
+    renderDots(ctx);
+}
+
+function renderDots(ctx) {
+    ctx.strokeStyle = '#cfcfcf';
+    ctx.clearRect(0, 0, workspace.width, workspace.height);
+
+    for (var dot of dots) {
+        ctx.beginPath();
+        ctx.moveTo(dot.x - 1.5, dot.y + 0.5);
+        ctx.lineTo(dot.x + 2.5, dot.y + 0.5);
+        ctx.moveTo(dot.x + 0.5, dot.y - 1.5);
+        ctx.lineTo(dot.x + 0.5, dot.y + 2.5);
+        ctx.stroke();
+    }
+}
+
+function pan(ctx) {
+    for (var dot of dots) {
+        dot.x += deltaX;
+        dot.y += deltaY;
+    }
 }

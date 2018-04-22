@@ -1,10 +1,3 @@
-class Point {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
 const DEFAULT_CENTRE_POINT = new Point(5, 5);
 const DEFAULT_X_SCALE = 1;
 const DEFAULT_Y_SCALE = 1;

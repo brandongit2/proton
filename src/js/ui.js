@@ -1,6 +1,21 @@
 var ui         = null;
 var colors     = null;
+var layout     = null;
+var panels     = null;
+
 var isMenuOpen = false;
+
+var mouseX = 0;
+var mouseY = 0;
+var deltaX = 0;
+var deltaY = 0;
+
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
 
 $(function() {
     // Obtain JSON files
@@ -22,6 +37,15 @@ $(function() {
         setColors();
     }
 
+    var request3 = new XMLHttpRequest();
+    request3.responseType = "json";
+    request3.open("GET", "default.math");
+    request3.send();
+    request3.onload = function() {
+        layout = request3.response;
+    }
+
+    // Closes menus when user clicks outside of a menu
     window.addEventListener("mouseup", function(e) {
         if (e.button == 0 && isMenuOpen && !(e.target.matches(".toolbar-menu") || e.target.matches(".toolbar-menu *"))) {
             document.getElementsByClassName("menu-open")[0].classList.add("menu-close");
@@ -32,6 +56,23 @@ $(function() {
             isMenuOpen = false;
         }
     });
+
+    window.addEventListener("mousemove", function(e) {
+        mouseX = e.x;
+        mouseY = e.y - 20; // 20 is the toolbar height
+    });
+
+    var prevMouseX = 0;
+    var prevMouseY = 0;
+    setInterval(function() {
+        deltaX = mouseX - prevMouseX;
+        deltaY = mouseY - prevMouseY;
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
+    }, 10);
+
+    createWorkspace();
+    //setUpGraph();
 });
 
 function setColors() {
