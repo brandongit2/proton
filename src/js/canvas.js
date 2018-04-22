@@ -12,20 +12,25 @@ const DEFAULT_Y_SCALE = 1;
 // line widths
 const MINOR_GRIDLINE_WIDTH = 0.2;
 const MAJOR_GRIDLINE_WIDTH = 0.7;
-const AXIS_GRIDLINE_WIDTH = 1.5;
+const AXIS_GRIDLINE_WIDTH  = 1.5;
 
 // multipler for each scroll
 const SCROLL_MULTIPLIER = 1.3;
 
+// optimal number of pixels between each minor gridline
 const OPTIMAL_PIXELS_BETWEEN_INTERVALS = 30;
 
 // list of optimal intervals {multiple: number of minor gridlines between each major gridline}
 const OPTIMAL_INTERVALS = { 1: 5, 2: 4, 5: 5 };
 
+// period of time for resize animation in seconds
+const RESIZE_ANIMATION_LENGTH = 0.3;
+const MILLISECONDS_IN_SECOND = 1000;
+
 // colours
-const GREY = '#F0F0F0';
+const GREY  = '#F0F0F0';
 const BLACK = '#000000';
-const RED = '#FF0000';
+const RED   = '#FF0000';
 const WHITE = '#FFFFFF';
 const GREEN = '#008000';
 
@@ -58,6 +63,11 @@ var curPixelInterval;
 
 // current number of minor gridlines between major gridlines
 var curGridlineInterval;
+
+// variables to keep track of the resize animation
+var resizeAnimationStart;
+var startResizeScale;
+var targetResizeScale;
 
 /**
  * Returns the formatted value to be displayed on the scale.
@@ -134,16 +144,59 @@ function getOptimalScaleSet(curScale) {
 }
 
 /**
- * Resizes the graph.
+ * Starts the graph resize animation.
  *
  * @param {number} xTimes
  * @param {number} yTimes
  */
 function resizeGraph(xTimes, yTimes) {
-    xScale *= xTimes;
-    yScale *= yTimes;
+    // scale before resizing
+    startResizeScale = new Point();
+    startResizeScale.x = xScale;
+    startResizeScale.y = yScale;
+
+    // scale after resizing
+    targetResizeScale = new Point();
+    targetResizeScale.x = xScale * xTimes;
+    targetResizeScale.y = yScale * yTimes;
+
+    // time that resizing animation started
+    resizeAnimationStart = null;
+
+    // set cursor image
+    if (xTimes * yTimes < 1) {
+        canvas.style.cursor = "zoom-in";
+    } else {
+        canvas.style.cursor = "zoom-out";
+    }
+
+    // start resize animation
+    window.requestAnimationFrame(animateResize);
+}
+
+/**
+ * Called during each frame of the resize animation.
+ *
+ * @param {DOMHighResTimeStamp} timestamp
+ */
+function animateResize(timestamp) {
+
+    if (resizeAnimationStart == null) {
+        resizeAnimationStart = timestamp;
+    }
+
+    var elapsedTime = timestamp - resizeAnimationStart;
+    var elapsedPercentage = Math.min(elapsedTime / (RESIZE_ANIMATION_LENGTH*MILLISECONDS_IN_SECOND), 1);
+
+    xScale = startResizeScale.x + (targetResizeScale.x - startResizeScale.x) * elapsedPercentage;
+    yScale = startResizeScale.y + (targetResizeScale.y - startResizeScale.y) * elapsedPercentage;
     drawGraph();
-    canvas.style.cursor = 'default';
+
+    if (xScale == targetResizeScale.x && yScale == targetResizeScale.y) {
+        canvas.style.cursor = "default";
+    } else {
+        window.requestAnimationFrame(animateResize);
+    }
 }
 
 /**
@@ -222,6 +275,10 @@ function setUpGraph() {
  * Clears the graph and redraws everything.
  */
 function drawGraph() {
+
+    // Clear tne canvas
+    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+
     // Get optimal scales and the number of pixels in between for the optimal scale
     var optimalXScaleSet = getOptimalScaleSet(xScale);
     var optimalXScale = optimalXScaleSet[0];
