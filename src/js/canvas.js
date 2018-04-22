@@ -342,8 +342,8 @@ function drawGraph() {
 
     // draw vertical lines
 
-    let leftMostLinePos = graphProperties.originPos.x + Math.ceil(graphProperties.leftPoint / graphProperties.scaleX) * graphProperties.pixelIntervalX;
-    let rightMostLinePos = graphProperties.originPos.x + Math.ceil(graphProperties.rightPoint / graphProperties.scaleX) * graphProperties.pixelIntervalX;
+    let leftMostLinePos = graphProperties.originPos.x + Util.awayFromZero(graphProperties.leftPoint / graphProperties.optimalScaleX) * graphProperties.pixelIntervalX;
+    let rightMostLinePos = graphProperties.originPos.x + Util.awayFromZero(graphProperties.rightPoint / graphProperties.optimalScaleX) * graphProperties.pixelIntervalX;
 
     let majorIntervalXCount = (Math.floor((graphProperties.originPos.x - leftMostLinePos) / graphProperties.pixelIntervalX) % graphProperties.minorBetweenMajorX + graphProperties.minorBetweenMajorX) % graphProperties.minorBetweenMajorX;
 
@@ -364,8 +364,8 @@ function drawGraph() {
 
     // draw horizontal lines
 
-    let topMostLinePos = graphProperties.originPos.y - Math.ceil(graphProperties.topPoint / graphProperties.scaleY) * graphProperties.pixelIntervalY;
-    let bottomMostLinePos = graphProperties.originPos.y - Math.ceil(graphProperties.bottomPoint / graphProperties.scaleY) * graphProperties.pixelIntervalY;
+    let topMostLinePos = graphProperties.originPos.y - Math.ceil(graphProperties.topPoint / graphProperties.optimalScaleY) * graphProperties.pixelIntervalY;
+    let bottomMostLinePos = graphProperties.originPos.y - Math.ceil(graphProperties.bottomPoint / graphProperties.optimalScaleY) * graphProperties.pixelIntervalY;
 
     let majorIntervalYCount = (Math.floor((graphProperties.originPos.y - topMostLinePos) / graphProperties.pixelIntervalY) % graphProperties.minorBetweenMajorY + graphProperties.minorBetweenMajorY) % graphProperties.minorBetweenMajorY;
 
@@ -408,7 +408,7 @@ function drawGraph() {
     let leftMostMajorLine = Math.floor((Math.floor(graphProperties.leftPoint / graphProperties.optimalScaleX) * graphProperties.optimalScaleX) / (graphProperties.minorBetweenMajorX * graphProperties.optimalScaleX)) * (graphProperties.minorBetweenMajorX * graphProperties.optimalScaleX);
 
     for (let x = leftMostMajorLine; x < graphProperties.rightPoint; x += graphProperties.minorBetweenMajorX * graphProperties.optimalScaleX) {
-        if (!Util.floatEqualsZero(x/graphProperties.minorBetweenMajorX * graphProperties.optimalScaleX)) {
+        if (Math.abs(x * (graphProperties.pixelIntervalX / graphProperties.optimalScaleX)) > 1) {
             drawScaleNumbersWithBackground(getScaleNumber(x), graphProperties.originPos.x + x * (graphProperties.pixelIntervalX / graphProperties.optimalScaleX), graphProperties.originPos.y + 5, "horizontal", AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
@@ -416,7 +416,7 @@ function drawGraph() {
     // draw vertical scale gridlines
     let topMostMajorLine = Math.floor((Math.floor(graphProperties.topPoint / graphProperties.optimalScaleY) * graphProperties.optimalScaleY) / (graphProperties.minorBetweenMajorY * graphProperties.optimalScaleY)) * (graphProperties.minorBetweenMajorY * graphProperties.optimalScaleY);
     for (let y = topMostMajorLine; y > graphProperties.bottomPoint; y -= graphProperties.minorBetweenMajorY * graphProperties.optimalScaleY) {
-        if (!Util.floatEqualsZero(y/graphProperties.minorBetweenMajorY * graphProperties.optimalScaleY)) {
+        if (Math.abs(y * (graphProperties.pixelIntervalY / graphProperties.optimalScaleY)) > 1) {
             drawScaleNumbersWithBackground(getScaleNumber(y), graphProperties.originPos.x - 5, graphProperties.originPos.y - y * (graphProperties.pixelIntervalY / graphProperties.optimalScaleY), "vertical", AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
