@@ -14,8 +14,6 @@ $(function() {
         layout = request1.response;
     }
 
-    $("#tools").css("width", "200px");
-
     setUpGraph();
 
     window.addEventListener("mousemove", function(e) {

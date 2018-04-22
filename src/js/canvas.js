@@ -23,16 +23,16 @@ const OPTIMAL_PIXELS_BETWEEN_INTERVALS = 30;
 const OPTIMAL_INTERVALS = { 1: 5, 2: 4, 5: 5 };
 
 // colours
-const GREY = "#F0F0F0"
-const BLACK = "#000000";
-const RED = "#FF0000";
-const WHITE = "#FFFFFF";
-const GREEN = "#008000";
+const GREY = '#F0F0F0';
+const BLACK = '#000000';
+const RED = '#FF0000';
+const WHITE = '#FFFFFF';
+const GREEN = '#008000';
 
 const BACKGROUND_COLOUR = GREY;
 
 // font
-const AXIS_NUMBERS_FONT = "12px Arial";
+const AXIS_NUMBERS_FONT = '12px Arial';
 const AXIS_NUMBERS_MAX_PLACES = 4;
 const AXIS_NUMBERS_PERCISION = 3;
 
@@ -94,13 +94,13 @@ function getScaleNumber(num) {
 function drawScaleNumbersWithBackground(text, x, y, axis, font, background, textColour) {
     ctx2d.font = font;
     ctx2d.fillStyle = background;
-    if (axis == "horizontal") {
-        ctx2d.textAlign    = "center";
-        ctx2d.textBaseline = "top";
+    if (axis == 'horizontal') {
+        ctx2d.textAlign    = 'center';
+        ctx2d.textBaseline = 'top';
         ctx2d.fillRect(x - (ctx2d.measureText(text).width / 2), y, ctx2d.measureText(text).width + 2, parseInt(ctx2d.font) + 2);
     } else {
-        ctx2d.textAlign    = "right";
-        ctx2d.textBaseline = "middle";
+        ctx2d.textAlign    = 'right';
+        ctx2d.textBaseline = 'middle';
         ctx2d.fillRect(x - ctx2d.measureText(text).width - 1, y - (parseInt(ctx2d.font) / 2), ctx2d.measureText(text).width + 2, parseInt(ctx2d.font) + 2);
     }
     ctx2d.fillStyle = textColour;
@@ -143,7 +143,7 @@ function resizeGraph(xTimes, yTimes) {
     xScale *= xTimes;
     yScale *= yTimes;
     drawGraph();
-    canvas.style.cursor = "default";
+    canvas.style.cursor = 'default';
 }
 
 /**
@@ -162,31 +162,31 @@ function panGraph(xMove, yMove) {
  * Sets up variables for the graph.
  */
 function setUpGraph() {
-    workspace = $("#workspace")[0];
-    canvas    = $("#canvas")[0];
+    workspace = $('#workspace')[0];
+    canvas    = $('#canvas')[0];
 
     // Get dimensions of canvas
     canvas.height = workspace.getBoundingClientRect().height;
-    canvas.width  = workspace.getBoundingClientRect().width - document.getElementById("tools").offsetWidth;
+    canvas.width  = workspace.getBoundingClientRect().width - document.getElementById('tools').offsetWidth;
     centrePos = new Point(canvas.width / 2, canvas.height / 2);
 
     // Get context of canvas
-    ctx2d = canvas.getContext("2d");
+    ctx2d = canvas.getContext('2d');
 
     // handle zooming
-    canvas.addEventListener("wheel", function (wheel) {
+    canvas.addEventListener('wheel', function (wheel) {
         if (wheel.deltaY > 0) {
-            canvas.style.cursor = "zoom-out";
+            canvas.style.cursor = 'zoom-out';
             resizeGraph(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER);
         } else {
-            canvas.style.cursor = "zoom-in";
+            canvas.style.cursor = 'zoom-in';
             resizeGraph(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER);
         }
     });
 
     // handle panning
-    canvas.addEventListener("mousedown", function (mousedown) {
-        canvas.style.cursor = "move";
+    canvas.addEventListener('mousedown', function (mousedown) {
+        canvas.style.cursor = 'move';
         var lastX = mousedown.x;
         var lastY = mousedown.y;
         var mousemoveListener = function (mousemove) {
@@ -194,26 +194,26 @@ function setUpGraph() {
             lastX = mousemove.x;
             lastY = mousemove.y;
         };
-        var mouseupListener = function mouseupListener(event) {
-            canvas.style.cursor = "default";
-            canvas.removeEventListener("mousemove", mousemoveListener);
-            canvas.removeEventListener("mouseup", mouseupListener);
+        var mouseupListener = function mouseupListener() {
+            canvas.style.cursor = 'default';
+            canvas.removeEventListener('mousemove', mousemoveListener);
+            canvas.removeEventListener('mouseup', mouseupListener);
         };
-        canvas.addEventListener("mousemove", mousemoveListener);
-        canvas.addEventListener("mouseup", mouseupListener);
+        canvas.addEventListener('mousemove', mousemoveListener);
+        canvas.addEventListener('mouseup', mouseupListener);
     });
 
     // handle key presses
-    window.addEventListener("keypress", function (keypress) {
+    window.addEventListener('keypress', function (keypress) {
         switch (keypress.key) {
-            case 'c':
-                // center on (0, 0)
-                centrePoint.x = 0;
-                centrePoint.y = 0;
-                drawGraph();
-                break;
+        case 'c':
+            // center on (0, 0)
+            centrePoint.x = 0;
+            centrePoint.y = 0;
+            drawGraph();
+            break;
         }
-    })
+    });
 
     drawGraph();
 }
@@ -286,6 +286,7 @@ function drawGraph() {
         ctx2d.stroke();
     }
 
+    delete window.majorIntervalCount;
     // Draw gridlines on vertical axis
     var majorIntervalCount = Math.abs(Math.round(Math.ceil((0 - originPos.y) / curPixelInterval.y))) % curGridlineInterval.y;
 
@@ -321,14 +322,14 @@ function drawGraph() {
     // Draw numbers on horizontal axis
     for (var x = originPos.x + Math.floor((0 - originPos.x) / curPixelInterval.x / curGridlineInterval.x) * curPixelInterval.x * curGridlineInterval.x; x < canvas.width; x += curGridlineInterval.x * curPixelInterval.x) {
         if (!Util.isSamePosition(x, originPos.x)) {
-            drawScaleNumbersWithBackground(getScaleNumber((x - originPos.x) / curPixelInterval.x * optimalXScale), x, originPos.y + 5, "horizontal", AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawScaleNumbersWithBackground(getScaleNumber((x - originPos.x) / curPixelInterval.x * optimalXScale), x, originPos.y + 5, 'horizontal', AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 
     // Draw numbers on vertical axis
     for (var y = originPos.y + Math.floor((0 - originPos.y) / curPixelInterval.y / curGridlineInterval.y) * curPixelInterval.y * curGridlineInterval.y; y < canvas.height; y += curGridlineInterval.y * curPixelInterval.y) {
         if (!Util.isSamePosition(y, originPos.y)) {
-            drawScaleNumbersWithBackground(getScaleNumber((originPos.y - y) / curPixelInterval.y * optimalYScale), originPos.x - 5, y, "vertical", AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
+            drawScaleNumbersWithBackground(getScaleNumber((originPos.y - y) / curPixelInterval.y * optimalYScale), originPos.x - 5, y, 'vertical', AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
         }
     }
 

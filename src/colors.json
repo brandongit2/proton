@@ -15,7 +15,10 @@
         },
         "panels": {
             "background": "#4b4b4b",
-            "foreground": "#e3e3e3"
+            "foreground": "#e3e3e3",
+            "tools": {
+                "color": "#e3e3e3"
+            }
         }
     }
 }
