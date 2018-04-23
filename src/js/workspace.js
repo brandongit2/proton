@@ -1,7 +1,7 @@
 const SPACE_BETWEEN_DOTS = 50;
 var workspace   = null;
-var dots        = [];
 var totalChange = [0, 0];
+var origin      = null;
 
 function createWorkspace() {
     workspace = document.getElementById('workspace');
@@ -10,21 +10,13 @@ function createWorkspace() {
     workspace.width  = document.getElementById('content').offsetWidth - document.getElementById('tools').offsetWidth;
     workspace.height = document.getElementById('content').offsetHeight;
 
-    var origin = new Point(workspace.width / 2, workspace.height / 2);
-
-    // Create small dots over the workspace
-    for (var i = 0; i < workspace.height; i += SPACE_BETWEEN_DOTS) {
-        for (var j = 0; j < workspace.width; j += SPACE_BETWEEN_DOTS) {
-            dots.push(new Point(Math.round(j), Math.round(i)));
-        }
-    }
+    origin = new Point(workspace.width / 2, workspace.height / 2);
 
     var panLoop = null;
     workspace.addEventListener("mousedown", function() {
         panLoop = setInterval(function() {
             origin.x += deltaX;
             origin.y += deltaY;
-            ctx.translate(deltaX, deltaY);
             renderDots(ctx);
         }, 10);
     });
@@ -42,19 +34,17 @@ function renderDots(ctx) {
     ctx.strokeStyle = '#cfcfcf';
     ctx.clearRect(0, 0, workspace.width, workspace.height);
 
-    for (var dot of dots) {
-        ctx.beginPath();
-        ctx.moveTo(dot.x - 1.5, dot.y + 0.5);
-        ctx.lineTo(dot.x + 2.5, dot.y + 0.5);
-        ctx.moveTo(dot.x + 0.5, dot.y - 1.5);
-        ctx.lineTo(dot.x + 0.5, dot.y + 2.5);
-        ctx.stroke();
+    for (var i = origin.x % SPACE_BETWEEN_DOTS + 0.5; i < origin.x % SPACE_BETWEEN_DOTS + workspace.width + 0.5; i += SPACE_BETWEEN_DOTS) {
+        for (var j = origin.y % SPACE_BETWEEN_DOTS + 0.5; j < origin.y % SPACE_BETWEEN_DOTS + workspace.width + 0.5; j += SPACE_BETWEEN_DOTS) {
+            ctx.beginPath();
+            ctx.moveTo(i - 2, j);
+            ctx.lineTo(i + 2, j);
+            ctx.moveTo(i, j - 2);
+            ctx.lineTo(i, j + 2);
+            ctx.stroke();
+        }
     }
 }
 
 function pan(ctx) {
-    for (var dot of dots) {
-        dot.x += deltaX;
-        dot.y += deltaY;
-    }
 }
