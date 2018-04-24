@@ -1,32 +1,47 @@
 const SPACE_BETWEEN_DOTS = 50;
 var workspace   = null;
 var totalChange = [0, 0];
-var origin      = null;
+var origin      = {x: 0, y: 0};
+var screenPos   = [0, 0, 0, 0]; // [top, right, bottom, left]
 var scale       = 1;
+var targetScale = 1;
 
 function createWorkspace() {
     workspace = document.getElementById('workspace');
-    var ctx       = workspace.getContext('2d');
+    var ctx   = workspace.getContext('2d');
 
     workspace.width  = document.getElementById('content').offsetWidth - document.getElementById('tools').offsetWidth;
     workspace.height = document.getElementById('content').offsetHeight;
 
-    origin = new Point(workspace.width / 2, workspace.height / 2);
+    origin.x  = workspace.width / 2;
+    origin.y  = workspace.height / 2;
+    screenPos = [-origin.y, workspace.width - origin.x, workspace.height - origin.y, -origin.x];
+    ctx.translate(origin.x, origin.y);
 
     var panLoop = null;
+    var colorAnimation = null;
     workspace.addEventListener("mousedown", function() {
-        TweenMax.killAll();
+        if (colorAnimation != null) {
+            colorAnimation.kill();
+        }
         TweenMax.to("#color-dummy", 0.3, {color: '#9d9d9d'});
         panLoop = setInterval(function() {
             origin.x += deltaX;
             origin.y += deltaY;
+            ctx.translate(deltaX, deltaY);
+            screenPos[1] -= deltaX;
+            screenPos[3] -= deltaX;
+            screenPos[0] -= deltaY;
+            screenPos[2] -= deltaY;
             renderDots(ctx);
         }, 10);
     });
 
     window.addEventListener("mouseup", function() {
         if (panLoop != null) {
-            TweenMax.killAll();
+            if (colorAnimation != null) {
+                colorAnimation.kill();
+            }
             TweenMax.to("#color-dummy", 0.3, {color: '#cfcfcf'});
             var animateBack = setInterval(function() {
                 renderDots(ctx);
@@ -39,7 +54,21 @@ function createWorkspace() {
     });
 
     workspace.addEventListener("wheel", function(e) {
-        scale *= e.deltaY > 0 ? 1 / 1.2 : 1.2;
+        targetScale *= e.deltaY > 0 ? 1 / 1.2 : 1.2;
+        if (zoomAnimation != null) {
+            zoomAnimation.kill();
+        }
+        var zoomAnimation = TweenMax.to(window, 0.2, {scale: targetScale});
+
+        var prevScale = scale;
+        var animateZoom = setInterval(function() {
+            ctx.scale(scale / prevScale, scale / prevScale);
+            prevScale = scale;
+            renderDots(ctx);
+        }, 10);
+        setTimeout(function() {
+            clearInterval(animateZoom);
+        }, 200);
         renderDots(ctx);
     });
 
@@ -48,12 +77,11 @@ function createWorkspace() {
 
 function renderDots(ctx) {
     ctx.strokeStyle = $('#color-dummy').css('color');
-    ctx.clearRect(0, 0, workspace.width, workspace.height);
-    var spaceBetweenDots = SPACE_BETWEEN_DOTS / scale;
-    console.log(spaceBetweenDots);
+    ctx.clearRect(screenPos[3], screenPos[0], screenPos[1] - screenPos[3], screenPos[2] - screenPos[0]);
+    ctx.fillRect(0, 0, 10, 10);
 
-    for (var i = origin.x % spaceBetweenDots - spaceBetweenDots + 0.5; i < origin.x % spaceBetweenDots + spaceBetweenDots + workspace.width + 0.5; i += spaceBetweenDots) {
-        for (var j = origin.y % spaceBetweenDots - spaceBetweenDots + 0.5; j < origin.y % spaceBetweenDots + spaceBetweenDots + workspace.width + 0.5; j += spaceBetweenDots) {
+    for (var i = Math.floor(-origin.x / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS + 0.5; i < Math.ceil((-origin.x + workspace.width + 1) / SPACE_BETWEEN_DOTS) * SPACE_BETWEEN_DOTS + 0.5; i += SPACE_BETWEEN_DOTS) {
+        for (var j = Math.floor(-origin.y / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS + 0.5; j < Math.ceil((-origin.y + workspace.width + 1) / SPACE_BETWEEN_DOTS) * SPACE_BETWEEN_DOTS + 0.5; j += SPACE_BETWEEN_DOTS) {
             ctx.beginPath();
             ctx.moveTo(i - 2, j);
             ctx.lineTo(i + 2, j);
