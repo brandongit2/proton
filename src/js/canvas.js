@@ -70,13 +70,31 @@ class GraphProperties {
         this.centrePoint = new Point((this.topPoint + this.bottomPoint) / 2, (this.leftPoint + this.rightPoint) / 2);
     }
 
-    resize(xTimes, yTimes) {
+    resize(xTimes, yTimes, centreX, centreY) {
+
         this.calculatePoints();
 
-        this.topPoint = this.centrePoint.y + (this.topPoint - this.centrePoint.y) * yTimes;
-        this.bottomPoint = this.centrePoint.y - (this.centrePoint.y - this.bottomPoint) * yTimes;
-        this.leftPoint = this.centrePoint.x - (this.centrePoint.x - this.leftPoint) * xTimes;
-        this.rightPoint = this.centrePoint.x + (this.rightPoint - this.centrePoint.x) * xTimes;
+        let topPercent = centreY / this.height;
+        let leftPercent = centreX / this.width;
+
+        this.newLeftPoint = this.centrePoint.x - ((this.rightPoint - this.leftPoint) * leftPercent * xTimes);
+        this.newRightPoint = this.centrePoint.x + ((this.rightPoint - this.leftPoint) * (1-leftPercent) * xTimes);
+        this.newTopPoint = this.centrePoint.y + ((this.topPoint - this.bottomPoint) * topPercent * yTimes);
+        this.newBottomPoint = this.centrePoint.y - ((this.topPoint - this.bottomPoint) * (1-topPercent) * yTimes);
+
+        this.leftPoint = this.newLeftPoint;
+        this.rightPoint = this.newRightPoint;
+        this.topPoint = this.newTopPoint;
+        this.bottomPoint = this.newBottomPoint;
+
+        console.log(this.leftPoint, this.rightPoint, this.topPoint, this.bottomPoint);
+
+        /*
+        this.topPoint = this.centrePoint.y + (this.topPoint - this.centrePoint.y) * yTimes * topPercent;
+        this.bottomPoint = this.centrePoint.y - (this.centrePoint.y - this.bottomPoint) * yTimes* (1-topPercent);
+        this.leftPoint = this.centrePoint.x - (this.centrePoint.x - this.leftPoint) * xTimes * leftPercent;
+        this.rightPoint = this.centrePoint.x + (this.rightPoint - this.centrePoint.x) * xTimes * (1-leftPercent);
+        */
 
         this.calculate();
         drawGraph();
@@ -286,10 +304,10 @@ function setUpGraph() {
     canvas.addEventListener("wheel", function (wheel) {
         if (wheel.deltaY > 0) {
             canvas.style.cursor = "zoom-out";
-            graphProperties.resize(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER);
+            graphProperties.resize(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER, wheel.offsetX, wheel.offsetY);
         } else {
             canvas.style.cursor = "zoom-in";
-            graphProperties.resize(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER);
+            graphProperties.resize(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER, wheel.offsetX, wheel.offsetY);
         }
     });
 
