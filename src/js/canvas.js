@@ -65,6 +65,13 @@ class GraphProperties {
         this.pixelIntervalY = OPTIMAL_PIXELS_BETWEEN_INTERVALS * (this.optimalScaleY / this.scaleY);
     }
 
+    getPointFromCoordinates(xCoord, yCoord) {
+        let curPoint = new Point();
+        curPoint.x = this.leftPoint + ((xCoord / this.pixelIntervalX) * this.optimalScaleX);
+        curPoint.y = this.topPoint - ((yCoord / this.pixelIntervalY) * this.optimalScaleY);
+        return curPoint;
+    }
+
     calculatePoints() {
         this.originPos = new Point(-this.leftPoint * (this.pixelIntervalY / this.optimalScaleY), this.topPoint * (this.pixelIntervalX / this.optimalScaleX));
         this.centrePoint = new Point((this.topPoint + this.bottomPoint) / 2, (this.leftPoint + this.rightPoint) / 2);
@@ -73,14 +80,15 @@ class GraphProperties {
     resize(xTimes, yTimes, centreX, centreY) {
 
         this.calculatePoints();
+        let mousePoint = this.getPointFromCoordinates(centreX, centreY);
 
         let topPercent = centreY / this.height;
         let leftPercent = centreX / this.width;
 
-        this.newLeftPoint = this.centrePoint.x - ((this.rightPoint - this.leftPoint) * leftPercent * xTimes);
-        this.newRightPoint = this.centrePoint.x + ((this.rightPoint - this.leftPoint) * (1-leftPercent) * xTimes);
-        this.newTopPoint = this.centrePoint.y + ((this.topPoint - this.bottomPoint) * topPercent * yTimes);
-        this.newBottomPoint = this.centrePoint.y - ((this.topPoint - this.bottomPoint) * (1-topPercent) * yTimes);
+        this.newLeftPoint = mousePoint.x - ((this.rightPoint - this.leftPoint) * leftPercent * xTimes);
+        this.newRightPoint = mousePoint.x + ((this.rightPoint - this.leftPoint) * (1-leftPercent) * xTimes);
+        this.newTopPoint = mousePoint.y + ((this.topPoint - this.bottomPoint) * topPercent * yTimes);
+        this.newBottomPoint = mousePoint.y - ((this.topPoint - this.bottomPoint) * (1-topPercent) * yTimes);
 
         this.leftPoint = this.newLeftPoint;
         this.rightPoint = this.newRightPoint;
@@ -309,6 +317,11 @@ function setUpGraph() {
             canvas.style.cursor = "zoom-in";
             graphProperties.resize(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER, wheel.offsetX, wheel.offsetY);
         }
+    });
+
+    // for debugging
+    canvas.addEventListener("click", function(click) {
+        console.log("Clicked on: ", graphProperties.getPointFromCoordinates(click.offsetX, click.offsetY));
     });
 
     // handle panning
