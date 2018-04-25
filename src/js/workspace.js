@@ -2,49 +2,48 @@ const SPACE_BETWEEN_DOTS = 50;
 var workspace   = null;
 var totalChange = [0, 0];
 var origin      = {x: 0, y: 0};
-var screenPos   = [0, 0, 0, 0]; // [top, right, bottom, left]
 var scale       = 1;
 var targetScale = 1;
+var ctx         = null;
 
 function createWorkspace() {
     workspace = document.getElementById('workspace');
-    var ctx   = workspace.getContext('2d');
+    ctx       = workspace.getContext('2d');
 
     workspace.width  = document.getElementById('content').offsetWidth - document.getElementById('tools').offsetWidth;
     workspace.height = document.getElementById('content').offsetHeight;
 
     origin.x  = workspace.width / 2;
     origin.y  = workspace.height / 2;
-    screenPos = [-origin.y, workspace.width - origin.x, workspace.height - origin.y, -origin.x];
-    ctx.translate(origin.x, origin.y);
+    ctx.translate(origin.x - 0.5, origin.y - 0.5);
 
     var panLoop = null;
     var colorAnimation = null;
+    var toolsWidth = document.getElementById('tools').offsetWidth; // Used to correct mouse X position for workspace
     workspace.addEventListener("mousedown", function() {
+        // Make dots darker when clicked
         if (colorAnimation != null) {
             colorAnimation.kill();
         }
         TweenMax.to("#color-dummy", 0.3, {color: '#9d9d9d'});
+
         panLoop = setInterval(function() {
-            origin.x += deltaX;
-            origin.y += deltaY;
-            ctx.translate(deltaX, deltaY);
-            screenPos[1] -= deltaX;
-            screenPos[3] -= deltaX;
-            screenPos[0] -= deltaY;
-            screenPos[2] -= deltaY;
-            renderDots(ctx);
+            origin.x += deltaX / scale;
+            origin.y += deltaY / scale;
+            ctx.setTransform(scale, 0, 0, scale, origin.x * scale, origin.y * scale);
+            renderDots();
         }, 10);
     });
 
     window.addEventListener("mouseup", function() {
         if (panLoop != null) {
+            // Make dots lighter again when mouse released
             if (colorAnimation != null) {
                 colorAnimation.kill();
             }
             TweenMax.to("#color-dummy", 0.3, {color: '#cfcfcf'});
             var animateBack = setInterval(function() {
-                renderDots(ctx);
+                renderDots();
             }, 10);
             setTimeout(function() {
                 clearInterval(animateBack);
@@ -55,33 +54,39 @@ function createWorkspace() {
 
     workspace.addEventListener("wheel", function(e) {
         targetScale *= e.deltaY > 0 ? 1 / 1.2 : 1.2;
+
+        var prevScale = scale;
+        var animateZoom = setInterval(function() {
+            console.log(prevScale + " " + scale);
+            origin.x += (mouseX - toolsWidth) / scale - (mouseX - toolsWidth) / prevScale;
+            origin.y += mouseY / scale - mouseY / prevScale;
+            ctx.setTransform(scale, 0, 0, scale, origin.x * scale, origin.y * scale);
+            renderDots();
+            prevScale = scale;
+        }, 10);
+        setTimeout(function() {
+            clearInterval(animateZoom);
+        }, 200);
+
         if (zoomAnimation != null) {
             zoomAnimation.kill();
         }
         var zoomAnimation = TweenMax.to(window, 0.2, {scale: targetScale});
 
-        var prevScale = scale;
-        var animateZoom = setInterval(function() {
-            ctx.scale(scale / prevScale, scale / prevScale);
-            prevScale = scale;
-            renderDots(ctx);
-        }, 10);
-        setTimeout(function() {
-            clearInterval(animateZoom);
-        }, 200);
-        renderDots(ctx);
+        renderDots();
     });
 
-    renderDots(ctx);
+    renderDots();
 }
 
-function renderDots(ctx) {
+function renderDots() {
+    var toolsWidth = document.getElementById('tools').offsetWidth; // Used to correct mouse X position for workspace
     ctx.strokeStyle = $('#color-dummy').css('color');
-    ctx.clearRect(screenPos[3], screenPos[0], screenPos[1] - screenPos[3], screenPos[2] - screenPos[0]);
-    ctx.fillRect(0, 0, 10, 10);
+    ctx.clearRect(-origin.x, -origin.y, workspace.width / scale, workspace.height / scale);
+    ctx.fillRect(-5, -5, 10, 10);
 
-    for (var i = Math.floor(-origin.x / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS + 0.5; i < Math.ceil((-origin.x + workspace.width + 1) / SPACE_BETWEEN_DOTS) * SPACE_BETWEEN_DOTS + 0.5; i += SPACE_BETWEEN_DOTS) {
-        for (var j = Math.floor(-origin.y / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS + 0.5; j < Math.ceil((-origin.y + workspace.width + 1) / SPACE_BETWEEN_DOTS) * SPACE_BETWEEN_DOTS + 0.5; j += SPACE_BETWEEN_DOTS) {
+    for (var i = Math.floor(-origin.x / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS; i < Math.ceil(((workspace.width) / scale + 1) / SPACE_BETWEEN_DOTS) * SPACE_BETWEEN_DOTS; i += SPACE_BETWEEN_DOTS) {
+        for (var j = Math.floor(-origin.y / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS; j < Math.ceil(((workspace.width) / scale + 1) / SPACE_BETWEEN_DOTS) * SPACE_BETWEEN_DOTS; j += SPACE_BETWEEN_DOTS) {
             ctx.beginPath();
             ctx.moveTo(i - 2, j);
             ctx.lineTo(i + 2, j);
@@ -90,7 +95,4 @@ function renderDots(ctx) {
             ctx.stroke();
         }
     }
-}
-
-function pan(ctx) {
 }

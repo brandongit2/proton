@@ -94,7 +94,6 @@ function setColors() {
     tool.css("color",  theme.panels.tools.color);
     tool.css("stroke", theme.panels.tools.color);
     tool.css("fill",   theme.panels.tools.color);
-    console.log(theme.panels.tools.color + " !important");
 
     // Replace all <img> SVG's with inline SVG so I can change their colors (code from Stack Overflow)
     // https://stackoverflow.com/questions/11978995/how-to-change-color-of-svg-image-using-css-jquery-svg-image-replacement
