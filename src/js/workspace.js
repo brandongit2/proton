@@ -1,4 +1,6 @@
-const SPACE_BETWEEN_DOTS = 50;
+const SPACE_BETWEEN_DOTS = 40;
+const MAX_ZOOM           = 10;
+const MIN_ZOOM           = 0.9;
 var workspace   = null;
 var totalChange = [0, 0];
 var origin      = {x: 0, y: 0};
@@ -52,28 +54,41 @@ function createWorkspace() {
         }
     });
 
+    var scrollEnabled = true;
+    var prevScrollDirection = 0;
     workspace.addEventListener("wheel", function(e) {
-        targetScale *= e.deltaY > 0 ? 1 / 1.2 : 1.2;
-
-        var prevScale = scale;
-        var animateZoom = setInterval(function() {
-            console.log(prevScale + " " + scale);
-            origin.x += (mouseX - toolsWidth) / scale - (mouseX - toolsWidth) / prevScale;
-            origin.y += mouseY / scale - mouseY / prevScale;
-            ctx.setTransform(scale, 0, 0, scale, origin.x * scale, origin.y * scale);
-            renderDots();
-            prevScale = scale;
-        }, 10);
-        setTimeout(function() {
-            clearInterval(animateZoom);
-        }, 200);
-
-        if (zoomAnimation != null) {
-            zoomAnimation.kill();
+        if (prevScrollDirection != Math.sign(e.deltaY)) {
+            targetScale = scale;
         }
-        var zoomAnimation = TweenMax.to(window, 0.2, {scale: targetScale});
+        prevScrollDirection = Math.sign(e.deltaY);
+        targetScale *= e.deltaY > 0 ? 1 / 1.2 : 1.2;
+        if (targetScale > MAX_ZOOM) {
+            targetScale = MAX_ZOOM;
+        } else if (targetScale < MIN_ZOOM) {
+            targetScale = MIN_ZOOM;
+        }
+        if (scrollEnabled) {
+            scrollEnabled = false;
+            setTimeout(function() {
+                scrollEnabled = true;
+            }, 100);
 
-        renderDots();
+            var prevScale = scale;
+            var animateZoom = function() {
+                origin.x += (mouseX - toolsWidth) / scale - (mouseX - toolsWidth) / prevScale;
+                origin.y += mouseY / scale - mouseY / prevScale;
+                ctx.setTransform(scale, 0, 0, scale, origin.x * scale, origin.y * scale);
+                renderDots();
+                prevScale = scale;
+            };
+
+            if (zoomAnimation != null) {
+                zoomAnimation.kill();
+            }
+            var zoomAnimation = TweenMax.to(window, 0.15, {scale: targetScale, onUpdate: animateZoom});
+
+            renderDots();
+        }
     });
 
     renderDots();
