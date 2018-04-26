@@ -1,4 +1,4 @@
-const SPACE_BETWEEN_DOTS = 40
+const SPACE_BETWEEN_DOTS = 40;
 const MAX_ZOOM           = 10;
 const MIN_ZOOM           = 0.9;
 var workspace   = null;
