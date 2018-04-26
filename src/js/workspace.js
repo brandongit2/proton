@@ -13,13 +13,13 @@ function createWorkspace() {
     workspace.width  = document.getElementById('content').offsetWidth - document.getElementById('tools').offsetWidth;
     workspace.height = document.getElementById('content').offsetHeight;
 
-    origin.x  = workspace.width / 2;
-    origin.y  = workspace.height / 2;
+    origin.x = workspace.width / 2;
+    origin.y = workspace.height / 2;
     ctx.translate(origin.x - 0.5, origin.y - 0.5);
 
-    var panLoop = null;
+    var panLoop        = null;
     var colorAnimation = null;
-    var toolsWidth = document.getElementById('tools').offsetWidth; // Used to correct mouse X position for workspace
+    var toolsWidth     = document.getElementById('tools').offsetWidth; // Used to correct mouse X position for workspace
     workspace.addEventListener("mousedown", function() {
         // Make dots darker when clicked
         if (colorAnimation != null) {
@@ -52,11 +52,15 @@ function createWorkspace() {
         }
     });
 
+    var animateZoom = null;
     workspace.addEventListener("wheel", function(e) {
         targetScale *= e.deltaY > 0 ? 1 / 1.2 : 1.2;
+        console.log("SCROLL");
 
         var prevScale = scale;
-        var animateZoom = setInterval(function() {
+
+        clearInterval(animateZoom);
+        animateZoom = setInterval(function() {
             console.log(prevScale + " " + scale);
             origin.x += (mouseX - toolsWidth) / scale - (mouseX - toolsWidth) / prevScale;
             origin.y += mouseY / scale - mouseY / prevScale;
