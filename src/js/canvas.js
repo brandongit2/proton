@@ -1,4 +1,4 @@
-/* global Util, console */
+/* global Util, console, TweenMax */
 
 /*
 NOTES:
@@ -27,28 +27,24 @@ class GraphProperties {
      * @param {Number} bottomPoint      The lowermost Y coordinate.
      * @param {Number} leftPoint        The leftmost X coordinate.
      * @param {Number} rightPoint       The rightmost X coordinate.
-     * @param {Number} width            The width of the graph in terms of pixels.
-     * @param {Number} height           The height of the graph in terms of pixels.
-     * @param {Object} settings         The settings that should be applied to the graph.
+     * @param {Object} graph            The graph that these properties apply to.
      */
-    constructor(topPoint, bottomPoint, leftPoint, rightPoint, width, height, settings) {
+    constructor(topPoint, bottomPoint, leftPoint, rightPoint, graph) {
         this.topPoint = topPoint;
         this.bottomPoint = bottomPoint;
         this.leftPoint = leftPoint;
         this.rightPoint = rightPoint;
-        this.width = width;
-        this.height = height;
-        this.settings = settings;
+        this.graph = graph;
     }
 
     /**
      * Resets the graph to show the origin (0, 0) at the centre.
      */
     reset() {
-        this.topPoint = this.height / 2 / this.settings.optimalPixelsBetweenIntervals;
-        this.bottomPoint = -this.height / 2 / this.settings.optimalPixelsBetweenIntervals;
-        this.leftPoint = -this.width / 2 / this.settings.optimalPixelsBetweenIntervals;
-        this.rightPoint = this.width / 2 / this.settings.optimalPixelsBetweenIntervals;
+        this.topPoint = this.graph.height / 2 / this.graph.settings.optimalPixelsBetweenIntervals;
+        this.bottomPoint = -this.graph.height / 2 / this.graph.settings.optimalPixelsBetweenIntervals;
+        this.leftPoint = -this.graph.width / 2 / this.graph.settings.optimalPixelsBetweenIntervals;
+        this.rightPoint = this.graph.width / 2 / this.graph.settings.optimalPixelsBetweenIntervals;
     }
 
     /**
@@ -65,8 +61,8 @@ class GraphProperties {
     calculateScale() {
 
         // determines the target scale for the current set of boundaries
-        this.scaleX = (this.rightPoint - this.leftPoint) / (this.width / this.settings.optimalPixelsBetweenIntervals);
-        this.scaleY = (this.topPoint - this.bottomPoint) / (this.height / this.settings.optimalPixelsBetweenIntervals);
+        this.scaleX = (this.rightPoint - this.leftPoint) / (this.graph.width / this.graph.settings.optimalPixelsBetweenIntervals);
+        this.scaleY = (this.topPoint - this.bottomPoint) / (this.graph.height / this.graph.settings.optimalPixelsBetweenIntervals);
 
         // determine the best multiple to use for the target scale
         var minIntervalX = 0;
@@ -77,7 +73,7 @@ class GraphProperties {
         var minIntervalYDifference = Number.MAX_VALUE;
         var mantissaY = Util.getMantissa(this.scaleY);
 
-        for (var interval in this.settings.optimalIntervals) {
+        for (var interval in this.graph.settings.optimalIntervals) {
             if (Math.abs(interval - mantissaX) <= minIntervalXDifference) {
                 minIntervalXDifference = Math.abs(interval - mantissaX);
                 minIntervalX = interval;
@@ -91,15 +87,15 @@ class GraphProperties {
         // determine that best scale to use with the best multiple determined earlier
         this.optimalScaleX = minIntervalX * Math.pow(10, Math.floor(Math.log10(this.scaleX)));
         this.intervalScaleX = Number.parseInt(minIntervalX);
-        this.minorBetweenMajorX = this.settings.optimalIntervals[minIntervalX];
+        this.minorBetweenMajorX = this.graph.settings.optimalIntervals[minIntervalX];
 
         this.optimalScaleY = minIntervalY * Math.pow(10, Math.floor(Math.log10(this.scaleY)));
         this.intervalScaleY = Number.parseInt(minIntervalY);
-        this.minorBetweenMajorY = this.settings.optimalIntervals[minIntervalY];
+        this.minorBetweenMajorY = this.graph.settings.optimalIntervals[minIntervalY];
 
         // determine the number of pixels between intervals based on the best scale determined earlier
-        this.pixelIntervalX = this.settings.optimalPixelsBetweenIntervals * (this.optimalScaleX / this.scaleX);
-        this.pixelIntervalY = this.settings.optimalPixelsBetweenIntervals * (this.optimalScaleY / this.scaleY);
+        this.pixelIntervalX = this.graph.settings.optimalPixelsBetweenIntervals * (this.optimalScaleX / this.scaleX);
+        this.pixelIntervalY = this.graph.settings.optimalPixelsBetweenIntervals * (this.optimalScaleY / this.scaleY);
     }
 
     /**
@@ -181,9 +177,7 @@ class Graph {
             -this.canvas.height / this.settings.optimalPixelsBetweenIntervals,
             -this.canvas.width / this.settings.optimalPixelsBetweenIntervals,
             this.canvas.width / this.settings.optimalPixelsBetweenIntervals, 
-            this.canvas.width, 
-            this.canvas.height,
-            this.settings
+            this
         );
 
         this.graphProperties.reset();
@@ -225,38 +219,6 @@ class Graph {
         });
 
         this.drawGraph();
-    }
-
-    /**
-     * Resizes the graph.
-     * 
-     * @param {Number} xTimes       Times to scale the X axis.
-     * @param {Number} yTimes       Times to scale the Y axis.
-     * @param {Number} centreX      The X position of the centre point of resizing.
-     * @param {Number} centreY      The Y position of the centre point of resizing.
-     */
-    resize(xTimes, yTimes, centreX, centreY) {
-
-        this.graphProperties.calculatePoints();
-        let mousePoint = this.getPointFromCoordinates(centreX, centreY);
-
-        let topPercent = centreY / this.height;
-        let leftPercent = centreX / this.width;
-
-        this.graphProperties.newLeftPoint = mousePoint.x - ((this.graphProperties.rightPoint - this.graphProperties.leftPoint) * leftPercent * xTimes);
-        this.graphProperties.newRightPoint = mousePoint.x + ((this.graphProperties.rightPoint - this.graphProperties.leftPoint) * (1 - leftPercent) * xTimes);
-        this.graphProperties.newTopPoint = mousePoint.y + ((this.graphProperties.topPoint - this.graphProperties.bottomPoint) * topPercent * yTimes);
-        this.graphProperties.newBottomPoint = mousePoint.y - ((this.graphProperties.topPoint - this.graphProperties.bottomPoint) * (1 - topPercent) * yTimes);
-
-        this.graphProperties.leftPoint = this.graphProperties.newLeftPoint;
-        this.graphProperties.rightPoint = this.graphProperties.newRightPoint;
-        this.graphProperties.topPoint = this.graphProperties.newTopPoint;
-        this.graphProperties.bottomPoint = this.graphProperties.newBottomPoint;
-
-        this.graphProperties.calculate();
-        this.drawGraph();
-
-        this.canvas.style.cursor = "default";
     }
 
     /**
@@ -407,27 +369,47 @@ class Graph {
     }
 
     /**
-     * Animates resizing the canvas. 
-     * [WORK IN PROGRESS]
+     * Resizes the graph.
      * 
-     * @param {Number} timestamp 
+     * @param {Number} xTimes       Times to scale the X axis.
+     * @param {Number} yTimes       Times to scale the Y axis.
+     * @param {Number} centreX      The X position of the centre point of resizing.
+     * @param {Number} centreY      The Y position of the centre point of resizing.
      */
-    animateResize(timestamp) {
+    resize(xTimes, yTimes, centreX, centreY) {
 
-        var elapsedTime = timestamp - resizeAnimationStart;
-        var elapsedPercentage = Math.min(elapsedTime / (RESIZE_ANIMATION_LENGTH * MILLISECONDS_IN_SECOND), 1);
+        let mousePoint = this.getPointFromCoordinates(centreX, centreY);
 
-        xScale = startResizeScale.x + (targetResizeScale.x - startResizeScale.x) * elapsedPercentage;
-        yScale = startResizeScale.y + (targetResizeScale.y - startResizeScale.y) * elapsedPercentage;
-        this.drawGraph();
+        let topPercent = centreY / this.height;
+        let leftPercent = centreX / this.width;
+        let pointWidth = this.graphProperties.rightPoint - this.graphProperties.leftPoint;
+        let pointHeight = this.graphProperties.topPoint - this.graphProperties.bottomPoint;
 
-        if (xScale == targetResizeScale.x && yScale == targetResizeScale.y) {
-            this.canvas.style.cursor = "default";
-        } else {
-            window.requestAnimationFrame(animateResize);
-        }
+        this.animationTargetProperties = new GraphProperties(
+            mousePoint.y + (pointHeight * topPercent * yTimes),
+            mousePoint.y - (pointHeight * (1 - topPercent) * yTimes), 
+            mousePoint.x - (pointWidth * leftPercent * xTimes), 
+            mousePoint.x + (pointWidth * (1 - leftPercent) * xTimes),
+            this
+        );
+
+        TweenMax.to(
+            this.graphProperties, 
+            this.settings.resizeAnimationLength, 
+            {
+                topPoint: this.animationTargetProperties.topPoint, 
+                bottomPoint: this.animationTargetProperties.bottomPoint, 
+                leftPoint: this.animationTargetProperties.leftPoint, 
+                rightPoint: this.animationTargetProperties.rightPoint, 
+                onUpdate: this.drawGraph, 
+                onUpdateScope: this,
+                onComplete: function() {
+                    this.canvas.style.cursor = "default";
+                },
+                onCompleteScope: this
+            }
+        );
     }
-
 }
 
 /**
@@ -472,5 +454,5 @@ function displayGraph() {
     var graphHeight = workspace.getBoundingClientRect().height;
     var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth;
     graph = new Graph(graphCanvas, DEFAULT_SETTINGS, graphWidth, graphHeight);
-    
+
 }
