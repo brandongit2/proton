@@ -148,7 +148,8 @@ class Graph {
      * @param {String} axis         The axis that the label will be displayed on ("horizontal", "vertical").
      */
     drawScaleNumbersWithBackground(text, x, y, axis) {
-        this.ctx2d.font = this.settings.axisNumbers.font;
+
+        // background
         this.ctx2d.fillStyle = this.settings.axisNumbers.background;
         if (axis == "horizontal") {
             this.ctx2d.textAlign = "center";
@@ -159,6 +160,9 @@ class Graph {
             this.ctx2d.textBaseline = "middle";
             this.ctx2d.fillRect(x - this.ctx2d.measureText(text).width - 1, y - (parseInt(this.ctx2d.font) / 2), this.ctx2d.measureText(text).width + 2, parseInt(this.ctx2d.font) + 2);
         }
+
+        // actual text
+        this.ctx2d.font = this.settings.axisNumbers.font;
         this.ctx2d.fillStyle = this.settings.axisNumbers.colour;
         this.ctx2d.fillText(text, x, y);
     }
@@ -380,11 +384,16 @@ class Graph {
 
         let mousePoint = this.getPointFromCoordinates(centreX, centreY);
 
+        // percent of the height covered above the mouse
         let topPercent = centreY / this.height;
+        // percent of the width covered left of the mosue
         let leftPercent = centreX / this.width;
+        // width of the graph in terms of coordinates
         let pointWidth = this.graphProperties.rightPoint - this.graphProperties.leftPoint;
+        // height of the graph in terms of coordiantes
         let pointHeight = this.graphProperties.topPoint - this.graphProperties.bottomPoint;
 
+        // determine target boundaries of graph after the zoom
         this.animationTargetProperties = new GraphProperties(
             mousePoint.y + (pointHeight * topPercent * yTimes),
             mousePoint.y - (pointHeight * (1 - topPercent) * yTimes), 
@@ -393,6 +402,7 @@ class Graph {
             this
         );
 
+        // animate the zoom
         TweenMax.to(
             this.graphProperties, 
             this.settings.resizeAnimationLength, 
@@ -414,6 +424,23 @@ class Graph {
 
 /**
  * Default settings for graph.
+ * @property {String} backgroundColour                  Background colour of the graph.
+ * @property {Number} xScale                            Scale for for the coordinates on the X axis.
+ * @property {Number} yScale                            Scale for for the coordinates on the Y axis.
+ * @property {String} gridlineColour                    Colour of the gridlines.
+ * @property {Number} minorGridlineWidth                Line width of minor gridlines.
+ * @property {Number} majorGridlineWidth                Line width of major gridlines.
+ * @property {Number} axisGridlineWdith                 Line width of axis gridlines.
+ * @property {Number} scrollMultiplier                  Number of times to zoom in/out on each scroll.
+ * @property {Number} optimalPixelsBetweenIntervals     Preferred number of pixels between each minor interval.
+ * @property {Object} optimalIntervals                  A list of preferred interval multiples in the format of {multiple: number of minor gridlines between major gridlines}
+ * @property {Number} resizeAnimationLength             Number of seconds for the resize animation.
+ * @property {Object} axisNumbers                       Settings for the axis numbers.
+ * @property {String} axisNumbers.font                  Font of the axis numbers.
+ * @property {String} axisNumbers.background            Background colour of the axis numbers.
+ * @property {String} axisNumbers.colour                Font colour of the axis numbers.
+ * @property {String} axisNumbers.maxPlaces             Maximum number of places for a scale number before displaying in scientific notation.
+ * @property {String} axisNumbers.percision             Number of places to display in scientific notation.
  */
 const DEFAULT_SETTINGS = {
     backgroundColour: "#F0F0F0", // grey
