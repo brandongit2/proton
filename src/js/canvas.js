@@ -1,4 +1,4 @@
-/* global Util, console, TweenMax */
+/* global Util, console, TweenMax, performance */
 
 /*
 NOTES:
@@ -200,7 +200,7 @@ class Graph {
 
         // for debugging
         this.canvas.addEventListener("click", function (click) {
-            console.log("Clicked on: ", graph.getPointFromCoordinates(click.offsetX, click.offsetY));
+            //console.log("Clicked on: ", graph.getPointFromCoordinates(click.offsetX, click.offsetY));
         });
 
         // handle panning
@@ -208,18 +208,21 @@ class Graph {
             graph.canvas.style.cursor = "move";
             var lastX = mousedown.x;
             var lastY = mousedown.y;
+            graph.panGraph(0, 0, true);
             var mousemoveListener = function (mousemove) {
-                graph.panGraph(lastX - mousemove.x, mousemove.y - lastY);
+                graph.panGraph(lastX - mousemove.x, mousemove.y - lastY, false);
                 lastX = mousemove.x;
                 lastY = mousemove.y;
             };
-            var mouseupListener = function mouseupListener(event) {
+            var mouseupListener = function mouseupListener(mouseup) {
+                graph.stopPanGraph();
                 mousedown.target.style.cursor = "default";
                 graph.canvas.removeEventListener("mousemove", mousemoveListener);
                 graph.canvas.removeEventListener("mouseup", mouseupListener);
             };
             graph.canvas.addEventListener("mousemove", mousemoveListener);
             graph.canvas.addEventListener("mouseup", mouseupListener);
+            graph.canvas.addEventListener('mouseleave', mouseupListener);
         });
 
         this.drawGraph();
@@ -315,9 +318,9 @@ class Graph {
         this.ctx2d.lineTo(this.canvas.width, Math.round(this.graphProperties.originPos.y) - 0.5);
         this.ctx2d.stroke();
 
-        let xAxisVisible = this.graphProperties.topPoint * this.graphProperties.pixelIntervalY > 30 && this.graphProperties.bottomPoint * this.graphProperties.pixelIntervalY < -30;
+        let xAxisVisible = (this.graphProperties.topPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY > 30 && (this.graphProperties.bottomPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY < -30;
 
-        let yAxisVisible = this.graphProperties.leftPoint * this.graphProperties.pixelIntervalX < -40 && this.graphProperties.rightPoint * this.graphProperties.pixelIntervalX > 0;
+        let yAxisVisible = (this.graphProperties.leftPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalX < -40 && (this.graphProperties.rightPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalX > 0;
 
         // draw horizontal scale numbers
         let leftMostMajorLine = Math.floor((Math.floor(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX) / (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX)) * (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX);
@@ -351,7 +354,18 @@ class Graph {
      * @param {Number} xMovePix     Number of pixels to move right (negative to move left).
      * @param {Number} yMovePix     Number of pixels to move down (negative to move up).
      */
-    panGraph(xMovePix, yMovePix) {
+    panGraph(xMovePix, yMovePix, start) {
+
+        let now = performance.now();
+
+        if (!start) {
+            let timeElapsed = now - this.lastPanTime;
+            this.panVelocity = new Point();
+            this.panVelocity.x = xMovePix / timeElapsed;
+            this.panVelocity.y = yMovePix / timeElapsed;
+        }
+
+        this.lastPanTime = now;
 
         let xMove = xMovePix / this.graphProperties.pixelIntervalX;
         let yMove = yMovePix / this.graphProperties.pixelIntervalY;
@@ -362,6 +376,30 @@ class Graph {
         this.graphProperties.bottomPoint += yMove * this.graphProperties.scaleY;
 
         this.drawGraph();
+    }
+
+    /**
+     * Called when panning of the graph is stopped and pan inertia should take over.
+     */
+    stopPanGraph() {
+        TweenMax.to(
+            graph.panVelocity, 
+            4, 
+            {
+                x: 0, 
+                y: 0,
+                onUpdate: this.continuePanInertia,
+                onUpdateScope: this,
+                ease: Power2.easeOut,
+                repeatDelay: 0.01
+            });
+    }
+
+    /**
+     * Continue pan movement using inertia.
+     */
+    continuePanInertia() {
+        graph.panGraph(this.panVelocity.x, this.panVelocity.y, true);
     }
 
     /**
