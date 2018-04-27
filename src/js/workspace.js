@@ -1,6 +1,7 @@
 const SPACE_BETWEEN_DOTS = 40;
 const MAX_ZOOM           = 10;
 const MIN_ZOOM           = 0.9;
+const SCALE_FACTOR       = 1.2;
 var workspace   = null;
 var origin      = {x: 0, y: 0};
 var scale       = 1;
@@ -31,7 +32,7 @@ function createWorkspace() {
         panLoop = setInterval(function() {
             origin.x += deltaX / scale;
             origin.y += deltaY / scale;
-            ctx.setTransform(scale, 0, 0, scale, origin.x * scale, origin.y * scale);
+            ctx.setTransform(scale, 0, 0, scale, origin.x * scale + 0.5, origin.y * scale + 0.5);
             renderDots();
         }, 10);
     });
@@ -60,7 +61,8 @@ function createWorkspace() {
             targetScale = scale;
         }
         prevScrollDirection = Math.sign(e.deltaY);
-        targetScale *= e.deltaY > 0 ? 1 / 1.2 : 1.2;
+        targetScale *= e.deltaY > 0 ? 1 / SCALE_FACTOR : SCALE_FACTOR; // Determine which way to zoom
+        // Enforce zoom limits
         if (targetScale > MAX_ZOOM) {
             targetScale = MAX_ZOOM;
         } else if (targetScale < MIN_ZOOM) {
@@ -76,7 +78,7 @@ function createWorkspace() {
             var animateZoom = function() {
                 origin.x += (mouseX - toolsWidth) / scale - (mouseX - toolsWidth) / prevScale;
                 origin.y += mouseY / scale - mouseY / prevScale;
-                ctx.setTransform(scale, 0, 0, scale, origin.x * scale, origin.y * scale);
+                ctx.setTransform(scale, 0, 0, scale, origin.x * scale + 0.5, origin.y * scale + 0.5);
                 renderDots();
                 prevScale = scale;
             };
