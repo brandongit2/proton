@@ -65,13 +65,13 @@ class GraphProperties {
         this.scaleY = (this.topPoint - this.bottomPoint) / (this.graph.height / this.graph.settings.optimalPixelsBetweenIntervals);
 
         // determine the best multiple to use for the target scale
-        var minIntervalX = 0;
-        var minIntervalXDifference = Number.MAX_VALUE;
-        var mantissaX = Util.getMantissa(this.scaleX);
+        let minIntervalX = 0;
+        let minIntervalXDifference = Number.MAX_VALUE;
+        let mantissaX = Util.getMantissa(this.scaleX);
 
-        var minIntervalY = 0;
-        var minIntervalYDifference = Number.MAX_VALUE;
-        var mantissaY = Util.getMantissa(this.scaleY);
+        let minIntervalY = 0;
+        let minIntervalYDifference = Number.MAX_VALUE;
+        let mantissaY = Util.getMantissa(this.scaleY);
 
         for (var interval in this.graph.settings.optimalIntervals) {
             if (Math.abs(interval - mantissaX) <= minIntervalXDifference) {
@@ -180,7 +180,7 @@ class Graph {
             this.canvas.height / this.settings.optimalPixelsBetweenIntervals,
             -this.canvas.height / this.settings.optimalPixelsBetweenIntervals,
             -this.canvas.width / this.settings.optimalPixelsBetweenIntervals,
-            this.canvas.width / this.settings.optimalPixelsBetweenIntervals, 
+            this.canvas.width / this.settings.optimalPixelsBetweenIntervals,
             this
         );
 
@@ -252,8 +252,9 @@ class Graph {
 
         // draw vertical lines
 
-        let leftMostLinePos = this.graphProperties.originPos.x + Util.awayFromZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX;
-        let rightMostLinePos = this.graphProperties.originPos.x + Util.awayFromZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX;
+        let leftMostLinePos = this.graphProperties.originPos.x + (Util.awayFromZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
+
+        let rightMostLinePos = this.graphProperties.originPos.x + (Util.awayFromZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
 
         let majorIntervalXCount = (Math.floor((this.graphProperties.originPos.x - leftMostLinePos) / this.graphProperties.pixelIntervalX) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
 
@@ -314,11 +315,9 @@ class Graph {
         this.ctx2d.lineTo(this.canvas.width, Math.round(this.graphProperties.originPos.y) - 0.5);
         this.ctx2d.stroke();
 
-        let xAxisVisible = this.graphProperties.topPoint * this.graphProperties.pixelIntervalY > 30 && this.graphProperties.bottomPoint  * this.graphProperties.pixelIntervalY < -30;
+        let xAxisVisible = this.graphProperties.topPoint * this.graphProperties.pixelIntervalY > 30 && this.graphProperties.bottomPoint * this.graphProperties.pixelIntervalY < -30;
 
-        let yAxisVisible = this.graphProperties.leftPoint * this.graphProperties.pixelIntervalX < -40 && this.graphProperties.rightPoint  * this.graphProperties.pixelIntervalX > 0;
-
-        console.log(xAxisVisible, yAxisVisible);
+        let yAxisVisible = this.graphProperties.leftPoint * this.graphProperties.pixelIntervalX < -40 && this.graphProperties.rightPoint * this.graphProperties.pixelIntervalX > 0;
 
         // draw horizontal scale numbers
         let leftMostMajorLine = Math.floor((Math.floor(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX) / (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX)) * (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX);
@@ -337,8 +336,11 @@ class Graph {
         let labelXPos = yAxisVisible ? this.graphProperties.originPos.x - 5 : this.width - 5;
 
         for (let y = topMostMajorLine; y > this.graphProperties.bottomPoint; y -= this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY) {
-            if (Math.abs(y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY)) > 1) {
-                this.drawScaleNumbersWithBackground(this.getScaleNumber(y), labelXPos, this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY), "vertical");
+            // prevent overlapping scale labels if both scales are shown on the top and right edge
+            if (yAxisVisible || this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY) > 30) {
+                if (Math.abs(y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY)) > 1) {
+                    this.drawScaleNumbersWithBackground(this.getScaleNumber(y), labelXPos, this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY), "vertical");
+                }
             }
         }
     }
@@ -407,24 +409,24 @@ class Graph {
         // determine target boundaries of graph after the zoom
         this.animationTargetProperties = new GraphProperties(
             mousePoint.y + (pointHeight * topPercent * yTimes),
-            mousePoint.y - (pointHeight * (1 - topPercent) * yTimes), 
-            mousePoint.x - (pointWidth * leftPercent * xTimes), 
+            mousePoint.y - (pointHeight * (1 - topPercent) * yTimes),
+            mousePoint.x - (pointWidth * leftPercent * xTimes),
             mousePoint.x + (pointWidth * (1 - leftPercent) * xTimes),
             this
         );
 
         // animate the zoom
         TweenMax.to(
-            this.graphProperties, 
-            this.settings.resizeAnimationLength, 
+            this.graphProperties,
+            this.settings.resizeAnimationLength,
             {
-                topPoint: this.animationTargetProperties.topPoint, 
-                bottomPoint: this.animationTargetProperties.bottomPoint, 
-                leftPoint: this.animationTargetProperties.leftPoint, 
-                rightPoint: this.animationTargetProperties.rightPoint, 
-                onUpdate: this.drawGraph, 
+                topPoint: this.animationTargetProperties.topPoint,
+                bottomPoint: this.animationTargetProperties.bottomPoint,
+                leftPoint: this.animationTargetProperties.leftPoint,
+                rightPoint: this.animationTargetProperties.rightPoint,
+                onUpdate: this.drawGraph,
                 onUpdateScope: this,
-                onComplete: function() {
+                onComplete: function () {
                     this.canvas.style.cursor = "default";
                 },
                 onCompleteScope: this
@@ -466,7 +468,8 @@ const DEFAULT_SETTINGS = {
     optimalIntervals: {
         1: 5,
         2: 4,
-        5: 5
+        5: 5,
+        10: 5
     },
     resizeAnimationLength: 0.3,
     axisNumbers: {
