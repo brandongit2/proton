@@ -255,9 +255,11 @@ class Graph {
 
         // draw vertical lines
 
-        let leftMostLinePos = this.graphProperties.originPos.x + (Util.awayFromZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
+        let leftMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
 
-        let rightMostLinePos = this.graphProperties.originPos.x + (Util.awayFromZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
+        let rightMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
+
+        console.log(leftMostLinePos, rightMostLinePos);
 
         let majorIntervalXCount = (Math.floor((this.graphProperties.originPos.x - leftMostLinePos) / this.graphProperties.pixelIntervalX) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
 
@@ -278,8 +280,8 @@ class Graph {
 
         // draw horizontal lines
 
-        let topMostLinePos = this.graphProperties.originPos.y - Math.ceil(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY;
-        let bottomMostLinePos = this.graphProperties.originPos.y - Math.ceil(this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY;
+        let topMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
+        let bottomMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
 
         let majorIntervalYCount = (Math.floor((this.graphProperties.originPos.y - topMostLinePos) / this.graphProperties.pixelIntervalY) % this.graphProperties.minorBetweenMajorY + this.graphProperties.minorBetweenMajorY) % this.graphProperties.minorBetweenMajorY;
 
@@ -404,8 +406,6 @@ class Graph {
         if (Math.sign(graph.panVelocity.y) != Math.sign(decreaseY)) {
             graph.panVelocity.y = 0;
         }
-
-        console.log(graph.panVelocity);
 
         if (graph.panVelocity.x != 0 || graph.panVelocity.y != 0) {
             graph.panGraph(graph.panVelocity.x, graph.panVelocity.y, true);
