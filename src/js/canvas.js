@@ -257,7 +257,7 @@ class Graph {
 
         let majorIntervalXCount = (Math.floor((this.graphProperties.originPos.x - leftMostLinePos) / this.graphProperties.pixelIntervalX) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
 
-        for (let x = leftMostLinePos; x < rightMostLinePos; x += this.graphProperties.pixelIntervalX) {
+        for (let x = leftMostLinePos; x <= rightMostLinePos; x += this.graphProperties.pixelIntervalX) {
             var lineX = Math.round(x) - 0.5;
             if (majorIntervalXCount == 0) {
                 this.ctx2d.lineWidth = this.settings.majorGridlineWidth;
@@ -279,7 +279,7 @@ class Graph {
 
         let majorIntervalYCount = (Math.floor((this.graphProperties.originPos.y - topMostLinePos) / this.graphProperties.pixelIntervalY) % this.graphProperties.minorBetweenMajorY + this.graphProperties.minorBetweenMajorY) % this.graphProperties.minorBetweenMajorY;
 
-        for (let y = topMostLinePos; y < bottomMostLinePos; y += this.graphProperties.pixelIntervalY) {
+        for (let y = topMostLinePos; y <= bottomMostLinePos; y += this.graphProperties.pixelIntervalY) {
             var lineY = Math.round(y) - 0.5;
             if (majorIntervalYCount == 0) {
                 this.ctx2d.lineWidth = this.settings.majorGridlineWidth;
@@ -314,20 +314,31 @@ class Graph {
         this.ctx2d.lineTo(this.canvas.width, Math.round(this.graphProperties.originPos.y) - 0.5);
         this.ctx2d.stroke();
 
+        let xAxisVisible = this.graphProperties.topPoint * this.graphProperties.pixelIntervalY > 30 && this.graphProperties.bottomPoint  * this.graphProperties.pixelIntervalY < -30;
+
+        let yAxisVisible = this.graphProperties.leftPoint * this.graphProperties.pixelIntervalX < -40 && this.graphProperties.rightPoint  * this.graphProperties.pixelIntervalX > 0;
+
+        console.log(xAxisVisible, yAxisVisible);
+
         // draw horizontal scale numbers
         let leftMostMajorLine = Math.floor((Math.floor(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX) / (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX)) * (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX);
 
+        let labelYPos = xAxisVisible ? this.graphProperties.originPos.y + 5 : 5;
+
         for (let x = leftMostMajorLine; x < this.graphProperties.rightPoint; x += this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX) {
             if (Math.abs(x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX)) > 1) {
-                this.drawScaleNumbersWithBackground(this.getScaleNumber(x), this.graphProperties.originPos.x + x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX), this.graphProperties.originPos.y + 5, "horizontal");
+                this.drawScaleNumbersWithBackground(this.getScaleNumber(x), this.graphProperties.originPos.x + x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX), labelYPos, "horizontal");
             }
         }
 
         // draw vertical scale gridlines
         let topMostMajorLine = Math.floor((Math.floor(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.optimalScaleY) / (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY)) * (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY);
+
+        let labelXPos = yAxisVisible ? this.graphProperties.originPos.x - 5 : this.width - 5;
+
         for (let y = topMostMajorLine; y > this.graphProperties.bottomPoint; y -= this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY) {
             if (Math.abs(y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY)) > 1) {
-                this.drawScaleNumbersWithBackground(this.getScaleNumber(y), this.graphProperties.originPos.x - 5, this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY), "vertical");
+                this.drawScaleNumbersWithBackground(this.getScaleNumber(y), labelXPos, this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY), "vertical");
             }
         }
     }
