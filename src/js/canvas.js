@@ -390,7 +390,6 @@ class Graph {
                 y: 0,
                 onUpdate: this.continuePanInertia,
                 onUpdateScope: this,
-                ease: Power2.easeOut,
                 repeatDelay: 0.01
             });
     }
@@ -410,7 +409,7 @@ class Graph {
     getScaleNumber(num) {
         if (Util.isIntegerPosition(num)) {
             if (Math.log10(Math.abs(num)) > this.settings.axisNumbers.maxPlaces) {
-                return num.toExponential(this.settings.axisNumbers.font.percision);
+                return num.toExponential(this.settings.axisNumbers.percision);
             } else {
                 return Math.round(num);
             }
