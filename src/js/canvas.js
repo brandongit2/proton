@@ -382,23 +382,35 @@ class Graph {
      * Called when panning of the graph is stopped and pan inertia should take over.
      */
     stopPanGraph() {
-        TweenMax.to(
-            graph.panVelocity, 
-            4, 
-            {
-                x: 0, 
-                y: 0,
-                onUpdate: this.continuePanInertia,
-                onUpdateScope: this,
-                repeatDelay: 0.01
-            });
+       this.continuePanInertia();
     }
 
     /**
      * Continue pan movement using inertia.
      */
     continuePanInertia() {
-        graph.panGraph(this.panVelocity.x, this.panVelocity.y, true);
+
+        let decreaseX = Math.sign(graph.panVelocity.x) * graph.settings.panInertia.frictionValue;
+        let decreaseY = Math.sign(graph.panVelocity.y) * graph.settings.panInertia.frictionValue;
+
+        graph.panVelocity.x -= decreaseX;
+        // ensure that the X velocity will not go further than 0
+        if (Math.sign(graph.panVelocity.x) != Math.sign(decreaseX)) {
+            graph.panVelocity.x = 0;
+        }
+
+        graph.panVelocity.y -= decreaseY;
+        // ensure that the Y velocity will not go further than 0
+        if (Math.sign(graph.panVelocity.y) != Math.sign(decreaseY)) {
+            graph.panVelocity.y = 0;
+        }
+
+        console.log(graph.panVelocity);
+
+        if (graph.panVelocity.x != 0 || graph.panVelocity.y != 0) {
+            graph.panGraph(graph.panVelocity.x, graph.panVelocity.y, true);
+            setTimeout(graph.continuePanInertia, 10);
+        }
     }
 
     /**
@@ -489,8 +501,11 @@ class Graph {
  * @property {String} axisNumbers.font                  Font of the axis numbers.
  * @property {String} axisNumbers.background            Background colour of the axis numbers.
  * @property {String} axisNumbers.colour                Font colour of the axis numbers.
- * @property {String} axisNumbers.maxPlaces             Maximum number of places for a scale number before displaying in scientific notation.
- * @property {String} axisNumbers.percision             Number of places to display in scientific notation.
+ * @property {Number} axisNumbers.maxPlaces             Maximum number of places for a scale number before displaying in scientific notation.
+ * @property {Number} axisNumbers.percision             Number of places to display in scientific notation.
+ * @property {Object} panInertia                        Settings for pan inertia.
+ * @property {Number} panInertia.frictionValue          Value to decrease the pan velocity by over time.
+ * @property {Number} panInertia.stopPanValue           Value to stop pan inertia when reached.
  */
 const DEFAULT_SETTINGS = {
     backgroundColour: "#F0F0F0", // grey
@@ -515,6 +530,10 @@ const DEFAULT_SETTINGS = {
         colour: "#000000", // black
         maxPlaces: 4,
         percision: 3
+    },
+    panInertia: {
+        frictionValue: 0.01,
+        stopPanValue: 0.000001
     }
 };
 
