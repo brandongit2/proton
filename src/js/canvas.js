@@ -384,44 +384,25 @@ class Graph {
      * Called when panning of the graph is stopped and pan inertia should take over.
      */
     stopPanGraph() {
-        // split up friction into X and Y components
 
-        if (this.panVelocity.y == 0) {
-
-            this.frictionValueX = -1 * Math.sign(this.panVelocity.x) * this.settings.panInertia.frictionValue;
-            this.frictionValueY = 0;
-
-        } else {
-
-            let xyRatio = this.panVelocity.x / this.panVelocity.y;
-
-            this.frictionValueY = -1 * Math.sign(this.panVelocity.y) * Math.sqrt(Math.pow(this.settings.panInertia.frictionValue, 2) / (Math.pow(xyRatio, 2) + 1));
-            this.frictionValueX = -1 * Math.sign(this.panVelocity.x) * Math.sqrt((Math.pow(this.settings.panInertia.frictionValue, 2) * Math.pow(xyRatio, 2)) / (Math.pow(xyRatio, 2) + 1));
-
-        }
-        clearInterval(this.panInteriaInterval);
-        this.panInteriaInterval = setInterval(this.continuePanInertia, this.settings.panInertia.updateInterval * 1000);
+        TweenMax.to(
+            this.panVelocity,
+            this.settings.panAnimationLength,
+            {
+                x: 0,
+                y: 0,
+                ease: Expo.easeOut,
+                onUpdate: this.continuePanGraph,
+                onUpdateScope: this,
+            }
+        );
     }
 
-    /**
-     * Continue pan movement using inertia.
-     */
-    continuePanInertia() {
-
-        let curXAcceleration = graph.frictionValueX * graph.settings.panInertia.updateInterval;
-        let curYAcceleration = graph.frictionValueY * graph.settings.panInertia.updateInterval;
-
-        // ensure that the X velocity will not go further than 0
-        graph.panVelocity.x += Math.abs(curXAcceleration) > Math.abs(graph.panVelocity.x) ? -graph.panVelocity.x : curXAcceleration;
-
-        // ensure that the Y velocity will not go further than 0
-        graph.panVelocity.y += Math.abs(curYAcceleration) > Math.abs(graph.panVelocity.y) ? -graph.panVelocity.y : curYAcceleration;
-
-        if (graph.panVelocity.x != 0 && graph.panVelocity.y != 0) {
-            graph.panGraph(graph.panVelocity.x * graph.settings.panInertia.updateInterval, graph.panVelocity.y * graph.settings.panInertia.updateInterval, true);
-        } else {
-            clearInterval(graph.panInteriaInterval);
-        }
+    continuePanGraph() {
+        let now = performance.now();
+        let timeElapsed = now - this.lastPanTime;
+        this.lastPanTime = now;
+        this.panGraph(this.panVelocity.x * (timeElapsed / 1000), this.panVelocity.y * (timeElapsed / 1000), true);
     }
 
     /**
@@ -544,11 +525,7 @@ const DEFAULT_SETTINGS = {
         maxPlaces: 4,
         percision: 3
     },
-    panInertia: {
-        frictionValue: 7000,
-        stopPanValue: 100,
-        updateInterval: 0.01
-    }
+    panAnimationLength: 1
 };
 
 const BLACK = "#000000";
