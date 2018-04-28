@@ -360,23 +360,31 @@ class Graph {
         let now = performance.now();
 
         if (!start) {
-            clearInterval(this.panInteriaInterval);
+            // stop pan inertia if any already exists
+            if (this.panInertiaAnimation != undefined) {
+                this.panInertiaAnimation.kill();
+            }
+            // get the velocity that the mouse moved at
             let timeElapsed = now - this.lastPanTime;
             this.panVelocity = new Point();
             this.panVelocity.x = xMovePix / (timeElapsed / 1000);
             this.panVelocity.y = yMovePix / (timeElapsed / 1000);
         }
 
+        // update the last time that the mouse velocity was updated
         this.lastPanTime = now;
-
+        
+        // calculate how much to pan the graph
         let xMove = xMovePix / this.graphProperties.pixelIntervalX;
         let yMove = yMovePix / this.graphProperties.pixelIntervalY;
 
+        // update the boundaries of the graph after the pan
         this.graphProperties.leftPoint += xMove * this.graphProperties.scaleX;
         this.graphProperties.rightPoint += xMove * this.graphProperties.scaleX;
         this.graphProperties.topPoint += yMove * this.graphProperties.scaleY;
         this.graphProperties.bottomPoint += yMove * this.graphProperties.scaleY;
 
+        // draw the graph after the pan
         this.drawGraph();
     }
 
@@ -385,7 +393,7 @@ class Graph {
      */
     stopPanGraph() {
 
-        TweenMax.to(
+        this.panInertiaAnimation = TweenMax.to(
             this.panVelocity,
             this.settings.panAnimationLength,
             {
@@ -398,6 +406,9 @@ class Graph {
         );
     }
 
+    /**
+     * Called each time pan inertia will cause the graph to be panned.
+     */
     continuePanGraph() {
         let now = performance.now();
         let timeElapsed = now - this.lastPanTime;
