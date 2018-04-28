@@ -417,8 +417,6 @@ class Graph {
         // ensure that the Y velocity will not go further than 0
         graph.panVelocity.y += Math.abs(curYAcceleration) > Math.abs(graph.panVelocity.y) ? -graph.panVelocity.y : curYAcceleration;
 
-        console.log(graph.panVelocity);
-
         if (graph.panVelocity.x != 0 && graph.panVelocity.y != 0) {
             graph.panGraph(graph.panVelocity.x * graph.settings.panInertia.updateInterval, graph.panVelocity.y * graph.settings.panInertia.updateInterval, true);
         } else {
@@ -547,7 +545,7 @@ const DEFAULT_SETTINGS = {
         percision: 3
     },
     panInertia: {
-        frictionValue: 10000,
+        frictionValue: 7000,
         stopPanValue: 100,
         updateInterval: 0.01
     }
