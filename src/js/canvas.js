@@ -146,19 +146,31 @@ class Graph {
      * @param {Number} x            The X coordinate of the number label.
      * @param {Number} y            The Y coordiante of the number label.
      * @param {String} axis         The axis that the label will be displayed on ("horizontal", "vertical").
+     * @param {String} alignment    The alignment of the label relative to the point specified ("top", "bottom", "left", "right").
      */
-    drawScaleNumbersWithBackground(text, x, y, axis) {
+    drawScaleNumbersWithBackground(text, x, y, axis, alignment) {
 
         // background
         this.ctx2d.fillStyle = this.settings.axisNumbers.background;
+
         if (axis == "horizontal") {
+             // horizontal axis
             this.ctx2d.textAlign = "center";
-            this.ctx2d.textBaseline = "top";
-            this.ctx2d.fillRect(x - (this.ctx2d.measureText(text).width / 2), y, this.ctx2d.measureText(text).width + 2, parseInt(this.ctx2d.font) + 2);
+            this.ctx2d.textBaseline = alignment;
+            if (alignment == "top") {
+                this.ctx2d.fillRect(x - (this.ctx2d.measureText(text).width / 2), y, this.ctx2d.measureText(text).width + 2, parseInt(this.ctx2d.font) + 2);
+            } else if (alignment == "bottom") {
+                this.ctx2d.fillRect(x - (this.ctx2d.measureText(text).width / 2), y - parseInt(this.ctx2d.font) - 2, this.ctx2d.measureText(text).width + 2, parseInt(this.ctx2d.font) + 2);
+            }
         } else {
-            this.ctx2d.textAlign = "right";
+            // vertical axis
+            this.ctx2d.textAlign = alignment;
             this.ctx2d.textBaseline = "middle";
-            this.ctx2d.fillRect(x - this.ctx2d.measureText(text).width - 1, y - (parseInt(this.ctx2d.font) / 2), this.ctx2d.measureText(text).width + 2, parseInt(this.ctx2d.font) + 2);
+            if (alignment == "right") {
+                this.ctx2d.fillRect(x - this.ctx2d.measureText(text).width - 2, y - (parseInt(this.ctx2d.font) / 2), this.ctx2d.measureText(text).width + 4, parseInt(this.ctx2d.font) + 2);
+            } else if (alignment == "left") {
+                this.ctx2d.fillRect(x - 2, y - (parseInt(this.ctx2d.font) / 2), this.ctx2d.measureText(text).width + 4, parseInt(this.ctx2d.font) + 2);
+            }
         }
 
         // actual text
@@ -260,7 +272,7 @@ class Graph {
 
         let rightMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
 
-        let majorIntervalXCount = (Math.floor((this.graphProperties.originPos.x - leftMostLinePos) / this.graphProperties.pixelIntervalX) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
+        let majorIntervalXCount = (Util.awayFromZero((this.graphProperties.originPos.x - leftMostLinePos) / this.graphProperties.pixelIntervalX) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
 
         for (let x = leftMostLinePos; x <= rightMostLinePos; x += this.graphProperties.pixelIntervalX) {
             var lineX = Math.round(x) - 0.5;
@@ -282,7 +294,7 @@ class Graph {
         let topMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
         let bottomMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
 
-        let majorIntervalYCount = (Math.floor((this.graphProperties.originPos.y - topMostLinePos) / this.graphProperties.pixelIntervalY) % this.graphProperties.minorBetweenMajorY + this.graphProperties.minorBetweenMajorY) % this.graphProperties.minorBetweenMajorY;
+        let majorIntervalYCount = (Util.awayFromZero((this.graphProperties.originPos.y - topMostLinePos) / this.graphProperties.pixelIntervalY) % this.graphProperties.minorBetweenMajorY + this.graphProperties.minorBetweenMajorY) % this.graphProperties.minorBetweenMajorY;
 
         for (let y = topMostLinePos; y <= bottomMostLinePos; y += this.graphProperties.pixelIntervalY) {
             var lineY = Math.round(y) - 0.5;
@@ -319,31 +331,71 @@ class Graph {
         this.ctx2d.lineTo(this.canvas.width, Math.round(this.graphProperties.originPos.y) - 0.5);
         this.ctx2d.stroke();
 
-        let xAxisVisible = (this.graphProperties.topPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY > 30 && (this.graphProperties.bottomPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY < -30;
+        // draw horizontal scale gridlines
 
-        let yAxisVisible = (this.graphProperties.leftPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalX < -40 && (this.graphProperties.rightPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalX > 0;
+        let xAxisVisible;
+        let labelYPos;
+        let labelYAlign;
 
-        // draw horizontal scale numbers
+        if ((this.graphProperties.topPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY < 0) {
+            // x axis off the screen on the top side
+            xAxisVisible = false;
+            labelYPos = 5;
+            labelYAlign = "top";
+        } else if ((this.graphProperties.bottomPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY > 0) {
+            // x axis off the screen on the bottom side
+            xAxisVisible = false;
+            labelYPos = this.height - 5;
+            labelYAlign = "bottom";
+        } else {
+            // x axis on the screen
+            xAxisVisible = true;
+            labelYPos = this.graphProperties.originPos.y + 5;
+            labelYAlign = "top";
+        }
+
         let leftMostMajorLine = Math.floor((Math.floor(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX) / (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX)) * (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX);
 
-        let labelYPos = xAxisVisible ? this.graphProperties.originPos.y + 5 : 5;
+        // determine the Y position of the horizontal labels
 
         for (let x = leftMostMajorLine; x < this.graphProperties.rightPoint; x += this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX) {
             if (Math.abs(x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX)) > 1) {
-                this.drawScaleNumbersWithBackground(this.getScaleNumber(x), this.graphProperties.originPos.x + x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX), labelYPos, "horizontal");
+                this.drawScaleNumbersWithBackground(this.getScaleNumber(x), this.graphProperties.originPos.x + x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX), labelYPos, "horizontal", labelYAlign);
             }
         }
 
         // draw vertical scale gridlines
+
+        let yAxisVisible;
+        let labelXPos;
+        let labelXAlign;
+
+        if ((this.graphProperties.leftPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalX > 0) {
+            // y axis off the screen on the left side
+            yAxisVisible = false;
+            labelXPos = 5;
+            labelXAlign = "left";
+        } else if ((this.graphProperties.rightPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalX < 0) {
+            // y axis off the screen on the right side
+            yAxisVisible = false;
+            labelXPos = this.width - 5;
+            labelXAlign = "right";
+        } else {
+            // y axis on the screen
+            yAxisVisible = true;
+            labelXPos = this.graphProperties.originPos.x - 5;
+            labelXAlign = "right";
+        }
+
         let topMostMajorLine = Math.floor((Math.floor(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.optimalScaleY) / (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY)) * (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY);
 
-        let labelXPos = yAxisVisible ? this.graphProperties.originPos.x - 5 : this.width - 5;
 
         for (let y = topMostMajorLine; y > this.graphProperties.bottomPoint; y -= this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY) {
-            // prevent overlapping scale labels if both scales are shown on the top and right edge
-            if (yAxisVisible || this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY) > 30) {
+            // prevent overlapping scale labels if both scales are shown on edge
+            let yAxisPos = this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY)
+            if (yAxisVisible || (yAxisPos > 30 && yAxisPos < this.height-30)) {
                 if (Math.abs(y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY)) > 1) {
-                    this.drawScaleNumbersWithBackground(this.getScaleNumber(y), labelXPos, this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY), "vertical");
+                    this.drawScaleNumbersWithBackground(this.getScaleNumber(y), labelXPos, this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY), "vertical", labelXAlign);
                 }
             }
         }
@@ -373,7 +425,7 @@ class Graph {
 
         // update the last time that the mouse velocity was updated
         this.lastPanTime = now;
-        
+
         // calculate how much to pan the graph
         let xMove = xMovePix / this.graphProperties.pixelIntervalX;
         let yMove = yMovePix / this.graphProperties.pixelIntervalY;
@@ -395,7 +447,7 @@ class Graph {
 
         this.panInertiaAnimation = TweenMax.to(
             this.panVelocity,
-            this.settings.panAnimationLength,
+            this.settings.panInertia.animationLength,
             {
                 x: 0,
                 y: 0,
@@ -413,7 +465,24 @@ class Graph {
         let now = performance.now();
         let timeElapsed = now - this.lastPanTime;
         this.lastPanTime = now;
-        this.panGraph(this.panVelocity.x * (timeElapsed / 1000), this.panVelocity.y * (timeElapsed / 1000), true);
+
+        // stops panning when the pan inertia velociy is too low (below stopPanValue)
+
+        let moveX;
+        if (Math.abs(this.panVelocity.x) > this.settings.panInertia.stopPanValue) {
+            moveX = this.panVelocity.x * (timeElapsed / 1000);
+        } else {
+            moveX = 0;
+        }
+
+        let moveY;
+        if (Math.abs(this.panVelocity.y) > this.settings.panInertia.stopPanValue) {
+            moveY = this.panVelocity.y * (timeElapsed / 1000);
+        } else {
+            moveY = 0;
+        }
+
+        this.panGraph(moveX, moveY, true);
     }
 
     /**
@@ -447,7 +516,10 @@ class Graph {
      */
     resize(xTimes, yTimes, centreX, centreY) {
 
-        clearInterval(this.panInteriaInterval);
+        // stop pan inertia if any already exists
+        if (this.panInertiaAnimation != undefined) {
+            this.panInertiaAnimation.kill();
+        }
 
         let mousePoint = this.getPointFromCoordinates(centreX, centreY);
 
@@ -509,7 +581,7 @@ class Graph {
  * @property {Number} axisNumbers.maxPlaces             Maximum number of places for a scale number before displaying in scientific notation.
  * @property {Number} axisNumbers.percision             Number of places to display in scientific notation.
  * @property {Object} panInertia                        Settings for pan inertia.
- * @property {Number} panInertia.frictionValue          Value to decrease the pan velocity by over time.
+ * @property {Number} panInertia.panAnimationLength     Number of seconds for the pan inertia animation.
  * @property {Number} panInertia.stopPanValue           Value to stop pan inertia when reached.
  */
 const DEFAULT_SETTINGS = {
@@ -520,7 +592,7 @@ const DEFAULT_SETTINGS = {
     minorGridlineWidth: 0.2,
     majorGridlineWidth: 0.7,
     axisGridlineWidth: 1.5,
-    scrollMultiplier: 2,
+    scrollMultiplier: 1.5,
     optimalPixelsBetweenIntervals: 30,
     optimalIntervals: {
         1: 5,
@@ -528,7 +600,7 @@ const DEFAULT_SETTINGS = {
         5: 5,
         10: 5
     },
-    resizeAnimationLength: 0.3,
+    resizeAnimationLength: 0.2,
     axisNumbers: {
         font: "12px Arial",
         background: "#F0F0F0", // grey
@@ -536,7 +608,10 @@ const DEFAULT_SETTINGS = {
         maxPlaces: 4,
         percision: 3
     },
-    panAnimationLength: 1
+    panInertia: {
+        animationLength: 1,
+        stopPanValue: 100
+    }
 };
 
 const BLACK = "#000000";
