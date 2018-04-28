@@ -219,6 +219,7 @@ class Graph {
                 mousedown.target.style.cursor = "default";
                 graph.canvas.removeEventListener("mousemove", mousemoveListener);
                 graph.canvas.removeEventListener("mouseup", mouseupListener);
+                graph.canvas.removeEventListener("mouseleave", mouseupListener);
             };
             graph.canvas.addEventListener("mousemove", mousemoveListener);
             graph.canvas.addEventListener("mouseup", mouseupListener);
@@ -258,8 +259,6 @@ class Graph {
         let leftMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
 
         let rightMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
-
-        console.log(leftMostLinePos, rightMostLinePos);
 
         let majorIntervalXCount = (Math.floor((this.graphProperties.originPos.x - leftMostLinePos) / this.graphProperties.pixelIntervalX) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
 
@@ -361,10 +360,11 @@ class Graph {
         let now = performance.now();
 
         if (!start) {
+            clearInterval(this.panInteriaInterval);
             let timeElapsed = now - this.lastPanTime;
             this.panVelocity = new Point();
-            this.panVelocity.x = xMovePix / timeElapsed;
-            this.panVelocity.y = yMovePix / timeElapsed;
+            this.panVelocity.x = xMovePix / (timeElapsed / 1000);
+            this.panVelocity.y = yMovePix / (timeElapsed / 1000);
         }
 
         this.lastPanTime = now;
@@ -384,7 +384,23 @@ class Graph {
      * Called when panning of the graph is stopped and pan inertia should take over.
      */
     stopPanGraph() {
-       this.continuePanInertia();
+        // split up friction into X and Y components
+
+        if (this.panVelocity.y == 0) {
+
+            this.frictionValueX = -1 * Math.sign(this.panVelocity.x) * this.settings.panInertia.frictionValue;
+            this.frictionValueY = 0;
+
+        } else {
+
+            let xyRatio = this.panVelocity.x / this.panVelocity.y;
+
+            this.frictionValueY = -1 * Math.sign(this.panVelocity.y) * Math.sqrt(Math.pow(this.settings.panInertia.frictionValue, 2) / (Math.pow(xyRatio, 2) + 1));
+            this.frictionValueX = -1 * Math.sign(this.panVelocity.x) * Math.sqrt((Math.pow(this.settings.panInertia.frictionValue, 2) * Math.pow(xyRatio, 2)) / (Math.pow(xyRatio, 2) + 1));
+
+        }
+        clearInterval(this.panInteriaInterval);
+        this.panInteriaInterval = setInterval(this.continuePanInertia, this.settings.panInertia.updateInterval * 1000);
     }
 
     /**
@@ -392,24 +408,21 @@ class Graph {
      */
     continuePanInertia() {
 
-        let decreaseX = Math.sign(graph.panVelocity.x) * graph.settings.panInertia.frictionValue;
-        let decreaseY = Math.sign(graph.panVelocity.y) * graph.settings.panInertia.frictionValue;
+        let curXAcceleration = graph.frictionValueX * graph.settings.panInertia.updateInterval;
+        let curYAcceleration = graph.frictionValueY * graph.settings.panInertia.updateInterval;
 
-        graph.panVelocity.x -= decreaseX;
         // ensure that the X velocity will not go further than 0
-        if (Math.sign(graph.panVelocity.x) != Math.sign(decreaseX)) {
-            graph.panVelocity.x = 0;
-        }
+        graph.panVelocity.x += Math.abs(curXAcceleration) > Math.abs(graph.panVelocity.x) ? -graph.panVelocity.x : curXAcceleration;
 
-        graph.panVelocity.y -= decreaseY;
         // ensure that the Y velocity will not go further than 0
-        if (Math.sign(graph.panVelocity.y) != Math.sign(decreaseY)) {
-            graph.panVelocity.y = 0;
-        }
+        graph.panVelocity.y += Math.abs(curYAcceleration) > Math.abs(graph.panVelocity.y) ? -graph.panVelocity.y : curYAcceleration;
 
-        if (graph.panVelocity.x != 0 || graph.panVelocity.y != 0) {
-            graph.panGraph(graph.panVelocity.x, graph.panVelocity.y, true);
-            setTimeout(graph.continuePanInertia, 10);
+        console.log(graph.panVelocity);
+
+        if (graph.panVelocity.x != 0 && graph.panVelocity.y != 0) {
+            graph.panGraph(graph.panVelocity.x * graph.settings.panInertia.updateInterval, graph.panVelocity.y * graph.settings.panInertia.updateInterval, true);
+        } else {
+            clearInterval(graph.panInteriaInterval);
         }
     }
 
@@ -443,6 +456,8 @@ class Graph {
      * @param {Number} centreY      The Y position of the centre point of resizing.
      */
     resize(xTimes, yTimes, centreX, centreY) {
+
+        clearInterval(this.panInteriaInterval);
 
         let mousePoint = this.getPointFromCoordinates(centreX, centreY);
 
@@ -532,8 +547,9 @@ const DEFAULT_SETTINGS = {
         percision: 3
     },
     panInertia: {
-        frictionValue: 0.01,
-        stopPanValue: 0.000001
+        frictionValue: 10000,
+        stopPanValue: 100,
+        updateInterval: 0.01
     }
 };
 
@@ -551,5 +567,4 @@ function displayGraph() {
     var graphHeight = workspace.getBoundingClientRect().height;
     var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth;
     graph = new Graph(graphCanvas, DEFAULT_SETTINGS, graphWidth, graphHeight);
-
 }
