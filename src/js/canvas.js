@@ -351,8 +351,13 @@ class Graph {
         } else {
             // x axis on the screen
             xAxisVisible = true;
-            labelYPos = this.graphProperties.originPos.y + 5;
-            labelYAlign = "top";
+            if (this.graphProperties.originPos.y > this.height - 20) {
+                labelYPos = this.graphProperties.originPos.y - 5;
+                labelYAlign = "bottom";
+            } else {
+                labelYPos = this.graphProperties.originPos.y + 5;
+                labelYAlign = "top";
+            }
         }
 
         let leftMostMajorLine = Math.floor((Math.floor(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX) / (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX)) * (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX);
@@ -384,8 +389,13 @@ class Graph {
         } else {
             // y axis on the screen
             yAxisVisible = true;
-            labelXPos = this.graphProperties.originPos.x - 5;
-            labelXAlign = "right";
+            if (this.graphProperties.originPos.x < 20) {
+                labelXPos = this.graphProperties.originPos.x + 5;
+                labelXAlign = "left";
+            } else {
+                labelXPos = this.graphProperties.originPos.x - 5;
+                labelXAlign = "right";
+            }
         }
 
         let topMostMajorLine = Math.floor((Math.floor(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.optimalScaleY) / (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY)) * (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY);
