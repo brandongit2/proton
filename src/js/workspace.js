@@ -1,8 +1,11 @@
 (function() {
     const SPACE_BETWEEN_DOTS = 40;
+    const SCALE_FACTOR       = 1.2;  // Scale factor of 2 makes everything twice as big, 0.5 makes everything half as big, etc.
+    const SCALE_LENGTH       = 0.15; // How long (in seconds) the zoom animation lasts
     const MAX_ZOOM           = 15;
     const MIN_ZOOM           = 0.8;
-    const SCALE_FACTOR       = 1.2;
+    const INERTIA_LENGTH     = 0.3;  // How long (in seconds) inertia lasts
+    const INERTIA_DISTANCE   = 6;    // Multiplied by mouse movement delta to determine how far to go
     var workspace   = null;
     var ctx         = null;
     var w = {
@@ -23,32 +26,44 @@
 
         w.origin.x = workspace.width / 2;
         w.origin.y = workspace.height / 2;
-        ctx.translate(w.origin.x - 0.5, w.origin.y - 0.5);
+        ctx.translate(Math.floor(w.origin.x) + 0.5, Math.floor(w.origin.y) + 0.5);
 
-        var panLoop        = null;
-        var toolsWidth     = document.getElementById('tools').offsetWidth; // Used to correct mouse X position for workspace
-        workspace.addEventListener("mousedown", function() {
+        var panLoop     = null;
+        var inertiaLoop = null; // Is actually a TweenMax
+        var toolsWidth  = document.getElementById('tools').offsetWidth; // Used to correct mouse X position for workspace
+        workspace.addEventListener("mousedown", function(event) {
+            event.preventDefault();
             TweenMax.to("#color-dummy", 0.3, {color: '#9d9d9d'});
 
+            if (inertiaLoop != null) {
+                inertiaLoop.kill();
+            }
             panLoop = setInterval(function() {
                 w.origin.x += deltaX / w.scale;
                 w.origin.y += deltaY / w.scale;
-                ctx.setTransform(w.scale, 0, 0, w.scale, w.origin.x * w.scale + 0.5, w.origin.y * w.scale + 0.5);
+                ctx.setTransform(w.scale, 0, 0, w.scale, Math.floor(w.origin.x * w.scale) + 0.5, Math.floor(w.origin.y * w.scale) + 0.5);
             }, 10);
         });
 
-        window.addEventListener("mouseup", function() {
+        var stopPan = function(event) {
             if (panLoop != null) {
-                TweenMax.to("#color-dummy", 0.3, {color: '#cfcfcf'});
+                if (event.type == "mouseup") {
+                    inertiaLoop = TweenMax.to(w.origin, 0.3, {x: w.origin.x + deltaX * INERTIA_DISTANCE, y: w.origin.y + deltaY * INERTIA_DISTANCE});
+                }
+
+                TweenMax.to("#color-dummy", INERTIA_LENGTH, {color: '#cfcfcf'});
                 clearInterval(panLoop);
             }
-        });
+        };
+
+        window.addEventListener("mouseup", stopPan);
+        window.addEventListener("mouseout", stopPan);
 
         var prevScale = w.scale;
         setInterval(function() {
             w.origin.x += (mouseX - toolsWidth) / w.scale - (mouseX - toolsWidth) / prevScale;
             w.origin.y += mouseY / w.scale - mouseY / prevScale;
-            ctx.setTransform(w.scale, 0, 0, w.scale, w.origin.x * w.scale + 0.5, w.origin.y * w.scale + 0.5);
+            ctx.setTransform(w.scale, 0, 0, w.scale, Math.floor(w.origin.x * w.scale) + 0.5, Math.floor(w.origin.y * w.scale) + 0.5);
             renderDots();
             prevScale = w.scale;
         }, 10);
@@ -71,7 +86,7 @@
                 zoomAnimation.kill();
                 prevScale = w.scale;
             }
-            var zoomAnimation = TweenMax.to(w, 0.15, {scale: w.targetScale});
+            var zoomAnimation = TweenMax.to(w, SCALE_LENGTH, {scale: w.targetScale});
         });
     }
 
@@ -81,11 +96,11 @@
     var renderDots = function() {
         var toolsWidth = document.getElementById('tools').offsetWidth; // Used to correct mouse X position for workspace
         ctx.strokeStyle = $('#color-dummy').css('color');
-        ctx.clearRect(-w.origin.x, -w.origin.y, workspace.width / w.scale, workspace.height / w.scale);
+        ctx.clearRect(-w.origin.x, -w.origin.y - 1, workspace.width / w.scale, workspace.height / w.scale + 1);
         ctx.fillRect(-5, -5, 10, 10);
 
-        for (var i = Math.floor(-w.origin.x / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS; i < Math.ceil(((workspace.width) / w.scale + 1) / SPACE_BETWEEN_DOTS) * SPACE_BETWEEN_DOTS; i += SPACE_BETWEEN_DOTS) {
-            for (var j = Math.floor(-w.origin.y / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS; j < Math.ceil(((workspace.width) / w.scale + 1) / SPACE_BETWEEN_DOTS) * SPACE_BETWEEN_DOTS; j += SPACE_BETWEEN_DOTS) {
+        for (var i = Math.floor(-w.origin.x / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS; i < Math.floor(-w.origin.x / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS + workspace.width / w.scale + 2 * SPACE_BETWEEN_DOTS; i += SPACE_BETWEEN_DOTS) {
+            for (var j = Math.floor(-w.origin.y / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS; j < Math.floor(-w.origin.y / SPACE_BETWEEN_DOTS - 1) * SPACE_BETWEEN_DOTS + workspace.height / w.scale + 2 * SPACE_BETWEEN_DOTS; j += SPACE_BETWEEN_DOTS) {
                 ctx.beginPath();
                 ctx.moveTo(i - 2, j);
                 ctx.lineTo(i + 2, j);
