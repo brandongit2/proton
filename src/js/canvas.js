@@ -272,7 +272,7 @@ class Graph {
 
         let rightMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
 
-        let majorIntervalXCount = (Util.awayFromZero((this.graphProperties.originPos.x - leftMostLinePos) / this.graphProperties.pixelIntervalX) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
+        let majorIntervalXCount = ((-1 * Util.towardZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX)) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
 
         for (let x = leftMostLinePos; x <= rightMostLinePos; x += this.graphProperties.pixelIntervalX) {
             var lineX = Math.round(x) - 0.5;
@@ -295,7 +295,7 @@ class Graph {
 
         let bottomMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
 
-        let majorIntervalYCount = (Util.awayFromZero((this.graphProperties.originPos.y - topMostLinePos) / this.graphProperties.pixelIntervalY) % this.graphProperties.minorBetweenMajorY + this.graphProperties.minorBetweenMajorY) % this.graphProperties.minorBetweenMajorY;
+        let majorIntervalYCount = ((Util.towardZero(this.graphProperties.topPoint / this.graphProperties.optimalScaleY)) % this.graphProperties.minorBetweenMajorY + this.graphProperties.minorBetweenMajorY) % this.graphProperties.minorBetweenMajorY;
 
         for (let y = topMostLinePos; y <= bottomMostLinePos; y += this.graphProperties.pixelIntervalY) {
             var lineY = Math.round(y) - 0.5;
