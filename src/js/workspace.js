@@ -10,6 +10,7 @@
     var ctx         = null;
     var w = {
         origin:      {x: 0, y: 0},
+        velocity:    {x: 0, y: 0},
         scale:       1,
         targetScale: 1
     };
@@ -41,6 +42,8 @@
             panLoop = setInterval(function() {
                 w.origin.x += deltaX / w.scale;
                 w.origin.y += deltaY / w.scale;
+                w.velocity.x = deltaX;
+                w.velocity.y = deltaY;
                 ctx.setTransform(w.scale, 0, 0, w.scale, Math.floor(w.origin.x * w.scale) + 0.5, Math.floor(w.origin.y * w.scale) + 0.5);
             }, 10);
         });
@@ -48,7 +51,7 @@
         var stopPan = function(event) {
             if (panLoop != null) {
                 if (event.type == "mouseup") {
-                    inertiaLoop = TweenMax.to(w.origin, INERTIA_LENGTH, {x: w.origin.x + deltaX * INERTIA_DISTANCE, y: w.origin.y + deltaY * INERTIA_DISTANCE, ease: Expo.easeOut});
+                    inertiaLoop = TweenMax.to(w.origin, INERTIA_LENGTH, {x: w.origin.x + w.velocity.x * INERTIA_DISTANCE, y: w.origin.y + w.velocity.y * INERTIA_DISTANCE, ease: Expo.easeOut});
                 }
 
                 TweenMax.to("#color-dummy", 0.3, {color: '#cfcfcf'});
