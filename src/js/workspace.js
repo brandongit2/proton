@@ -42,13 +42,16 @@
             panLoop = setInterval(function() {
                 w.origin.x += deltaX / w.scale;
                 w.origin.y += deltaY / w.scale;
-                w.velocity.x = deltaX;
-                w.velocity.y = deltaY;
+                w.velocity.x = deltaX / w.scale;
+                w.velocity.y = deltaY / w.scale;
                 ctx.setTransform(w.scale, 0, 0, w.scale, Math.floor(w.origin.x * w.scale) + 0.5, Math.floor(w.origin.y * w.scale) + 0.5);
             }, 10);
         });
 
         var stopPan = function(event) {
+            deltaX = 0;
+            deltaY = 0;
+
             if (panLoop != null) {
                 if (event.type == "mouseup") {
                     inertiaLoop = TweenMax.to(w.origin, INERTIA_LENGTH, {x: w.origin.x + w.velocity.x * INERTIA_DISTANCE, y: w.origin.y + w.velocity.y * INERTIA_DISTANCE, ease: Expo.easeOut});
@@ -75,6 +78,9 @@
         workspace.addEventListener("wheel", function(e) {
             if (prevScrollDirection != Math.sign(e.deltaY)) {
                 w.targetScale = w.scale;
+            }
+            if (inertiaLoop != null) {
+                inertiaLoop.kill();
             }
             prevScrollDirection = Math.sign(e.deltaY);
             w.targetScale *= e.deltaY > 0 ? 1 / SCALE_FACTOR : SCALE_FACTOR; // Determine which way to zoom

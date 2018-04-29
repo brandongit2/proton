@@ -57,19 +57,17 @@ $(function() {
         }
     });
 
+    var prevMouseX = 0;
+    var prevMouseY = 0;
     window.addEventListener("mousemove", function(e) {
         mouseX = e.x;
         mouseY = e.y - 20; // 20 is the toolbar height
-    });
 
-    var prevMouseX = 0;
-    var prevMouseY = 0;
-    setInterval(function() {
         deltaX = mouseX - prevMouseX;
         deltaY = mouseY - prevMouseY;
         prevMouseX = mouseX;
         prevMouseY = mouseY;
-    }, 10);
+    });
 
     createWorkspace();
     //setUpGraph();
