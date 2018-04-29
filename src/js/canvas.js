@@ -102,7 +102,7 @@ class GraphProperties {
      * Calculates the reference points for the graph.
      */
     calculatePoints() {
-        this.originPos = new Point(-this.leftPoint * (this.pixelIntervalY / this.optimalScaleY), this.topPoint * (this.pixelIntervalX / this.optimalScaleX));
+        this.originPos = new Point(-this.leftPoint * this.pixelIntervalY / this.optimalScaleY, this.topPoint * this.pixelIntervalX / this.optimalScaleX);
         this.centrePoint = new Point((this.topPoint + this.bottomPoint) / 2, (this.leftPoint + this.rightPoint) / 2);
     }
 }
@@ -154,7 +154,7 @@ class Graph {
         this.ctx2d.fillStyle = this.settings.axisNumbers.background;
 
         if (axis == "horizontal") {
-             // horizontal axis
+            // horizontal axis
             this.ctx2d.textAlign = "center";
             this.ctx2d.textBaseline = alignment;
             if (alignment == "top") {
@@ -292,6 +292,7 @@ class Graph {
         // draw horizontal lines
 
         let topMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
+
         let bottomMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
 
         let majorIntervalYCount = (Util.awayFromZero((this.graphProperties.originPos.y - topMostLinePos) / this.graphProperties.pixelIntervalY) % this.graphProperties.minorBetweenMajorY + this.graphProperties.minorBetweenMajorY) % this.graphProperties.minorBetweenMajorY;
@@ -393,7 +394,7 @@ class Graph {
         for (let y = topMostMajorLine; y > this.graphProperties.bottomPoint; y -= this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY) {
             // prevent overlapping scale labels if both scales are shown on edge
             let yAxisPos = this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY)
-            if (yAxisVisible || (yAxisPos > 30 && yAxisPos < this.height-30)) {
+            if (yAxisVisible || (yAxisPos > 30 && yAxisPos < this.height - 30)) {
                 if (Math.abs(y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY)) > 1) {
                     this.drawScaleNumbersWithBackground(this.getScaleNumber(y), labelXPos, this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY), "vertical", labelXAlign);
                 }
@@ -445,17 +446,19 @@ class Graph {
      */
     stopPanGraph() {
 
-        this.panInertiaAnimation = TweenMax.to(
-            this.panVelocity,
-            this.settings.panInertia.animationLength,
-            {
-                x: 0,
-                y: 0,
-                ease: Expo.easeOut,
-                onUpdate: this.continuePanGraph,
-                onUpdateScope: this,
-            }
-        );
+        if (this.panVelocity != undefined && (this.panVelocity.x != 0 || this.panVelocity.y != 0)) {
+            this.panInertiaAnimation = TweenMax.to(
+                this.panVelocity,
+                this.settings.panInertia.animationLength,
+                {
+                    x: 0,
+                    y: 0,
+                    ease: Expo.easeOut,
+                    onUpdate: this.continuePanGraph,
+                    onUpdateScope: this,
+                }
+            );
+        }
     }
 
     /**
@@ -516,48 +519,65 @@ class Graph {
      */
     resize(xTimes, yTimes, centreX, centreY) {
 
-        // stop pan inertia if any already exists
-        if (this.panInertiaAnimation != undefined) {
-            this.panInertiaAnimation.kill();
-        }
+        // prevent zooming if too far from origin
+        let maxDisFromOrigin = Math.max(
+            (this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX,
+            (this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX,
+            (this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY,
+            (this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
 
-        let mousePoint = this.getPointFromCoordinates(centreX, centreY);
+        let maxCoordinate = Math.max(
+            this.graphProperties.leftPoint,
+            this.graphProperties.rightPoint,
+            this.graphProperties.topPoint,
+            this.graphProperties.bottomPoint
+        )
 
-        // percent of the height covered above the mouse
-        let topPercent = centreY / this.height;
-        // percent of the width covered left of the mosue
-        let leftPercent = centreX / this.width;
-        // width of the graph in terms of coordinates
-        let pointWidth = this.graphProperties.rightPoint - this.graphProperties.leftPoint;
-        // height of the graph in terms of coordiantes
-        let pointHeight = this.graphProperties.topPoint - this.graphProperties.bottomPoint;
+        if ((maxCoordinate < this.settings.maxCoordinate || (xTimes < 1 && yTimes < 1)) && (maxDisFromOrigin < this.settings.maxZoomLimitPixelsFromOrigin || (xTimes > 1 && yTimes > 1))) {
 
-        // determine target boundaries of graph after the zoom
-        this.animationTargetProperties = new GraphProperties(
-            mousePoint.y + (pointHeight * topPercent * yTimes),
-            mousePoint.y - (pointHeight * (1 - topPercent) * yTimes),
-            mousePoint.x - (pointWidth * leftPercent * xTimes),
-            mousePoint.x + (pointWidth * (1 - leftPercent) * xTimes),
-            this
-        );
-
-        // animate the zoom
-        TweenMax.to(
-            this.graphProperties,
-            this.settings.resizeAnimationLength,
-            {
-                topPoint: this.animationTargetProperties.topPoint,
-                bottomPoint: this.animationTargetProperties.bottomPoint,
-                leftPoint: this.animationTargetProperties.leftPoint,
-                rightPoint: this.animationTargetProperties.rightPoint,
-                onUpdate: this.drawGraph,
-                onUpdateScope: this,
-                onComplete: function () {
-                    this.canvas.style.cursor = "default";
-                },
-                onCompleteScope: this
+            // stop pan inertia if any already exists
+            if (this.panInertiaAnimation != undefined) {
+                this.panInertiaAnimation.kill();
             }
-        );
+
+            let mousePoint = this.getPointFromCoordinates(centreX, centreY);
+
+            // percent of the height covered above the mouse
+            let topPercent = centreY / this.height;
+            // percent of the width covered left of the mosue
+            let leftPercent = centreX / this.width;
+            // width of the graph in terms of coordinates
+            let pointWidth = this.graphProperties.rightPoint - this.graphProperties.leftPoint;
+            // height of the graph in terms of coordiantes
+            let pointHeight = this.graphProperties.topPoint - this.graphProperties.bottomPoint;
+
+            // determine target boundaries of graph after the zoom
+            this.animationTargetProperties = new GraphProperties(
+                mousePoint.y + (pointHeight * topPercent * yTimes),
+                mousePoint.y - (pointHeight * (1 - topPercent) * yTimes),
+                mousePoint.x - (pointWidth * leftPercent * xTimes),
+                mousePoint.x + (pointWidth * (1 - leftPercent) * xTimes),
+                this
+            );
+
+            // animate the zoom
+            TweenMax.to(
+                this.graphProperties,
+                this.settings.resizeAnimationLength,
+                {
+                    topPoint: this.animationTargetProperties.topPoint,
+                    bottomPoint: this.animationTargetProperties.bottomPoint,
+                    leftPoint: this.animationTargetProperties.leftPoint,
+                    rightPoint: this.animationTargetProperties.rightPoint,
+                    onUpdate: this.drawGraph,
+                    onUpdateScope: this,
+                    onComplete: function () {
+                        this.canvas.style.cursor = "default";
+                    },
+                    onCompleteScope: this
+                }
+            );
+        }
     }
 }
 
@@ -583,6 +603,8 @@ class Graph {
  * @property {Object} panInertia                        Settings for pan inertia.
  * @property {Number} panInertia.panAnimationLength     Number of seconds for the pan inertia animation.
  * @property {Number} panInertia.stopPanValue           Value to stop pan inertia when reached.
+ * @property {Number} maxZoomLimitPixelsFromOrigin      Maximum number of pixels from the origin to prevent floating point errors.
+ * @property {Number} maxCoordinate                     Maximum coordinate that can be safely displayed.
  */
 const DEFAULT_SETTINGS = {
     backgroundColour: "#F0F0F0", // grey
@@ -611,7 +633,9 @@ const DEFAULT_SETTINGS = {
     panInertia: {
         animationLength: 1,
         stopPanValue: 100
-    }
+    },
+    maxZoomLimitPixelsFromOrigin: 1e10,
+    maxCoordinate: 1e300
 };
 
 const BLACK = "#000000";
