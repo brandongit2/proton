@@ -155,6 +155,8 @@ class Point {
                 </div>
             `);
             var toolbarItem = document.querySelector('.toolbar-item:last-child');
+
+            // Opens menu
             toolbarItem.addEventListener('mouseup', function(event) {
                 if (event.button == 0 && !isMenuOpen) {
                     var itemName = `menu-item-${event.target.innerText.toLowerCase()}`;
@@ -197,31 +199,34 @@ class Point {
                 switch (items[item][menuItem]['type']) {
                     case 'button':
                         $('.toolbar-menu').last().append(`
-                            <div class="toolbar-menu-item"></div>
-                            <div class="toolbar-menu-item">${menuItem}</div>
-                            <div class="toolbar-menu-item"></div>`);
+                            <div></div>
+                            <span class="toolbar-menu-item">${menuItem}</span>
+                            <div></div>`);
                         break;
                     case 'toggle':
                         $('.toolbar-menu').last().append(`
-                                <input type="checkbox" class="toolbar-menu-item">
-                                <span>${menuItem}</span>
+                                <input type="checkbox" style="margin-left:8px;">
+                                <span class="toolbar-menu-item center">${menuItem}</span>
+                                <div></div>
                             </div>
                         `);
                         break;
                     case 'line':
-                        $('.toolbar-menu').last().append('<hr style="margin:3px 2px;">');
+                        $('.toolbar-menu').last().append('<hr style="margin:3px 2px; grid-column:1 / span 3;">');
                         break;
                     case 'panel':
+                        $('.toolbar-menu').last().append('<div></div>');
+
                         var panelItem = document.createElement('div');
                         panelItem.classList.add('toolbar-menu-item');
                         panelItem.addEventListener('mouseover', function(event) {
                             if ($(event.target.parentNode).hasClass('menu-open')) {
-                                console.log("gonna open the toolbar panel hold on");
+                                event.target.append('<div class="menu-panel"></div>');
                             }
                         });
                         panelItem.innerHTML = menuItem;
                         document.getElementById('menu-item-' + item.toLowerCase()).appendChild(panelItem);
-                        //$('.toolbar-menu').last().append(`<div class="toolbar-menu-item">${menuItem}</div>`);
+                        $('.toolbar-menu').last().append(`<div></div>`);
 
                 }
             }
