@@ -9,6 +9,7 @@
     var workspace   = null;
     var ctx         = null;
     var doPan       = false;
+    // w stands for "workspace"
     var w = {
         origin:      {x: 0, y: 0},
         velocity:    {x: 0, y: 0},
@@ -60,24 +61,24 @@
 
         var prevScale = w.scale;
         setInterval(function() {
-            w.origin.x += (mouseX - toolsWidth) / w.scale - (mouseX - toolsWidth) / prevScale;
-            w.origin.y += mouseY / w.scale - mouseY / prevScale;
+            w.origin.x += (mouse.x - toolsWidth) / w.scale - (mouse.x - toolsWidth) / prevScale;
+            w.origin.y += mouse.y / w.scale - mouse.y / prevScale;
             ctx.setTransform(w.scale, 0, 0, w.scale, Math.floor(w.origin.x * w.scale) + 0.5, Math.floor(w.origin.y * w.scale) + 0.5);
             renderDots();
             prevScale = w.scale;
         }, 10);
 
         var prevScrollDirection = 0;
-        workspace.addEventListener("wheel", function(e) {
-            if (prevScrollDirection != Math.sign(e.deltaY)) {
+        workspace.addEventListener("wheel", function(event) {
+            if (prevScrollDirection != Math.sign(event.deltaY)) {
                 w.targetScale = w.scale;
             }
             if (inertiaLoop != null) {
                 inertiaLoop.kill();
                 inertiaLoop = null;
             }
-            prevScrollDirection = Math.sign(e.deltaY);
-            w.targetScale *= e.deltaY > 0 ? 1 / SCALE_FACTOR : SCALE_FACTOR; // Determine which way to zoom
+            prevScrollDirection = Math.sign(event.deltaY);
+            w.targetScale *= event.deltaY > 0 ? 1 / SCALE_FACTOR : SCALE_FACTOR; // Determine which way to zoom
             // Enforce zoom limits
             if (w.targetScale > MAX_ZOOM) {
                 w.targetScale = MAX_ZOOM;
@@ -100,10 +101,10 @@
      */
     window.pan = function() {
         if (doPan) {
-            w.origin.x += deltaX / w.scale;
-            w.origin.y += deltaY / w.scale;
-            w.velocity.x = deltaX / w.scale;
-            w.velocity.y = deltaY / w.scale;
+            w.origin.x += mouse.dX / w.scale;
+            w.origin.y += mouse.dY / w.scale;
+            w.velocity.x = mouse.dX / w.scale;
+            w.velocity.y = mouse.dY / w.scale;
             ctx.setTransform(w.scale, 0, 0, w.scale, Math.floor(w.origin.x * w.scale) + 0.5, Math.floor(w.origin.y * w.scale) + 0.5);
         }
     }
