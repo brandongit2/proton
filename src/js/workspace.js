@@ -3,11 +3,12 @@
     const SCALE_FACTOR       = 1.2;  // Scale factor of 2 makes everything twice as big, 0.5 makes everything half as big, etc.
     const SCALE_LENGTH       = 0.15; // How long (in seconds) the zoom animation lasts
     const MAX_ZOOM           = 15;
-    const MIN_ZOOM           = 0.8;
+    const MIN_ZOOM           = 0.5;
     const INERTIA_LENGTH     = 0.7;  // How long (in seconds) inertia lasts
     const INERTIA_DISTANCE   = 6;    // Multiplied by mouse movement delta to determine how far to go
     var workspace   = null;
     var ctx         = null;
+    var doPan       = false;
     var w = {
         origin:      {x: 0, y: 0},
         velocity:    {x: 0, y: 0},
@@ -29,7 +30,6 @@
         w.origin.y = workspace.height / 2;
         ctx.translate(Math.floor(w.origin.x) + 0.5, Math.floor(w.origin.y) + 0.5);
 
-        var panLoop     = null;
         var inertiaLoop = null; // Is actually a TweenMax
         var toolsWidth  = document.getElementById('tools').offsetWidth; // Used to correct mouse X position for workspace
         workspace.addEventListener("mousedown", function(event) {
@@ -38,27 +38,20 @@
 
             if (inertiaLoop != null) {
                 inertiaLoop.kill();
+                inertiaLoop = null;
             }
-            panLoop = setInterval(function() {
-                w.origin.x += deltaX / w.scale;
-                w.origin.y += deltaY / w.scale;
-                w.velocity.x = deltaX / w.scale;
-                w.velocity.y = deltaY / w.scale;
-                ctx.setTransform(w.scale, 0, 0, w.scale, Math.floor(w.origin.x * w.scale) + 0.5, Math.floor(w.origin.y * w.scale) + 0.5);
-            }, 10);
+
+            doPan = true;
         });
 
         var stopPan = function(event) {
-            deltaX = 0;
-            deltaY = 0;
-
-            if (panLoop != null) {
+            if (doPan) {
                 if (event.type == "mouseup") {
                     inertiaLoop = TweenMax.to(w.origin, INERTIA_LENGTH, {x: w.origin.x + w.velocity.x * INERTIA_DISTANCE, y: w.origin.y + w.velocity.y * INERTIA_DISTANCE, ease: Expo.easeOut});
                 }
 
                 TweenMax.to("#color-dummy", 0.3, {color: '#cfcfcf'});
-                clearInterval(panLoop);
+                doPan = false;
             }
         };
 
@@ -81,6 +74,7 @@
             }
             if (inertiaLoop != null) {
                 inertiaLoop.kill();
+                inertiaLoop = null;
             }
             prevScrollDirection = Math.sign(e.deltaY);
             w.targetScale *= e.deltaY > 0 ? 1 / SCALE_FACTOR : SCALE_FACTOR; // Determine which way to zoom
@@ -93,10 +87,25 @@
 
             if (zoomAnimation != null) {
                 zoomAnimation.kill();
+                zoomAnimation = null;
                 prevScale = w.scale;
             }
             var zoomAnimation = TweenMax.to(w, SCALE_LENGTH, {scale: w.targetScale});
         });
+    }
+
+    /**
+     * Is called by a mousemove listener in ui.js in order to synchronize moving the mouse with moving the workspace.
+     * Pans the workspace.
+     */
+    window.pan = function() {
+        if (doPan) {
+            w.origin.x += deltaX / w.scale;
+            w.origin.y += deltaY / w.scale;
+            w.velocity.x = deltaX / w.scale;
+            w.velocity.y = deltaY / w.scale;
+            ctx.setTransform(w.scale, 0, 0, w.scale, Math.floor(w.origin.x * w.scale) + 0.5, Math.floor(w.origin.y * w.scale) + 0.5);
+        }
     }
 
     /**

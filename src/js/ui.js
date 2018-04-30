@@ -59,6 +59,7 @@ $(function() {
 
     var prevMouseX = 0;
     var prevMouseY = 0;
+    var resetMousePos = null;
     window.addEventListener("mousemove", function(e) {
         mouseX = e.x;
         mouseY = e.y - 20; // 20 is the toolbar height
@@ -67,12 +68,23 @@ $(function() {
         deltaY = mouseY - prevMouseY;
         prevMouseX = mouseX;
         prevMouseY = mouseY;
+
+        pan();
+
+        clearTimeout(resetMousePos);
+        resetMousePos = setTimeout(function() {
+            deltaX = 0;
+            deltaY = 0;
+        }, 20);
     });
 
     createWorkspace();
     //setUpGraph();
 });
 
+/**
+ * Sets colors of different UI elements based on values set in colors.json.
+ */
 function setColors() {
     var toolbar = $("#toolbar");
     var theme   = colors.light;
@@ -93,7 +105,7 @@ function setColors() {
     tool.css("stroke", theme.panels.tools.color);
     tool.css("fill",   theme.panels.tools.color);
 
-    // Replace all <img> SVG's with inline SVG so I can change their colors (code from Stack Overflow)
+    // Replace all <img> SVGs with inline SVG so I can change their colors (code from Stack Overflow)
     // https://stackoverflow.com/questions/11978995/how-to-change-color-of-svg-image-using-css-jquery-svg-image-replacement
     $('img.svg').each(function(){
         var $img = jQuery(this);
@@ -125,6 +137,9 @@ function setColors() {
     });
 }
 
+/**
+ * Populates the toolbar with items defined in ui.json.
+ */
 function populateToolbar() {
     var toolbar = document.getElementById("toolbar");
     var items   = ui.toolbar;
@@ -154,6 +169,7 @@ function populateToolbar() {
                 }, 30);
             }
         });
+        
         // Close current menu and open new one when moving mouse over another menu
         toolbarItem.addEventListener("mouseleave", function(e) {
             if (e.relatedTarget != null) {
