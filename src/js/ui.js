@@ -1,3 +1,6 @@
+/**
+ * Represents one point on the graph in terms of its X and Y coordinate.
+ */
 class Point {
     constructor(x, y) {
         this.x = x;

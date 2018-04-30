@@ -1,397 +1,680 @@
-const DEFAULT_CENTRE_POINT = new Point(5, 5);
-const DEFAULT_X_SCALE = 1;
-const DEFAULT_Y_SCALE = 1;
-
-// line widths
-const MINOR_GRIDLINE_WIDTH = 0.2;
-const MAJOR_GRIDLINE_WIDTH = 0.7;
-const AXIS_GRIDLINE_WIDTH  = 1.5;
-
-// multipler for each scroll
-const SCROLL_MULTIPLIER = 1.3;
-
-// optimal number of pixels between each minor gridline
-const OPTIMAL_PIXELS_BETWEEN_INTERVALS = 30;
-
-// list of optimal intervals {multiple: number of minor gridlines between each major gridline}
-const OPTIMAL_INTERVALS = { 1: 5, 2: 4, 5: 5 };
-
-// period of time for resize animation in seconds
-const RESIZE_ANIMATION_LENGTH = 0.3;
-const MILLISECONDS_IN_SECOND = 1000;
-
-// colours
-const GREY  = '#F0F0F0';
-const BLACK = '#000000';
-const RED   = '#FF0000';
-const WHITE = '#FFFFFF';
-const GREEN = '#008000';
-
-const BACKGROUND_COLOUR = GREY;
-
-// font
-const AXIS_NUMBERS_FONT = '12px Arial';
-const AXIS_NUMBERS_MAX_PLACES = 4;
-const AXIS_NUMBERS_PERCISION = 3;
-
-var canvas;
-var ctx2d;
-var workspace;
+/* global Util, console, TweenMax, performance */
 
 /*
-Any variables ending in "Pos" represent acutal canvas coordiantes.
-Any variables ending in "Point" represent graph coordiantes.
+NOTES:
+    - "coordinates" and "point" refer to actual grid coordiantes
+    - "position" refers to the number of pixels from the upper-left corner of the canvas
 */
 
-// centre of the canvas
-var centrePos;
-var centrePoint = DEFAULT_CENTRE_POINT;
+/**
+ * Represents the properties of a graph.
+ */
+class GraphProperties {
 
-// scales for horizontal and vertical axises
-var xScale = DEFAULT_X_SCALE;
-var yScale = DEFAULT_Y_SCALE;
+    /**
+     * Creates a graph properties object.
+     * @param {Number} topPoint         The uppermost Y coordinate.
+     * @param {Number} bottomPoint      The lowermost Y coordinate.
+     * @param {Number} leftPoint        The leftmost X coordinate.
+     * @param {Number} rightPoint       The rightmost X coordinate.
+     * @param {Object} graph            The graph that these properties apply to.
+     */
+    constructor(topPoint, bottomPoint, leftPoint, rightPoint, graph) {
+        this.topPoint = topPoint;
+        this.bottomPoint = bottomPoint;
+        this.leftPoint = leftPoint;
+        this.rightPoint = rightPoint;
+        this.graph = graph;
+    }
 
-// current number of pixels between intervals
-var curPixelInterval;
+    /**
+     * Resets the graph to show the origin (0, 0) at the centre.
+     */
+    reset() {
+        this.topPoint = this.graph.height / 2 / this.graph.settings.optimalPixelsBetweenIntervals;
+        this.bottomPoint = -this.graph.height / 2 / this.graph.settings.optimalPixelsBetweenIntervals;
+        this.leftPoint = -this.graph.width / 2 / this.graph.settings.optimalPixelsBetweenIntervals;
+        this.rightPoint = this.graph.width / 2 / this.graph.settings.optimalPixelsBetweenIntervals;
+    }
 
-// current number of minor gridlines between major gridlines
-var curGridlineInterval;
+    /**
+     * Calculates the scale and reference points for the graph.
+     */
+    calculate() {
+        this.calculateScale();
+        this.calculatePoints();
+    }
 
-// variables to keep track of the resize animation
-var resizeAnimationStart;
-var startResizeScale;
-var targetResizeScale;
+    /**
+     * Calculates optimal the scale for the graph based on the leftPoint, rightPoint, topPoint, bottomPoint, height, width, and optimalPixelsBetweenIntervals.
+     */
+    calculateScale() {
+
+        // determines the target scale for the current set of boundaries
+        this.scaleX = (this.rightPoint - this.leftPoint) / (this.graph.width / this.graph.settings.optimalPixelsBetweenIntervals);
+        this.scaleY = (this.topPoint - this.bottomPoint) / (this.graph.height / this.graph.settings.optimalPixelsBetweenIntervals);
+
+        // determine the best multiple to use for the target scale
+        let minIntervalX = 0;
+        let minIntervalXDifference = Number.MAX_VALUE;
+        let mantissaX = Util.getMantissa(this.scaleX);
+
+        let minIntervalY = 0;
+        let minIntervalYDifference = Number.MAX_VALUE;
+        let mantissaY = Util.getMantissa(this.scaleY);
+
+        for (var interval in this.graph.settings.optimalIntervals) {
+            if (Math.abs(interval - mantissaX) <= minIntervalXDifference) {
+                minIntervalXDifference = Math.abs(interval - mantissaX);
+                minIntervalX = interval;
+            }
+            if (Math.abs(interval - mantissaY) <= minIntervalYDifference) {
+                minIntervalYDifference = Math.abs(interval - mantissaY);
+                minIntervalY = interval;
+            }
+        }
+
+        // determine that best scale to use with the best multiple determined earlier
+        this.optimalScaleX = minIntervalX * Math.pow(10, Math.floor(Math.log10(this.scaleX)));
+        this.intervalScaleX = Number.parseInt(minIntervalX);
+        this.minorBetweenMajorX = this.graph.settings.optimalIntervals[minIntervalX];
+
+        this.optimalScaleY = minIntervalY * Math.pow(10, Math.floor(Math.log10(this.scaleY)));
+        this.intervalScaleY = Number.parseInt(minIntervalY);
+        this.minorBetweenMajorY = this.graph.settings.optimalIntervals[minIntervalY];
+
+        // determine the number of pixels between intervals based on the best scale determined earlier
+        this.pixelIntervalX = this.graph.settings.optimalPixelsBetweenIntervals * (this.optimalScaleX / this.scaleX);
+        this.pixelIntervalY = this.graph.settings.optimalPixelsBetweenIntervals * (this.optimalScaleY / this.scaleY);
+    }
+
+    /**
+     * Calculates the reference points for the graph.
+     */
+    calculatePoints() {
+        this.originPos = new Point(-this.leftPoint * this.pixelIntervalY / this.optimalScaleY, this.topPoint * this.pixelIntervalX / this.optimalScaleX);
+        this.centrePoint = new Point((this.topPoint + this.bottomPoint) / 2, (this.leftPoint + this.rightPoint) / 2);
+    }
+}
 
 /**
- * Returns the formatted value to be displayed on the scale.
- *
- * @param {number} num - the raw value to be displayed
+ * Represents a graph and features methods relating to the graph.
  */
-function getScaleNumber(num) {
-    if (Util.isIntegerPosition(num)) {
-        if (Math.log10(Math.abs(num)) > AXIS_NUMBERS_MAX_PLACES) {
-            return num.toExponential(AXIS_NUMBERS_PERCISION);
+class Graph {
+
+    /**
+     * @param {HTMLCanvasElement} canvas    The canvas to draw the graph on.
+     * @param {Object} settings             The settings for the formatting of the graph.
+     * @param {Number} width                The width of the graph.
+     * @param {Number} height               The height of the graph.
+     */
+    constructor(canvas, settings, width, height) {
+        this.width = width;
+        this.height = height;
+        this.canvas = canvas;
+        this.settings = settings;
+        this.setupGraph();
+    }
+
+    /**
+     * Determines the point that is located at a set of X and Y positions from the top left corner of the canvas. It will convert a pair of positions (in pixels) to grid coordinates.
+     *
+     * @param {Number} xCoord       The number of pixels from the left edge.
+     * @param {Number} yCoord       The number of pixels from the top edge.
+     */
+    getPointFromCoordinates(xCoord, yCoord) {
+        let curPoint = new Point();
+        curPoint.x = this.graphProperties.leftPoint + ((xCoord / this.graphProperties.pixelIntervalX) * this.graphProperties.optimalScaleX);
+        curPoint.y = this.graphProperties.topPoint - ((yCoord / this.graphProperties.pixelIntervalY) * this.graphProperties.optimalScaleY);
+        return curPoint;
+    }
+
+    /**
+     * Draws scale numbers onto the graph.
+     *
+     * @param {String} text         The text to be displayed on the number label.
+     * @param {Number} x            The X coordinate of the number label.
+     * @param {Number} y            The Y coordiante of the number label.
+     * @param {String} axis         The axis that the label will be displayed on ("horizontal", "vertical").
+     * @param {String} alignment    The alignment of the label relative to the point specified ("top", "bottom", "left", "right").
+     */
+    drawScaleNumbersWithBackground(text, x, y, axis, alignment) {
+
+        // background
+        this.ctx2d.fillStyle = this.settings.axisNumbers.background;
+
+        let bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight;
+
+        if (axis == "horizontal") {
+            // horizontal axis
+            this.ctx2d.textAlign = "center";
+            this.ctx2d.textBaseline = alignment;
+            bgBoxX = x - (this.ctx2d.measureText(text).width / 2) - this.settings.axisNumbers.padding;
+            bgBoxWidth = this.ctx2d.measureText(text).width + (this.settings.axisNumbers.padding*2);
+            bgBoxHeight = parseInt(this.ctx2d.font) + (this.settings.axisNumbers.padding*2);
+            if (alignment == "top") {
+                bgBoxY = y - this.settings.axisNumbers.padding;
+            } else if (alignment == "bottom") {
+                bgBoxY = y - parseInt(this.ctx2d.font) - this.settings.axisNumbers.padding;
+            }
         } else {
-            return Math.round(num);
+            // vertical axis
+            this.ctx2d.textAlign = alignment;
+            this.ctx2d.textBaseline = "middle";
+            bgBoxY = y - (parseInt(this.ctx2d.font) / 2) - this.settings.axisNumbers.padding;
+            bgBoxWidth = this.ctx2d.measureText(text).width + (this.settings.axisNumbers.padding*2);
+            bgBoxHeight = parseInt(this.ctx2d.font) + (this.settings.axisNumbers.padding*2);
+            if (alignment == "right") {
+                bgBoxX = x - this.ctx2d.measureText(text).width - this.settings.axisNumbers.padding;
+            } else if (alignment == "left") {
+                bgBoxX = x - this.settings.axisNumbers.padding;
+            }
         }
-    } else {
-        if (Math.abs(Math.log10(Math.abs(num))) > AXIS_NUMBERS_MAX_PLACES) {
-            return num.toExponential(AXIS_NUMBERS_PERCISION);
+
+        // background of text
+        this.ctx2d.fillRect(bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight);
+
+        // actual text
+        this.ctx2d.font = this.settings.axisNumbers.font;
+        this.ctx2d.fillStyle = this.settings.axisNumbers.colour;
+        this.ctx2d.fillText(text, x, y);
+    }
+
+    measureScaleNumbersWidth(text) {
+        this.ctx2d.font = this.settings.axisNumbers.font;
+        return this.ctx2d.measureText(text).width;
+    }
+
+    /**
+     * Sets up the graph variables, event listeners, and properties.
+     */
+    setupGraph() {
+
+        this.canvas.height = this.height;
+        this.canvas.width = this.width;
+        this.ctx2d = this.canvas.getContext("2d");
+
+        this.graphProperties = new GraphProperties(
+            this.canvas.height / this.settings.optimalPixelsBetweenIntervals,
+            -this.canvas.height / this.settings.optimalPixelsBetweenIntervals,
+            -this.canvas.width / this.settings.optimalPixelsBetweenIntervals,
+            this.canvas.width / this.settings.optimalPixelsBetweenIntervals,
+            this
+        );
+
+        this.graphProperties.reset();
+        this.graphProperties.calculate();
+
+        // handle zooming
+        this.canvas.addEventListener("wheel", function (wheel) {
+            if (wheel.deltaY > 0) {
+                graph.canvas.style.cursor = "zoom-out";
+                graph.resize(graph.settings.scrollMultiplier, graph.settings.scrollMultiplier, wheel.offsetX, wheel.offsetY);
+            } else {
+                graph.canvas.style.cursor = "zoom-in";
+                graph.resize(1 / graph.settings.scrollMultiplier, 1 / graph.settings.scrollMultiplier, wheel.offsetX, wheel.offsetY);
+            }
+        });
+
+        // for debugging
+        this.canvas.addEventListener("click", function (click) {
+            //console.log("Clicked on: ", graph.getPointFromCoordinates(click.offsetX, click.offsetY));
+        });
+
+        // handle panning
+        this.canvas.addEventListener("mousedown", function (mousedown) {
+            graph.canvas.style.cursor = "move";
+            var lastX = mousedown.x;
+            var lastY = mousedown.y;
+            graph.panGraph(0, 0, true);
+            var mousemoveListener = function (mousemove) {
+                graph.panGraph(lastX - mousemove.x, mousemove.y - lastY, false);
+                lastX = mousemove.x;
+                lastY = mousemove.y;
+            };
+            var mouseupListener = function mouseupListener(mouseup) {
+                graph.stopPanGraph();
+                mousedown.target.style.cursor = "default";
+                graph.canvas.removeEventListener("mousemove", mousemoveListener);
+                graph.canvas.removeEventListener("mouseup", mouseupListener);
+                graph.canvas.removeEventListener("mouseleave", mouseupListener);
+            };
+            graph.canvas.addEventListener("mousemove", mousemoveListener);
+            graph.canvas.addEventListener("mouseup", mouseupListener);
+            graph.canvas.addEventListener('mouseleave', mouseupListener);
+        });
+
+        this.drawGraph();
+    }
+
+    /**
+     * Draws the graph to the canvas.
+     */
+    drawGraph() {
+
+        // Clear tne canvas
+        this.ctx2d.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.graphProperties.calculate();
+
+        // Fill background of canvas
+        this.ctx2d.fillStyle = this.settings.backgroundColour;
+        this.ctx2d.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Rectangles at the four corner of the canvas
+        this.ctx2d.fillStyle = RED;
+        this.ctx2d.fillRect(0, 0, 5, 5);
+        this.ctx2d.fillRect(this.canvas.width - 5, 0, 5, 5);
+        this.ctx2d.fillRect(0, this.canvas.height - 5, 5, 5);
+        this.ctx2d.fillRect(this.canvas.width - 5, this.canvas.height - 5, 5, 5);
+
+        // Set up gridlines
+        this.ctx2d.strokeStyle = BLACK;
+        this.ctx2d.lineWidth = this.settings.minorGridlineWidth;
+
+        // draw vertical lines
+
+        let leftMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
+
+        let rightMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
+
+        let majorIntervalXCount = ((-1 * Util.towardZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX)) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
+
+        for (let x = leftMostLinePos; x <= rightMostLinePos; x += this.graphProperties.pixelIntervalX) {
+            var lineX = Math.round(x) - 0.5;
+            if (majorIntervalXCount == 0) {
+                this.ctx2d.lineWidth = this.settings.majorGridlineWidth;
+                majorIntervalXCount = this.graphProperties.minorBetweenMajorX;
+            } else {
+                this.ctx2d.lineWidth = this.settings.minorGridlineWidth;
+            }
+            majorIntervalXCount--;
+            this.ctx2d.beginPath();
+            this.ctx2d.moveTo(lineX, 0);
+            this.ctx2d.lineTo(lineX, this.canvas.height);
+            this.ctx2d.stroke();
+        }
+
+        // draw horizontal lines
+
+        let topMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
+
+        let bottomMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
+
+        let majorIntervalYCount = ((Util.towardZero(this.graphProperties.topPoint / this.graphProperties.optimalScaleY)) % this.graphProperties.minorBetweenMajorY + this.graphProperties.minorBetweenMajorY) % this.graphProperties.minorBetweenMajorY;
+
+        for (let y = topMostLinePos; y <= bottomMostLinePos; y += this.graphProperties.pixelIntervalY) {
+            var lineY = Math.round(y) - 0.5;
+            if (majorIntervalYCount == 0) {
+                this.ctx2d.lineWidth = this.settings.majorGridlineWidth;
+                majorIntervalYCount = this.graphProperties.minorBetweenMajorX;
+            } else {
+                this.ctx2d.lineWidth = this.settings.minorGridlineWidth;
+            }
+            majorIntervalYCount--;
+            this.ctx2d.beginPath();
+            this.ctx2d.moveTo(0, lineY);
+            this.ctx2d.lineTo(this.canvas.width, lineY);
+            this.ctx2d.stroke();
+        }
+
+        // draw centre dot
+        this.ctx2d.fillStyle = RED;
+        this.ctx2d.beginPath();
+        this.ctx2d.arc(this.graphProperties.originPos.x, this.graphProperties.originPos.y, 3, 0, 2 * Math.PI);
+        this.ctx2d.fill();
+
+        // vertical axis line
+        this.ctx2d.lineWidth = this.settings.axisGridlineWidth;
+        this.ctx2d.beginPath();
+        this.ctx2d.moveTo(Math.round(this.graphProperties.originPos.x) - 0.5, 0);
+        this.ctx2d.lineTo(Math.round(this.graphProperties.originPos.x) - 0.5, this.canvas.width);
+        this.ctx2d.stroke();
+
+        //horizontal axis line
+        this.ctx2d.lineWidth = this.settings.axisGridlineWidth;
+        this.ctx2d.beginPath();
+        this.ctx2d.moveTo(0, Math.round(this.graphProperties.originPos.y) - 0.5);
+        this.ctx2d.lineTo(this.canvas.width, Math.round(this.graphProperties.originPos.y) - 0.5);
+        this.ctx2d.stroke();
+
+        // draw horizontal scale gridlines
+
+        /*
+        if ((this.graphProperties.topPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY < 0) {
+            // x axis off the screen on the top side
+            xAxisVisible = false;
+            labelYPos = 5;
+            labelYAlign = "top";
+        } else if ((this.graphProperties.bottomPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY > 0) {
+            // x axis off the screen on the bottom side
+            xAxisVisible = false;
+            labelYPos = this.height - 5;
+            labelYAlign = "bottom";
         } else {
-            return parseFloat(num.toPrecision(AXIS_NUMBERS_PERCISION));
+            // x axis on the screen
+            xAxisVisible = true;
+            if (this.graphProperties.originPos.y > this.height - 20) {
+                labelYPos = this.graphProperties.originPos.y - 5;
+                labelYAlign = "bottom";
+            } else {
+                labelYPos = this.graphProperties.originPos.y + 5;
+                labelYAlign = "top";
+            }
+        }*/
+
+        let leftMostMajorLine = Math.floor((Math.floor(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX) / (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX)) * (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX);
+
+        for (let x = leftMostMajorLine; x < this.graphProperties.rightPoint; x += this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX) {
+
+            let labelXPos = this.graphProperties.originPos.x + x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX);
+            let labelYPos = this.graphProperties.originPos.y;
+            let labelHeight = parseInt(this.ctx2d.font);
+            let labelYAlign;
+
+            if (labelYPos < 0) {
+                // label is off the screen on the top
+                labelYPos = this.settings.axisNumbers.margin;
+                labelYAlign = "top";
+            } else if (labelYPos + labelHeight + (this.settings.axisNumbers.margin*2) > this.height) {
+                // label is off the screen on the bottom
+                labelYPos = this.height - this.settings.axisNumbers.margin;
+                labelYAlign = "bottom";
+            } else {
+                // label is on the bottom of the axis
+                labelYPos = this.graphProperties.originPos.y + this.settings.axisNumbers.margin;
+                labelYAlign = "top";
+            }
+
+            if (Math.abs(x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX)) > 1) {
+                this.drawScaleNumbersWithBackground(this.getScaleNumber(x), labelXPos, labelYPos, "horizontal", labelYAlign);
+            }
+        }
+
+        // draw vertical scale gridlines
+
+        let topMostMajorLine = Math.floor((Math.floor(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.optimalScaleY) / (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY)) * (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY);
+
+
+        for (let y = topMostMajorLine; y > this.graphProperties.bottomPoint; y -= this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY) {
+
+            let labelYPos = this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY);
+            let labelXPos = this.graphProperties.originPos.x;
+            let labelWidth = this.measureScaleNumbersWidth(this.getScaleNumber(y));
+            let labelXAlign;
+
+            if ((labelXPos - labelWidth - (this.settings.axisNumbers.margin*2)) < 0) {
+                // label is off the screen on the left
+                labelXPos = this.settings.axisNumbers.margin;
+                labelXAlign = "left";
+            } else if (labelXPos > this.width) {
+                // label is off the screen on the right
+                labelXPos = this.width - this.settings.axisNumbers.margin;
+                labelXAlign = "right";
+            } else {
+                // label is on the left of the axis
+                labelXPos = this.graphProperties.originPos.x - this.settings.axisNumbers.margin;
+                labelXAlign = "right";
+            }
+
+            if (Math.abs(y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY)) > 1) {
+                this.drawScaleNumbersWithBackground(this.getScaleNumber(y), labelXPos, labelYPos, "vertical", labelXAlign);
+            }
         }
     }
-}
 
-/**
- * Draws labels on the axis.
- *
- * @param {string} text - text to be displayed
- * @param {number} x - x position of the label
- * @param {number} y - y position of the label
- * @param {string} axis - axis the label will be positioend on
- * @param {string} font - font of the label
- * @param {string} background - background colour of the label
- * @param {string} textColour - colour of the text
- */
-function drawScaleNumbersWithBackground(text, x, y, axis, font, background, textColour) {
-    ctx2d.font = font;
-    ctx2d.fillStyle = background;
-    if (axis == 'horizontal') {
-        ctx2d.textAlign    = 'center';
-        ctx2d.textBaseline = 'top';
-        ctx2d.fillRect(x - (ctx2d.measureText(text).width / 2), y, ctx2d.measureText(text).width + 2, parseInt(ctx2d.font) + 2);
-    } else {
-        ctx2d.textAlign    = 'right';
-        ctx2d.textBaseline = 'middle';
-        ctx2d.fillRect(x - ctx2d.measureText(text).width - 1, y - (parseInt(ctx2d.font) / 2), ctx2d.measureText(text).width + 2, parseInt(ctx2d.font) + 2);
+    /**
+     * Pans the graph.
+     *
+     * @param {Number} xMovePix     Number of pixels to move right (negative to move left).
+     * @param {Number} yMovePix     Number of pixels to move down (negative to move up).
+     */
+    panGraph(xMovePix, yMovePix, start) {
+
+        let now = performance.now();
+
+        if (!start) {
+            // stop pan inertia if any already exists
+            if (this.panInertiaAnimation != undefined) {
+                this.panInertiaAnimation.kill();
+            }
+            // get the velocity that the mouse moved at
+            let timeElapsed = now - this.lastPanTime;
+            this.panVelocity = new Point();
+            this.panVelocity.x = xMovePix / (timeElapsed / 1000);
+            this.panVelocity.y = yMovePix / (timeElapsed / 1000);
+        }
+
+        // update the last time that the mouse velocity was updated
+        this.lastPanTime = now;
+
+        // calculate how much to pan the graph
+        let xMove = xMovePix / this.graphProperties.pixelIntervalX;
+        let yMove = yMovePix / this.graphProperties.pixelIntervalY;
+
+        // update the boundaries of the graph after the pan
+        this.graphProperties.leftPoint += xMove * this.graphProperties.optimalScaleX;
+        this.graphProperties.rightPoint += xMove * this.graphProperties.optimalScaleX;
+        this.graphProperties.topPoint += yMove * this.graphProperties.optimalScaleY;
+        this.graphProperties.bottomPoint += yMove * this.graphProperties.optimalScaleY;
+
+        // draw the graph after the pan
+        this.drawGraph();
     }
-    ctx2d.fillStyle = textColour;
-    ctx2d.fillText(text, x, y);
-}
 
-/**
- * Returns the optimal scale set for the scale specified. The optimal scale set will be a multiple of the scales specified in {@link OPTIMAL_INTERVALS}.
- *
- * @param {number} curScale - the current scale
- * @returns {number[]} - [number of pixels for the optimal interval, the optimal interval]
- */
-function getOptimalScaleSet(curScale) {
+    /**
+     * Called when panning of the graph is stopped and pan inertia should take over.
+     */
+    stopPanGraph() {
 
-    var minInterval = 0;
-    var minIntervalDifference = Number.MAX_VALUE;
-    var mantissa = Util.getMantissa(curScale);
-
-    // loop through optimal intervals and select the one that is the closest to the current scale
-    for (var interval in OPTIMAL_INTERVALS) {
-        if (Math.abs(interval - mantissa) <= minIntervalDifference) {
-            minIntervalDifference = Math.abs(interval - mantissa);
-            minInterval = interval;
+        if (this.panVelocity != undefined && (this.panVelocity.x != 0 || this.panVelocity.y != 0)) {
+            this.panInertiaAnimation = TweenMax.to(
+                this.panVelocity,
+                this.settings.panInertia.animationLength,
+                {
+                    x: 0,
+                    y: 0,
+                    ease: Expo.easeOut,
+                    onUpdate: this.continuePanGraph,
+                    onUpdateScope: this,
+                }
+            );
         }
     }
 
-    // convert the closest interval to number of pixels
-    var optiminalInterval = minInterval * Math.pow(10, Math.floor(Math.log10(curScale)));
+    /**
+     * Called each time pan inertia will cause the graph to be panned.
+     */
+    continuePanGraph() {
+        let now = performance.now();
+        let timeElapsed = now - this.lastPanTime;
+        this.lastPanTime = now;
 
-    return [optiminalInterval, minInterval];
-}
+        // stops panning when the pan inertia velociy is too low (below stopPanValue)
 
-/**
- * Starts the graph resize animation.
- *
- * @param {number} xTimes
- * @param {number} yTimes
- */
-function resizeGraph(xTimes, yTimes) {
-    // scale before resizing
-    startResizeScale = new Point();
-    startResizeScale.x = xScale;
-    startResizeScale.y = yScale;
-
-    // scale after resizing
-    targetResizeScale = new Point();
-    targetResizeScale.x = xScale * xTimes;
-    targetResizeScale.y = yScale * yTimes;
-
-    // time that resizing animation started
-    resizeAnimationStart = null;
-
-    // set cursor image
-    if (xTimes * yTimes < 1) {
-        canvas.style.cursor = "zoom-in";
-    } else {
-        canvas.style.cursor = "zoom-out";
-    }
-
-    // start resize animation
-    window.requestAnimationFrame(animateResize);
-}
-
-/**
- * Called during each frame of the resize animation.
- *
- * @param {DOMHighResTimeStamp} timestamp
- */
-function animateResize(timestamp) {
-
-    if (resizeAnimationStart == null) {
-        resizeAnimationStart = timestamp;
-    }
-
-    var elapsedTime = timestamp - resizeAnimationStart;
-    var elapsedPercentage = Math.min(elapsedTime / (RESIZE_ANIMATION_LENGTH*MILLISECONDS_IN_SECOND), 1);
-
-    xScale = startResizeScale.x + (targetResizeScale.x - startResizeScale.x) * elapsedPercentage;
-    yScale = startResizeScale.y + (targetResizeScale.y - startResizeScale.y) * elapsedPercentage;
-    drawGraph();
-
-    if (xScale == targetResizeScale.x && yScale == targetResizeScale.y) {
-        canvas.style.cursor = "default";
-    } else {
-        window.requestAnimationFrame(animateResize);
-    }
-}
-
-/**
- * Pans the graph.
- *
- * @param {number} xMove
- * @param {number} yMove
- */
-function panGraph(xMove, yMove) {
-    centrePoint.x += xMove * xScale;
-    centrePoint.y += yMove * yScale;
-    drawGraph();
-}
-
-/**
- * Sets up variables for the graph.
- */
-function setUpGraph() {
-    workspace = $('#workspace')[0];
-    canvas    = $('#canvas')[0];
-
-    // Get dimensions of canvas
-    canvas.height = workspace.getBoundingClientRect().height;
-    canvas.width  = workspace.getBoundingClientRect().width - document.getElementById('tools').offsetWidth;
-    centrePos = new Point(canvas.width / 2, canvas.height / 2);
-
-    // Get context of canvas
-    ctx2d = canvas.getContext('2d');
-
-    // handle zooming
-    canvas.addEventListener('wheel', function (wheel) {
-        if (wheel.deltaY > 0) {
-            canvas.style.cursor = 'zoom-out';
-            resizeGraph(SCROLL_MULTIPLIER, SCROLL_MULTIPLIER);
+        let moveX;
+        if (Math.abs(this.panVelocity.x) > this.settings.panInertia.stopPanValue) {
+            moveX = this.panVelocity.x * (timeElapsed / 1000);
         } else {
-            canvas.style.cursor = 'zoom-in';
-            resizeGraph(1 / SCROLL_MULTIPLIER, 1 / SCROLL_MULTIPLIER);
+            moveX = 0;
         }
-    });
 
-    // handle panning
-    canvas.addEventListener('mousedown', function (mousedown) {
-        canvas.style.cursor = 'move';
-        var lastX = mousedown.x;
-        var lastY = mousedown.y;
-        var mousemoveListener = function (mousemove) {
-            panGraph((lastX - mousemove.x) * 1 / curPixelInterval.x, (mousemove.y - lastY) * 1 / curPixelInterval.y);
-            lastX = mousemove.x;
-            lastY = mousemove.y;
-        };
-        var mouseupListener = function mouseupListener() {
-            canvas.style.cursor = 'default';
-            canvas.removeEventListener('mousemove', mousemoveListener);
-            canvas.removeEventListener('mouseup', mouseupListener);
-        };
-        canvas.addEventListener('mousemove', mousemoveListener);
-        canvas.addEventListener('mouseup', mouseupListener);
-    });
-
-    // handle key presses
-    window.addEventListener('keypress', function (keypress) {
-        switch (keypress.key) {
-        case 'c':
-            // center on (0, 0)
-            centrePoint.x = 0;
-            centrePoint.y = 0;
-            drawGraph();
-            break;
+        let moveY;
+        if (Math.abs(this.panVelocity.y) > this.settings.panInertia.stopPanValue) {
+            moveY = this.panVelocity.y * (timeElapsed / 1000);
+        } else {
+            moveY = 0;
         }
-    });
 
-    drawGraph();
+        this.panGraph(moveX, moveY, true);
+    }
+
+    /**
+     * Takes a number and formats it into a string to be displayed as a scale label.
+     *
+     * @param {Number} num      The number of be displayed.
+     */
+    getScaleNumber(num) {
+        if (Util.isIntegerPosition(num)) {
+            if (Math.log10(Math.abs(num)) > this.settings.axisNumbers.maxPlaces) {
+                return num.toExponential(this.settings.axisNumbers.percision);
+            } else {
+                return Math.round(num);
+            }
+        } else {
+            if (Math.abs(Math.log10(Math.abs(num))) > this.settings.axisNumbers.maxPlaces) {
+                return num.toExponential(this.settings.axisNumbers.percision);
+            } else {
+                return parseFloat(num.toPrecision(this.settings.axisNumbers.percision));
+            }
+        }
+    }
+
+    /**
+     * Resizes the graph.
+     *
+     * @param {Number} xTimes       Times to scale the X axis.
+     * @param {Number} yTimes       Times to scale the Y axis.
+     * @param {Number} centreX      The X position of the centre point of resizing.
+     * @param {Number} centreY      The Y position of the centre point of resizing.
+     */
+    resize(xTimes, yTimes, centreX, centreY) {
+
+        // prevent zooming if too far from origin
+        let maxDisFromOrigin = Math.max(
+            (this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX,
+            (this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX,
+            (this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY,
+            (this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
+
+        let maxCoordinate = Math.max(
+            this.graphProperties.leftPoint,
+            this.graphProperties.rightPoint,
+            this.graphProperties.topPoint,
+            this.graphProperties.bottomPoint
+        )
+
+        if ((maxCoordinate < this.settings.maxCoordinate || (xTimes < 1 && yTimes < 1)) && (maxDisFromOrigin < this.settings.maxZoomLimitPixelsFromOrigin || (xTimes > 1 && yTimes > 1))) {
+
+            // stop pan inertia if any already exists
+            if (this.panInertiaAnimation != undefined) {
+                this.panInertiaAnimation.kill();
+            }
+
+            let mousePoint = this.getPointFromCoordinates(centreX, centreY);
+
+            // percent of the height covered above the mouse
+            let topPercent = centreY / this.height;
+            // percent of the width covered left of the mosue
+            let leftPercent = centreX / this.width;
+            // width of the graph in terms of coordinates
+            let pointWidth = this.graphProperties.rightPoint - this.graphProperties.leftPoint;
+            // height of the graph in terms of coordiantes
+            let pointHeight = this.graphProperties.topPoint - this.graphProperties.bottomPoint;
+
+            // determine target boundaries of graph after the zoom
+            this.animationTargetProperties = new GraphProperties(
+                mousePoint.y + (pointHeight * topPercent * yTimes),
+                mousePoint.y - (pointHeight * (1 - topPercent) * yTimes),
+                mousePoint.x - (pointWidth * leftPercent * xTimes),
+                mousePoint.x + (pointWidth * (1 - leftPercent) * xTimes),
+                this
+            );
+
+            // animate the zoom
+            TweenMax.to(
+                this.graphProperties,
+                this.settings.resizeAnimationLength,
+                {
+                    topPoint: this.animationTargetProperties.topPoint,
+                    bottomPoint: this.animationTargetProperties.bottomPoint,
+                    leftPoint: this.animationTargetProperties.leftPoint,
+                    rightPoint: this.animationTargetProperties.rightPoint,
+                    onUpdate: this.drawGraph,
+                    onUpdateScope: this,
+                    onComplete: function () {
+                        this.canvas.style.cursor = "default";
+                    },
+                    onCompleteScope: this
+                }
+            );
+        }
+    }
 }
 
 /**
- * Clears the graph and redraws everything.
+ * Default settings for graph.
+ * @property {String} backgroundColour                  Background colour of the graph.
+ * @property {Number} xScale                            Scale for for the coordinates on the X axis.
+ * @property {Number} yScale                            Scale for for the coordinates on the Y axis.
+ * @property {String} gridlineColour                    Colour of the gridlines.
+ * @property {Number} minorGridlineWidth                Line width of minor gridlines.
+ * @property {Number} majorGridlineWidth                Line width of major gridlines.
+ * @property {Number} axisGridlineWdith                 Line width of axis gridlines.
+ * @property {Number} scrollMultiplier                  Number of times to zoom in/out on each scroll.
+ * @property {Number} optimalPixelsBetweenIntervals     Preferred number of pixels between each minor interval.
+ * @property {Object} optimalIntervals                  A list of preferred interval multiples in the format of {multiple: number of minor gridlines between major gridlines}
+ * @property {Number} resizeAnimationLength             Number of seconds for the resize animation.
+ * @property {Object} axisNumbers                       Settings for the axis numbers.
+ * @property {String} axisNumbers.font                  Font of the axis numbers.
+ * @property {String} axisNumbers.background            Background colour of the axis numbers.
+ * @property {String} axisNumbers.colour                Font colour of the axis numbers.
+ * @property {Number} axisNumbers.maxPlaces             Maximum number of places for a scale number before displaying in scientific notation.
+ * @property {Number} axisNumbers.percision             Number of places to display in scientific notation.
+ * @property {Number} axisNumbers.padding               Number of pixels of padding around axis label numbers
+ * @property {Number} axisNumbers.margin                Number of pixels of margin around the axis label nubmers
+ * @property {Object} panInertia                        Settings for pan inertia.
+ * @property {Number} panInertia.panAnimationLength     Number of seconds for the pan inertia animation.
+ * @property {Number} panInertia.stopPanValue           Value to stop pan inertia when reached.
+ * @property {Number} maxZoomLimitPixelsFromOrigin      Maximum number of pixels from the origin to prevent floating point errors.
+ * @property {Number} maxCoordinate                     Maximum coordinate that can be safely displayed.
  */
-function drawGraph() {
+const DEFAULT_SETTINGS = {
+    backgroundColour: "#F0F0F0", // grey
+    xScale: 1,
+    yScale: 1,
+    gridlineColour: "#000000", //black
+    minorGridlineWidth: 0.2,
+    majorGridlineWidth: 0.7,
+    axisGridlineWidth: 1.5,
+    scrollMultiplier: 1.5,
+    optimalPixelsBetweenIntervals: 30,
+    optimalIntervals: {
+        1: 5,
+        2: 4,
+        5: 5,
+        10: 5
+    },
+    resizeAnimationLength: 0.2,
+    axisNumbers: {
+        font: "12px Arial",
+        background: "#F0F0F0", // grey
+        colour: "#000000", // black
+        maxPlaces: 4,
+        percision: 3,
+        padding: 2,
+        margin: 5
+    },
+    panInertia: {
+        animationLength: 1,
+        stopPanValue: 100
+    },
+    maxZoomLimitPixelsFromOrigin: 1e10,
+    maxCoordinate: 1e300
+};
 
-    // Clear tne canvas
-    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+const BLACK = "#000000";
+const RED = "#FF0000";
 
-    // Get optimal scales and the number of pixels in between for the optimal scale
-    var optimalXScaleSet = getOptimalScaleSet(xScale);
-    var optimalXScale = optimalXScaleSet[0];
-    var optimalXInterval = optimalXScaleSet[1];
-    var optimalYScaleSet = getOptimalScaleSet(yScale);
-    var optimalYScale = optimalYScaleSet[0];
-    var optimalYInterval = optimalYScaleSet[1];
+var graph;
 
-    // Sets the current scale interval in terms of pixels
-    curPixelInterval = new Point();
-    curPixelInterval.x = OPTIMAL_PIXELS_BETWEEN_INTERVALS * (optimalXScale / xScale);
-    curPixelInterval.y = OPTIMAL_PIXELS_BETWEEN_INTERVALS * (optimalYScale / yScale);
+function displayGraph() {
 
-    // Sets the current number of minor gridlines between major gridlines
-    curGridlineInterval = new Point();
-    curGridlineInterval.x = OPTIMAL_INTERVALS[optimalXInterval];
-    curGridlineInterval.y = OPTIMAL_INTERVALS[optimalYInterval];
+    var graphCanvas = $("#graph")[0];
+    var workspace = $("#workspace")[0];
+    var tools = $("#tools")[0];
 
-    // Sets up the point on a gridline that will be the closest to the centre of the graph
-    var wholeCentrePoint = new Point();
-    wholeCentrePoint.x = (Math.floor(centrePoint.x / optimalXScale) * optimalXScale);
-    wholeCentrePoint.y = (Math.floor(centrePoint.y / optimalYScale) * optimalYScale);
-    var wholeCentrePos = new Point();
-    wholeCentrePos.x = centrePos.x + ((wholeCentrePoint.x - centrePoint.x) / xScale) * curPixelInterval.x;
-    wholeCentrePos.y = centrePos.y - ((wholeCentrePoint.y - centrePoint.y) / yScale) * curPixelInterval.y;
-
-    // Sets up the position of the origin of the graph
-    var originPos = new Point();
-    originPos.x = wholeCentrePos.x - (wholeCentrePoint.x / xScale) * curPixelInterval.x;
-    originPos.y = wholeCentrePos.y + (wholeCentrePoint.y / yScale) * curPixelInterval.y;
-
-    // Fill background of canvas
-    ctx2d.fillStyle = BACKGROUND_COLOUR;
-    ctx2d.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Rectangles at the four corner of the canvas
-    ctx2d.fillStyle = RED;
-    ctx2d.fillRect(0, 0, 5, 5);
-    ctx2d.fillRect(canvas.width - 5, 0, 5, 5);
-    ctx2d.fillRect(0, canvas.height - 5, 5, 5);
-    ctx2d.fillRect(canvas.width - 5, canvas.height - 5, 5, 5);
-
-    // Set up gridlines
-    ctx2d.strokeStyle = BLACK;
-    ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
-
-    // Draw gridlines on horizontal axis
-    var majorIntervalCount = Math.abs(Math.round(Math.ceil((0 - originPos.x) / curPixelInterval.x))) % curGridlineInterval.x;
-
-    for (var x = originPos.x + (Math.ceil((0 - originPos.x) / curPixelInterval.x) * curPixelInterval.x); x < canvas.width; x += curPixelInterval.x) {
-        var roundedX = Math.round(x);
-        if (majorIntervalCount == 0) {
-            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
-            majorIntervalCount = curGridlineInterval.x;
-        } else {
-            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
-        }
-        majorIntervalCount--;
-        ctx2d.beginPath();
-        ctx2d.moveTo(roundedX, 0);
-        ctx2d.lineTo(roundedX, canvas.height);
-        ctx2d.stroke();
-    }
-
-    delete window.majorIntervalCount;
-    // Draw gridlines on vertical axis
-    var majorIntervalCount = Math.abs(Math.round(Math.ceil((0 - originPos.y) / curPixelInterval.y))) % curGridlineInterval.y;
-
-    for (var y = originPos.y + (Math.ceil((0 - originPos.y) / curPixelInterval.y) * curPixelInterval.y); y < canvas.height; y += curPixelInterval.y) {
-        var roundedY = Math.round(y);
-        if (majorIntervalCount == 0) {
-            ctx2d.lineWidth = MAJOR_GRIDLINE_WIDTH;
-            majorIntervalCount = curGridlineInterval.y;
-        } else {
-            ctx2d.lineWidth = MINOR_GRIDLINE_WIDTH;
-        }
-        majorIntervalCount--;
-        ctx2d.beginPath();
-        ctx2d.moveTo(0, roundedY);
-        ctx2d.lineTo(canvas.width, roundedY);
-        ctx2d.stroke();
-    }
-
-    // Darker vertical axis lines
-    ctx2d.lineWidth = AXIS_GRIDLINE_WIDTH;
-    ctx2d.beginPath();
-    ctx2d.moveTo(originPos.x, 0);
-    ctx2d.lineTo(originPos.x, canvas.width);
-    ctx2d.stroke();
-
-    // Darker horizontal axis lines
-    ctx2d.lineWidth = AXIS_GRIDLINE_WIDTH;
-    ctx2d.beginPath();
-    ctx2d.moveTo(0, originPos.y);
-    ctx2d.lineTo(canvas.width, originPos.y);
-    ctx2d.stroke();
-
-    // Draw numbers on horizontal axis
-    for (var x = originPos.x + Math.floor((0 - originPos.x) / curPixelInterval.x / curGridlineInterval.x) * curPixelInterval.x * curGridlineInterval.x; x < canvas.width; x += curGridlineInterval.x * curPixelInterval.x) {
-        if (!Util.isSamePosition(x, originPos.x)) {
-            drawScaleNumbersWithBackground(getScaleNumber((x - originPos.x) / curPixelInterval.x * optimalXScale), x, originPos.y + 5, 'horizontal', AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
-        }
-    }
-
-    // Draw numbers on vertical axis
-    for (var y = originPos.y + Math.floor((0 - originPos.y) / curPixelInterval.y / curGridlineInterval.y) * curPixelInterval.y * curGridlineInterval.y; y < canvas.height; y += curGridlineInterval.y * curPixelInterval.y) {
-        if (!Util.isSamePosition(y, originPos.y)) {
-            drawScaleNumbersWithBackground(getScaleNumber((originPos.y - y) / curPixelInterval.y * optimalYScale), originPos.x - 5, y, 'vertical', AXIS_NUMBERS_FONT, BACKGROUND_COLOUR, BLACK);
-        }
-    }
-
-    // Draw circle in the centre of the canvas
-    ctx2d.fillStyle = RED;
-    ctx2d.beginPath();
-    ctx2d.arc(centrePos.x, centrePos.y, 3, 0, 2 * Math.PI);
-    ctx2d.fill();
-
-    // Draw circle in closest whole point in centre of canvas
-    ctx2d.fillStyle = GREEN;
-    ctx2d.beginPath();
-    ctx2d.arc(wholeCentrePos.x, wholeCentrePos.y, 3, 0, 2 * Math.PI);
-    ctx2d.fill();
+    var graphHeight = workspace.getBoundingClientRect().height;
+    var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth;
+    graph = new Graph(graphCanvas, DEFAULT_SETTINGS, graphWidth, graphHeight);
 }
