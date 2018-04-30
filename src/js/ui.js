@@ -24,8 +24,8 @@ class Point {
     $(function() {
         // Obtain JSON files
         var request1 = new XMLHttpRequest();
-        request1.responseType = "json";
-        request1.open("GET", "ui.json");
+        request1.responseType = 'json';
+        request1.open('GET', 'ui.json');
         request1.send();
         request1.onload = function() {
             data.ui = request1.response;
@@ -33,8 +33,8 @@ class Point {
         }
 
         var request2 = new XMLHttpRequest();
-        request2.responseType = "json";
-        request2.open("GET", "colors.json");
+        request2.responseType = 'json';
+        request2.open('GET', 'colors.json');
         request2.send();
         request2.onload = function() {
             data.colors = request2.response;
@@ -42,20 +42,20 @@ class Point {
         }
 
         var request3 = new XMLHttpRequest();
-        request3.responseType = "json";
-        request3.open("GET", "default.math");
+        request3.responseType = 'json';
+        request3.open('GET', 'default.math');
         request3.send();
         request3.onload = function() {
             data.layout = request3.response;
         }
 
         // Closes menus when user clicks outside of a menu
-        window.addEventListener("mouseup", function(e) {
-            if (e.button == 0 && isMenuOpen && !(e.target.matches(".toolbar-menu") || e.target.matches(".toolbar-menu *"))) {
-                document.getElementsByClassName("menu-open")[0].classList.add("menu-close");
-                document.getElementsByClassName("menu-close")[0].classList.remove("menu-open");
-                if (document.getElementById("leave-menu") != null) {
-                    document.getElementById("leave-menu").outerHTML = "";
+        window.addEventListener('mouseup', function(e) {
+            if (e.button == 0 && isMenuOpen && !(e.target.matches('.toolbar-menu') || e.target.matches('.toolbar-menu *'))) {
+                document.getElementsByClassName('menu-open')[0].classList.add('menu-close');
+                document.getElementsByClassName('menu-close')[0].classList.remove('menu-open');
+                if (document.getElementById('leave-menu') != null) {
+                    document.getElementById('leave-menu').outerHTML = '';
                 }
                 isMenuOpen = false;
             }
@@ -64,7 +64,7 @@ class Point {
         var prevMouseX = 0;
         var prevMouseY = 0;
         var resetMousePos = null;
-        window.addEventListener("mousemove", function(e) {
+        window.addEventListener('mousemove', function(e) {
             mouse.x = e.x;
             mouse.y = e.y - 20; // 20 is the toolbar height
 
@@ -90,24 +90,24 @@ class Point {
      * Sets colors of different UI elements based on values set in colors.json.
      */
     function setColors() {
-        var toolbar = $("#toolbar");
+        var toolbar = $('#toolbar');
         var theme   = data.colors.light;
-        toolbar.css("background-color", theme.toolbar.background);
-        toolbar.css("color",            theme.toolbar.color);
-        document.getElementById("extra-styling").innerHTML = `
+        toolbar.css('background-color', theme.toolbar.background);
+        toolbar.css('color',            theme.toolbar.color);
+        document.getElementById('extra-styling').innerHTML = `
             .toolbar-item > span:hover {
                 background-color: ${theme.toolbar.item.hover.background};
                 color:            ${theme.toolbar.item.hover.text};
             }
         `;
 
-        var tools = $("#tools");
-        tools.css("background-color", theme.panels.background);
+        var tools = $('#tools');
+        tools.css('background-color', theme.panels.background);
 
-        var tool = $(".tool");
-        tool.css("color",  theme.panels.tools.color);
-        tool.css("stroke", theme.panels.tools.color);
-        tool.css("fill",   theme.panels.tools.color);
+        var tool = $('.tool');
+        tool.css('color',  theme.panels.tools.color);
+        tool.css('stroke', theme.panels.tools.color);
+        tool.css('fill',   theme.panels.tools.color);
 
         // Replace all <img> SVGs with inline SVG so I can change their colors (code from Stack Overflow)
         // https://stackoverflow.com/questions/11978995/how-to-change-color-of-svg-image-using-css-jquery-svg-image-replacement
@@ -145,7 +145,7 @@ class Point {
      * Populates the toolbar with items defined in ui.json.
      */
     function populateToolbar() {
-        var toolbar = document.getElementById("toolbar");
+        var toolbar = document.getElementById('toolbar');
         var items   = data.ui.toolbar;
         for (var item in items) {
             $("#toolbar").append(`
@@ -154,19 +154,19 @@ class Point {
                     <div class="toolbar-menu" id="menu-item-${item.toLowerCase()}"></div>
                 </div>
             `);
-            var toolbarItem = document.querySelector(".toolbar-item:last-child");
-            toolbarItem.addEventListener("mouseup", function(event) {
-                if (e.button == 0 && !isMenuOpen) {
+            var toolbarItem = document.querySelector('.toolbar-item:last-child');
+            toolbarItem.addEventListener('mouseup', function(event) {
+                if (event.button == 0 && !isMenuOpen) {
                     var itemName = `menu-item-${event.target.innerText.toLowerCase()}`;
-                    document.getElementById(itemName).classList.remove("menu-close");
-                    document.getElementById(itemName).classList.add("menu-open");
+                    document.getElementById(itemName).classList.remove('menu-close');
+                    document.getElementById(itemName).classList.add('menu-open');
 
-                    var leaveMenu = document.createElement("div"); // Prevents clicks on other UI elements while menu is open
-                    leaveMenu.style.height   = "100%";
-                    leaveMenu.style.width    = "100%";
-                    leaveMenu.style.position = "absolute";
-                    leaveMenu.style.zIndex   = "1";
-                    leaveMenu.setAttribute("id", "leave-menu");
+                    var leaveMenu = document.createElement('div'); // Prevents clicks on other UI elements while menu is open
+                    leaveMenu.style.height   = '100%';
+                    leaveMenu.style.width    = '100%';
+                    leaveMenu.style.position = 'absolute';
+                    leaveMenu.style.zIndex   = '1';
+                    leaveMenu.setAttribute('id', 'leave-menu');
                     document.body.appendChild(leaveMenu);
                     setTimeout(function() {
                         isMenuOpen = true;
@@ -175,43 +175,53 @@ class Point {
             });
 
             // Close current menu and open new one when moving mouse over another menu
-            toolbarItem.addEventListener("mouseleave", function(event) {
+            toolbarItem.addEventListener('mouseleave', function(event) {
                 if (event.relatedTarget != null) {
-                    if (isMenuOpen && event.relatedTarget.matches(".toolbar-item > span")) {
-                        var openMenus = document.getElementsByClassName("menu-open");
+                    if (isMenuOpen && event.relatedTarget.matches('.toolbar-item > span')) {
+                        var openMenus = document.getElementsByClassName('menu-open');
                         for (var i = 0; i < openMenus.length; i++) {
-                            openMenus[i].classList.add("menu-close");
-                            openMenus[i].classList.remove("menu-open");
+                            openMenus[i].classList.add('menu-close');
+                            openMenus[i].classList.remove('menu-open');
                         }
 
                         var itemName = `menu-item-${event.relatedTarget.innerText.toLowerCase()}`;
                         if (document.getElementById(itemName) != null) {
-                            document.getElementById(itemName).classList.remove("menu-close");
-                            document.getElementById(itemName).classList.add("menu-open");
+                            document.getElementById(itemName).classList.remove('menu-close');
+                            document.getElementById(itemName).classList.add('menu-open');
                         }
                     }
                 }
             });
 
             for (var menuItem in items[item]) {
-                switch (items[item][menuItem]["type"]) {
-                    case "button":
-                        $(".toolbar-menu").last().append(`<div class="toolbar-menu-item">${menuItem}</div>`);
+                switch (items[item][menuItem]['type']) {
+                    case 'button':
+                        $('.toolbar-menu').last().append(`
+                            <div class="toolbar-menu-item"></div>
+                            <div class="toolbar-menu-item">${menuItem}</div>
+                            <div class="toolbar-menu-item"></div>`);
                         break;
-                    case "toggle":
-                        $(".toolbar-menu").last().append(`
-                            <div style="position:relative;" class="toolbar-menu-item">
-                                <input type="checkbox">
+                    case 'toggle':
+                        $('.toolbar-menu').last().append(`
+                                <input type="checkbox" class="toolbar-menu-item">
                                 <span>${menuItem}</span>
                             </div>
                         `);
                         break;
-                    case "line":
-                        $(".toolbar-menu").last().append("<hr style=\"margin:3px 2px;\">");
+                    case 'line':
+                        $('.toolbar-menu').last().append('<hr style="margin:3px 2px;">');
                         break;
-                    case "panel":
-                        //var
-                        $(".toolbar-menu").last().append(`<div class="toolbar-menu-item">${menuItem}</div>`);
+                    case 'panel':
+                        var panelItem = document.createElement('div');
+                        panelItem.classList.add('toolbar-menu-item');
+                        panelItem.addEventListener('mouseover', function(event) {
+                            if ($(event.target.parentNode).hasClass('menu-open')) {
+                                console.log("gonna open the toolbar panel hold on");
+                            }
+                        });
+                        panelItem.innerHTML = menuItem;
+                        document.getElementById('menu-item-' + item.toLowerCase()).appendChild(panelItem);
+                        //$('.toolbar-menu').last().append(`<div class="toolbar-menu-item">${menuItem}</div>`);
 
                 }
             }
