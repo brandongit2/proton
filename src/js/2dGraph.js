@@ -636,7 +636,7 @@ const DEFAULT_SETTINGS = {
     },
     resizeAnimationLength: 0.2,
     axisNumbers: {
-        font: "12px Arial",
+        font: "12px KaTeX_Math",
         background: "#F0F0F0", // grey
         colour: "#000000", // black
         maxPlaces: 4,

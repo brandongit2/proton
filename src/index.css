@@ -126,3 +126,8 @@ body {
 .tool:hover {
     background-color: rgba(0, 0, 0, 0.2);
 }
+
+@font-face {
+    font-family: "KaTeX Math";
+    src: url("res/KaTeX_Math-Regular.ttf")
+}
