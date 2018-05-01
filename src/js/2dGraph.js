@@ -207,6 +207,7 @@ class Graph {
 
         // handle zooming
         this.canvas.addEventListener("wheel", function (wheel) {
+            let graph = wheel.target.graph;
             if (wheel.deltaY > 0) {
                 graph.canvas.style.cursor = "zoom-out";
                 graph.resize(graph.settings.scrollMultiplier, graph.settings.scrollMultiplier, wheel.offsetX, wheel.offsetY);
@@ -218,11 +219,13 @@ class Graph {
 
         // for debugging
         this.canvas.addEventListener("click", function (click) {
+            let graph = click.target.graph;
             //console.log("Clicked on: ", graph.getPointFromCoordinates(click.offsetX, click.offsetY));
         });
 
         // handle panning
         this.canvas.addEventListener("mousedown", function (mousedown) {
+            let graph = mousedown.target.graph;
             graph.canvas.style.cursor = "move";
             var lastX = mousedown.x;
             var lastY = mousedown.y;
@@ -665,8 +668,6 @@ const DEFAULT_SETTINGS = {
 const BLACK = "#000000";
 const RED = "#FF0000";
 
-var graph;
-
 function displayGraph() {
 
     var graphCanvas = $("#graph")[0];
@@ -676,5 +677,5 @@ function displayGraph() {
     var graphHeight = workspace.getBoundingClientRect().height;
     var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth / 2;
     graphCanvas.offsetX = tools.offsetWidth;
-    graph = new Graph(graphCanvas, DEFAULT_SETTINGS, graphWidth, graphHeight);
+    graphCanvas.graph = new Graph(graphCanvas, DEFAULT_SETTINGS, graphWidth, graphHeight);
 }
