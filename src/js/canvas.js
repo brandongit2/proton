@@ -274,13 +274,13 @@ class Graph {
 
         // draw vertical lines
 
-        let leftMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
-
-        let rightMostLinePos = this.graphProperties.originPos.x + (Util.towardZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
+        let leftMostLineCoord = Util.towardZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX;
+        let rightMostLineCoord = Util.towardZero(this.graphProperties.rightPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX;
 
         let majorIntervalXCount = ((-1 * Util.towardZero(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX)) % this.graphProperties.minorBetweenMajorX + this.graphProperties.minorBetweenMajorX) % this.graphProperties.minorBetweenMajorX;
 
-        for (let x = leftMostLinePos; x <= rightMostLinePos; x += this.graphProperties.pixelIntervalX) {
+        for (let xCoord = leftMostLineCoord; xCoord <= rightMostLineCoord; xCoord += this.graphProperties.optimalScaleX) {
+            var x = this.graphProperties.originPos.x + (Math.round(xCoord / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX);
             var lineX = Math.round(x) - 0.5;
             if (majorIntervalXCount == 0) {
                 this.ctx2d.lineWidth = this.settings.majorGridlineWidth;
@@ -297,14 +297,14 @@ class Graph {
 
         // draw horizontal lines
 
-        let topMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
-
-        let bottomMostLinePos = this.graphProperties.originPos.y - (Util.towardZero(this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
+        let topMostLineCoord = Util.towardZero(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.optimalScaleY;
+        let bottomMostLineCoord = Util.towardZero(this.graphProperties.bottomPoint / this.graphProperties.optimalScaleY) * this.graphProperties.optimalScaleY;
 
         let majorIntervalYCount = ((Util.towardZero(this.graphProperties.topPoint / this.graphProperties.optimalScaleY)) % this.graphProperties.minorBetweenMajorY + this.graphProperties.minorBetweenMajorY) % this.graphProperties.minorBetweenMajorY;
 
-        for (let y = topMostLinePos; y <= bottomMostLinePos; y += this.graphProperties.pixelIntervalY) {
-            var lineY = Math.round(y) - 0.5;
+        for (let yCoord = topMostLineCoord; yCoord >= bottomMostLineCoord; yCoord -= this.graphProperties.optimalScaleY) {
+            let y = this.graphProperties.originPos.y - (Math.round(yCoord / this.graphProperties.optimalScaleY) * this.graphProperties.pixelIntervalY);
+            let lineY = Math.round(y) - 0.5;
             if (majorIntervalYCount == 0) {
                 this.ctx2d.lineWidth = this.settings.majorGridlineWidth;
                 majorIntervalYCount = this.graphProperties.minorBetweenMajorX;
@@ -651,11 +651,8 @@ function displayGraph() {
     var workspace = $("#content")[0];
     var tools = $("#tools")[0];
 
-    console.log($("#tools")[0].offsetWidth);
-
     var graphHeight = workspace.getBoundingClientRect().height;
     var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth/2;
     graphCanvas.offsetX = tools.offsetWidth;
-    console.log(graphCanvas.offsetX);
     graph = new Graph(graphCanvas, DEFAULT_SETTINGS, graphWidth, graphHeight);
 }
