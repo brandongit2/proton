@@ -340,29 +340,6 @@ class Graph {
 
         // draw horizontal scale gridlines
 
-        /*
-        if ((this.graphProperties.topPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY < 0) {
-            // x axis off the screen on the top side
-            xAxisVisible = false;
-            labelYPos = 5;
-            labelYAlign = "top";
-        } else if ((this.graphProperties.bottomPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalY > 0) {
-            // x axis off the screen on the bottom side
-            xAxisVisible = false;
-            labelYPos = this.height - 5;
-            labelYAlign = "bottom";
-        } else {
-            // x axis on the screen
-            xAxisVisible = true;
-            if (this.graphProperties.originPos.y > this.height - 20) {
-                labelYPos = this.graphProperties.originPos.y - 5;
-                labelYAlign = "bottom";
-            } else {
-                labelYPos = this.graphProperties.originPos.y + 5;
-                labelYAlign = "top";
-            }
-        }*/
-
         let leftMostMajorLine = Math.floor((Math.floor(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX) / (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX)) * (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX);
 
         for (let x = leftMostMajorLine; x < this.graphProperties.rightPoint; x += this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX) {
@@ -671,10 +648,14 @@ var graph;
 function displayGraph() {
 
     var graphCanvas = $("#graph")[0];
-    var workspace = $("#workspace")[0];
+    var workspace = $("#content")[0];
     var tools = $("#tools")[0];
 
+    console.log($("#tools")[0].offsetWidth);
+
     var graphHeight = workspace.getBoundingClientRect().height;
-    var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth;
+    var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth/2;
+    graphCanvas.offsetX = tools.offsetWidth;
+    console.log(graphCanvas.offsetX);
     graph = new Graph(graphCanvas, DEFAULT_SETTINGS, graphWidth, graphHeight);
 }

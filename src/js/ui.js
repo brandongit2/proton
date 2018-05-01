@@ -85,8 +85,8 @@ class Point {
             }, 20);
         });
 
-        createWorkspace();
-        //setUpGraph();
+        //createWorkspace();
+        displayGraph();
     });
 
     /**
