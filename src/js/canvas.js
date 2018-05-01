@@ -150,8 +150,8 @@ class Graph {
             this.ctx2d.textAlign = "center";
             this.ctx2d.textBaseline = alignment;
             bgBoxX = x - (this.ctx2d.measureText(text).width / 2) - this.settings.axisNumbers.padding;
-            bgBoxWidth = this.ctx2d.measureText(text).width + (this.settings.axisNumbers.padding*2);
-            bgBoxHeight = parseInt(this.ctx2d.font) + (this.settings.axisNumbers.padding*2);
+            bgBoxWidth = this.ctx2d.measureText(text).width + (this.settings.axisNumbers.padding * 2);
+            bgBoxHeight = parseInt(this.ctx2d.font) + (this.settings.axisNumbers.padding * 2);
             if (alignment == "top") {
                 bgBoxY = y - this.settings.axisNumbers.padding;
             } else if (alignment == "bottom") {
@@ -162,8 +162,8 @@ class Graph {
             this.ctx2d.textAlign = alignment;
             this.ctx2d.textBaseline = "middle";
             bgBoxY = y - (parseInt(this.ctx2d.font) / 2) - this.settings.axisNumbers.padding;
-            bgBoxWidth = this.ctx2d.measureText(text).width + (this.settings.axisNumbers.padding*2);
-            bgBoxHeight = parseInt(this.ctx2d.font) + (this.settings.axisNumbers.padding*2);
+            bgBoxWidth = this.ctx2d.measureText(text).width + (this.settings.axisNumbers.padding * 2);
+            bgBoxHeight = parseInt(this.ctx2d.font) + (this.settings.axisNumbers.padding * 2);
             if (alignment == "right") {
                 bgBoxX = x - this.ctx2d.measureText(text).width - this.settings.axisNumbers.padding;
             } else if (alignment == "left") {
@@ -353,7 +353,7 @@ class Graph {
                 // label is off the screen on the top
                 labelYPos = this.settings.axisNumbers.margin;
                 labelYAlign = "top";
-            } else if (labelYPos + labelHeight + (this.settings.axisNumbers.margin*2) > this.height) {
+            } else if (labelYPos + labelHeight + (this.settings.axisNumbers.margin * 2) > this.height) {
                 // label is off the screen on the bottom
                 labelYPos = this.height - this.settings.axisNumbers.margin;
                 labelYAlign = "bottom";
@@ -380,7 +380,7 @@ class Graph {
             let labelWidth = this.measureScaleNumbersWidth(this.getScaleNumber(y));
             let labelXAlign;
 
-            if ((labelXPos - labelWidth - (this.settings.axisNumbers.margin*2)) < 0) {
+            if ((labelXPos - labelWidth - (this.settings.axisNumbers.margin * 2)) < 0) {
                 // label is off the screen on the left
                 labelXPos = this.settings.axisNumbers.margin;
                 labelXAlign = "left";
@@ -408,35 +408,57 @@ class Graph {
      */
     panGraph(xMovePix, yMovePix, start) {
 
-        let now = performance.now();
-
-        if (!start) {
-            // stop pan inertia if any already exists
-            if (this.panInertiaAnimation != undefined) {
-                this.panInertiaAnimation.kill();
-            }
-            // get the velocity that the mouse moved at
-            let timeElapsed = now - this.lastPanTime;
-            this.panVelocity = new Point();
-            this.panVelocity.x = xMovePix / (timeElapsed / 1000);
-            this.panVelocity.y = yMovePix / (timeElapsed / 1000);
-        }
-
-        // update the last time that the mouse velocity was updated
-        this.lastPanTime = now;
-
+        let allowPan = true;
+        
         // calculate how much to pan the graph
         let xMove = xMovePix / this.graphProperties.pixelIntervalX;
         let yMove = yMovePix / this.graphProperties.pixelIntervalY;
 
-        // update the boundaries of the graph after the pan
-        this.graphProperties.leftPoint += xMove * this.graphProperties.optimalScaleX;
-        this.graphProperties.rightPoint += xMove * this.graphProperties.optimalScaleX;
-        this.graphProperties.topPoint += yMove * this.graphProperties.optimalScaleY;
-        this.graphProperties.bottomPoint += yMove * this.graphProperties.optimalScaleY;
+        let newLeftPoint = this.graphProperties.leftPoint + xMove * this.graphProperties.optimalScaleX;
+        let newRightPoint = this.graphProperties.rightPoint + xMove * this.graphProperties.optimalScaleX;
+        let newTopPoint = this.graphProperties.topPoint + yMove * this.graphProperties.optimalScaleY;
+        let newBottomPoint = this.graphProperties.bottomPoint + yMove * this.graphProperties.optimalScaleY;
 
-        // draw the graph after the pan
-        this.drawGraph();
+        // check if the pan will go off the safe boundaries of the graph
+        if (newLeftPoint < -this.settings.maxCoordinate && xMovePix < 0) {
+            allowPan = false;
+        } else if (newRightPoint > this.settings.maxCoordinate && xMovePix > 0) {
+            allowPan = false;
+        } else if (newTopPoint > this.settings.maxCoordinate && yMovePix > 0) {
+            allowPan = false;
+        } else if (newBottomPoint < -this.settings.maxCoordinate && yMovePix < 0) {
+            allowPan = false;
+        }
+
+        if (allowPan) {
+
+            let now = performance.now();
+
+            if (!start) {
+                // stop pan inertia if any already exists
+                if (this.panInertiaAnimation != undefined) {
+                    this.panInertiaAnimation.kill();
+                }
+                // get the velocity that the mouse moved at
+                let timeElapsed = now - this.lastPanTime;
+                this.panVelocity = new Point();
+                this.panVelocity.x = xMovePix / (timeElapsed / 1000);
+                this.panVelocity.y = yMovePix / (timeElapsed / 1000);
+            }
+
+            // update the last time that the mouse velocity was updated
+            this.lastPanTime = now;
+
+
+            // update the boundaries of the graph after the pan
+            this.graphProperties.leftPoint = newLeftPoint;
+            this.graphProperties.rightPoint = newRightPoint;
+            this.graphProperties.topPoint = newTopPoint;
+            this.graphProperties.bottomPoint = newBottomPoint;
+
+            // draw the graph after the pan
+            this.drawGraph();
+        }
     }
 
     /**
@@ -652,7 +674,7 @@ function displayGraph() {
     var tools = $("#tools")[0];
 
     var graphHeight = workspace.getBoundingClientRect().height;
-    var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth/2;
+    var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth / 2;
     graphCanvas.offsetX = tools.offsetWidth;
     graph = new Graph(graphCanvas, DEFAULT_SETTINGS, graphWidth, graphHeight);
 }
