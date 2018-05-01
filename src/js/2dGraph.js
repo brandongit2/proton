@@ -264,13 +264,6 @@ class Graph {
         this.ctx2d.fillStyle = this.settings.backgroundColour;
         this.ctx2d.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Rectangles at the four corner of the canvas
-        this.ctx2d.fillStyle = RED;
-        this.ctx2d.fillRect(0, 0, 5, 5);
-        this.ctx2d.fillRect(this.canvas.width - 5, 0, 5, 5);
-        this.ctx2d.fillRect(0, this.canvas.height - 5, 5, 5);
-        this.ctx2d.fillRect(this.canvas.width - 5, this.canvas.height - 5, 5, 5);
-
         // Set up gridlines
         this.ctx2d.strokeStyle = BLACK;
         this.ctx2d.lineWidth = this.settings.minorGridlineWidth;
@@ -321,24 +314,18 @@ class Graph {
             this.ctx2d.stroke();
         }
 
-        // draw centre dot
-        this.ctx2d.fillStyle = RED;
-        this.ctx2d.beginPath();
-        this.ctx2d.arc(this.graphProperties.originPos.x, this.graphProperties.originPos.y, 3, 0, 2 * Math.PI);
-        this.ctx2d.fill();
-
         // vertical axis line
         this.ctx2d.lineWidth = this.settings.axisGridlineWidth;
         this.ctx2d.beginPath();
-        this.ctx2d.moveTo(Math.round(this.graphProperties.originPos.x) - 0.5, 0);
-        this.ctx2d.lineTo(Math.round(this.graphProperties.originPos.x) - 0.5, this.canvas.width);
+        this.ctx2d.moveTo(Math.round(this.graphProperties.originPos.x), 0);
+        this.ctx2d.lineTo(Math.round(this.graphProperties.originPos.x), this.canvas.width);
         this.ctx2d.stroke();
 
         //horizontal axis line
         this.ctx2d.lineWidth = this.settings.axisGridlineWidth;
         this.ctx2d.beginPath();
-        this.ctx2d.moveTo(0, Math.round(this.graphProperties.originPos.y) - 0.5);
-        this.ctx2d.lineTo(this.canvas.width, Math.round(this.graphProperties.originPos.y) - 0.5);
+        this.ctx2d.moveTo(0, Math.round(this.graphProperties.originPos.y));
+        this.ctx2d.lineTo(this.canvas.width, Math.round(this.graphProperties.originPos.y));
         this.ctx2d.stroke();
 
         // draw horizontal scale gridlines
@@ -638,7 +625,7 @@ const DEFAULT_SETTINGS = {
     gridlineColour: "#000000", //black
     minorGridlineWidth: 0.2,
     majorGridlineWidth: 0.7,
-    axisGridlineWidth: 1.5,
+    axisGridlineWidth: 2,
     scrollMultiplier: 1.5,
     optimalPixelsBetweenIntervals: 30,
     optimalIntervals: {
@@ -669,6 +656,8 @@ const BLACK = "#000000";
 const RED = "#FF0000";
 
 function displayGraph() {
+
+    console.log(data);
 
     var graphCanvas = $("#graph")[0];
     var workspace = $("#content")[0];
