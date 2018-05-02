@@ -3,7 +3,9 @@ var loadingStatus = {
     ui: false,
     colors: false,
     layout: false
-}
+};
+
+var isMenuOpen = false;
 
 function checkLoadingComplete() {
 
@@ -14,7 +16,7 @@ function checkLoadingComplete() {
         }
     }
 
-    $("#loading-screen").hide();
+    $("#loading-screen").fadeOut();
     populateToolbar();
     setColors();
     displayGraph();
@@ -174,7 +176,6 @@ function populateToolbar() {
         layout: null,
         panels: null
     };
-    var isMenuOpen = false;
 
     window.mouse = {
         x: 0,
