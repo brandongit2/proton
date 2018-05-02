@@ -142,7 +142,6 @@ class Graph {
 
         let bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight;
 
-        const EXPONENTIAL_FORM_REGEX = /(.+)e\+?(.+)/;
         let regexMatch = EXPONENTIAL_FORM_REGEX.exec(text);
 
         if (regexMatch === null) {
@@ -161,7 +160,7 @@ class Graph {
                 if (alignment == "top") {
                     bgBoxY = y - this.settings.axisNumbers.padding;
                 } else if (alignment == "bottom") {
-                    bgBoxY = y - parseInt(this.settings.axisNumbers.font) - this.settings.axisNumbers.padding*2;
+                    bgBoxY = y - parseInt(this.settings.axisNumbers.font) - this.settings.axisNumbers.padding * 2;
                 }
             } else {
                 // vertical axis
@@ -209,7 +208,7 @@ class Graph {
                 if (alignment == "top") {
                     bgBoxY = y - this.settings.axisNumbers.padding;
                 } else if (alignment == "bottom") {
-                    bgBoxY = y - parseInt(this.settings.axisNumbers.font) - this.settings.axisNumbers.padding*2;
+                    bgBoxY = y - parseInt(this.settings.axisNumbers.font) - this.settings.axisNumbers.padding * 2;
                 }
                 // top of normal sized text to be reference point for the top of the superscripted text
                 normalTextTop = bgBoxY + this.settings.axisNumbers.padding;
@@ -226,16 +225,16 @@ class Graph {
                 this.ctx2d.font = this.settings.axisNumbers.superscriptFont;
                 this.ctx2d.textBaseline = "top";
                 this.ctx2d.textAlign = "left";
-                this.ctx2d.fillText(superText, x + normalTextWidth/2 - this.settings.axisNumbers.padding, normalTextTop);
+                this.ctx2d.fillText(superText, x + normalTextWidth / 2 - this.settings.axisNumbers.padding, normalTextTop);
             } else {
                 // vertical axis
                 this.ctx2d.textAlign = alignment;
                 this.ctx2d.textBaseline = "middle";
-                bgBoxY = y - (parseInt(this.settings.axisNumbers.font) / 2) - this.settings.axisNumbers.padding*2;
+                bgBoxY = y - (parseInt(this.settings.axisNumbers.font) / 2) - this.settings.axisNumbers.padding * 2;
                 bgBoxWidth = normalTextWidth + superTextWidth + (this.settings.axisNumbers.padding * 2);
                 bgBoxHeight = parseInt(this.settings.axisNumbers.font) + (this.settings.axisNumbers.padding * 2);
                 if (alignment == "right") {
-                    bgBoxX = x - normalTextWidth - superTextWidth - this.settings.axisNumbers.padding*2;
+                    bgBoxX = x - normalTextWidth - superTextWidth - this.settings.axisNumbers.padding * 2;
                 } else if (alignment == "left") {
                     bgBoxX = x - this.settings.axisNumbers.padding;
                 }
@@ -259,8 +258,12 @@ class Graph {
         }
     }
 
-    measureScaleNumbersWidth(text) {
-        this.ctx2d.font = this.settings.axisNumbers.font;
+    /**
+     * Measures the width of the supplied string of text using the font specified in this.ctx2d.font.
+     * 
+     * @param {String} text
+     */
+    measureTextWidth(text) {
         return this.ctx2d.measureText(text).width;
     }
 
@@ -415,7 +418,7 @@ class Graph {
 
             let labelXPos = this.graphProperties.originPos.x + x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX);
             let labelYPos = this.graphProperties.originPos.y;
-            let labelHeight = parseInt(this.ctx2d.font);
+            let labelHeight = parseInt(this.settings.axisNumbers.font);
             let labelYAlign;
 
             if (labelYPos < 0) {
@@ -446,7 +449,30 @@ class Graph {
 
             let labelYPos = this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY);
             let labelXPos = this.graphProperties.originPos.x;
-            let labelWidth = this.measureScaleNumbersWidth(this.getScaleNumber(y));
+
+            // get width of label
+            let labelWidth;
+            let label = this.getScaleNumber(y);
+
+            let regexMatch = EXPONENTIAL_FORM_REGEX.exec(label);
+
+            if (regexMatch == null) {
+                labelWidth = this.ctx2d.measureText(label).width;
+            } else {
+                let mantissa = regexMatch[1];
+                let exponent = regexMatch[2];
+
+                let normalText = mantissa + " \u{22C5} 10 ";
+                this.ctx2d.font = this.settings.axisNumbers.font;
+                let normalTextWidth = this.ctx2d.measureText(normalText).width;
+
+                let superText = exponent;
+                this.ctx2d.font = this.settings.axisNumbers.superscriptFont;
+                let superTextWidth = this.ctx2d.measureText(superText).width;
+
+                labelWidth = normalTextWidth + superTextWidth;
+            }
+
             let labelXAlign;
 
             if ((labelXPos - labelWidth - (this.settings.axisNumbers.margin * 2)) < 0) {
@@ -464,7 +490,7 @@ class Graph {
             }
 
             if (Math.abs(y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY)) > 1) {
-                this.drawScaleNumbersWithBackground(this.getScaleNumber(y), labelXPos, labelYPos, "vertical", labelXAlign);
+                this.drawScaleNumbersWithBackground(label, labelXPos, labelYPos, "vertical", labelXAlign);
             }
         }
     }
@@ -734,6 +760,8 @@ const DEFAULT_SETTINGS = {
 
 const BLACK = "#000000";
 const RED = "#FF0000";
+
+const EXPONENTIAL_FORM_REGEX = /(.+)e\+?(.+)/;
 
 function displayGraph() {
 
