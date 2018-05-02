@@ -140,44 +140,123 @@ class Graph {
      */
     drawScaleNumbersWithBackground(text, x, y, axis, alignment) {
 
-        // background
-        this.ctx2d.fillStyle = this.settings.axisNumbers.background;
-
         let bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight;
 
-        if (axis == "horizontal") {
-            // horizontal axis
-            this.ctx2d.textAlign = "center";
-            this.ctx2d.textBaseline = alignment;
-            bgBoxX = x - (this.ctx2d.measureText(text).width / 2) - this.settings.axisNumbers.padding;
-            bgBoxWidth = this.ctx2d.measureText(text).width + (this.settings.axisNumbers.padding * 2);
-            bgBoxHeight = parseInt(this.ctx2d.font) + (this.settings.axisNumbers.padding * 2);
-            if (alignment == "top") {
-                bgBoxY = y - this.settings.axisNumbers.padding;
-            } else if (alignment == "bottom") {
-                bgBoxY = y - parseInt(this.ctx2d.font) - this.settings.axisNumbers.padding;
+        const EXPONENTIAL_FORM_REGEX = /(.+)e\+?(.+)/;
+        let regexMatch = EXPONENTIAL_FORM_REGEX.exec(text);
+
+        if (regexMatch === null) {
+            // label is NOT in exponential form
+
+            this.ctx2d.font = this.settings.axisNumbers.font;
+            let textWidth = this.ctx2d.measureText(text).width;
+
+            if (axis == "horizontal") {
+                // horizontal axis
+                this.ctx2d.textAlign = "center";
+                this.ctx2d.textBaseline = alignment;
+                bgBoxX = x - (textWidth / 2) - this.settings.axisNumbers.padding;
+                bgBoxWidth = textWidth + (this.settings.axisNumbers.padding * 2);
+                bgBoxHeight = parseInt(this.settings.axisNumbers.font) + (this.settings.axisNumbers.padding * 2);
+                if (alignment == "top") {
+                    bgBoxY = y - this.settings.axisNumbers.padding;
+                } else if (alignment == "bottom") {
+                    bgBoxY = y - parseInt(this.settings.axisNumbers.font) - this.settings.axisNumbers.padding*2;
+                }
+            } else {
+                // vertical axis
+                this.ctx2d.textAlign = alignment;
+                this.ctx2d.textBaseline = "middle";
+                bgBoxY = y - (parseInt(this.settings.axisNumbers.font) / 2) - this.settings.axisNumbers.padding;
+                bgBoxWidth = textWidth + (this.settings.axisNumbers.padding * 2);
+                bgBoxHeight = parseInt(this.settings.axisNumbers.font) + (this.settings.axisNumbers.padding * 2);
+                if (alignment == "right") {
+                    bgBoxX = x - textWidth - this.settings.axisNumbers.padding;
+                } else if (alignment == "left") {
+                    bgBoxX = x - this.settings.axisNumbers.padding;
+                }
             }
+
+            // background of text
+            this.ctx2d.fillStyle = this.settings.axisNumbers.background;
+            this.ctx2d.fillRect(bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight);
+
+            // actual text
+            this.ctx2d.font = this.settings.axisNumbers.font;
+            this.ctx2d.fillStyle = this.settings.axisNumbers.colour;
+            this.ctx2d.fillText(text, x, y);
         } else {
-            // vertical axis
-            this.ctx2d.textAlign = alignment;
-            this.ctx2d.textBaseline = "middle";
-            bgBoxY = y - (parseInt(this.ctx2d.font) / 2) - this.settings.axisNumbers.padding;
-            bgBoxWidth = this.ctx2d.measureText(text).width + (this.settings.axisNumbers.padding * 2);
-            bgBoxHeight = parseInt(this.ctx2d.font) + (this.settings.axisNumbers.padding * 2);
-            if (alignment == "right") {
-                bgBoxX = x - this.ctx2d.measureText(text).width - this.settings.axisNumbers.padding;
-            } else if (alignment == "left") {
-                bgBoxX = x - this.settings.axisNumbers.padding;
+            // label is in exponential form
+            let mantissa = regexMatch[1];
+            let exponent = regexMatch[2];
+
+            let normalText = mantissa + " \u{22C5} 10 ";
+            this.ctx2d.font = this.settings.axisNumbers.font;
+            let normalTextWidth = this.ctx2d.measureText(normalText).width;
+            let normalTextTop;
+
+            let superText = exponent;
+            this.ctx2d.font = this.settings.axisNumbers.superscriptFont;
+            let superTextWidth = this.ctx2d.measureText(superText).width;
+
+            if (axis == "horizontal") {
+                // horizontal axis
+                this.ctx2d.textAlign = "center";
+                this.ctx2d.textBaseline = alignment;
+                bgBoxX = x - (normalTextWidth / 2) - this.settings.axisNumbers.padding;
+                bgBoxWidth = normalTextWidth + superTextWidth + (this.settings.axisNumbers.padding * 2);
+                bgBoxHeight = parseInt(this.settings.axisNumbers.font) + (this.settings.axisNumbers.padding * 2);
+                if (alignment == "top") {
+                    bgBoxY = y - this.settings.axisNumbers.padding;
+                } else if (alignment == "bottom") {
+                    bgBoxY = y - parseInt(this.settings.axisNumbers.font) - this.settings.axisNumbers.padding*2;
+                }
+                // top of normal sized text to be reference point for the top of the superscripted text
+                normalTextTop = bgBoxY + this.settings.axisNumbers.padding;
+
+                // background of text
+                this.ctx2d.fillStyle = this.settings.axisNumbers.background;
+                this.ctx2d.fillRect(bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight);
+
+                // actual text
+                this.ctx2d.fillStyle = this.settings.axisNumbers.colour;
+                this.ctx2d.font = this.settings.axisNumbers.font;
+                this.ctx2d.fillText(normalText, x, y);
+
+                this.ctx2d.font = this.settings.axisNumbers.superscriptFont;
+                this.ctx2d.textBaseline = "top";
+                this.ctx2d.textAlign = "left";
+                this.ctx2d.fillText(superText, x + normalTextWidth/2 - this.settings.axisNumbers.padding, normalTextTop);
+            } else {
+                // vertical axis
+                this.ctx2d.textAlign = alignment;
+                this.ctx2d.textBaseline = "middle";
+                bgBoxY = y - (parseInt(this.settings.axisNumbers.font) / 2) - this.settings.axisNumbers.padding*2;
+                bgBoxWidth = normalTextWidth + superTextWidth + (this.settings.axisNumbers.padding * 2);
+                bgBoxHeight = parseInt(this.settings.axisNumbers.font) + (this.settings.axisNumbers.padding * 2);
+                if (alignment == "right") {
+                    bgBoxX = x - normalTextWidth - superTextWidth - this.settings.axisNumbers.padding*2;
+                } else if (alignment == "left") {
+                    bgBoxX = x - this.settings.axisNumbers.padding;
+                }
+                // top of normal sized text to be reference point for the top of the superscripted text
+                normalTextTop = bgBoxY + this.settings.axisNumbers.padding;
+
+                // background of text
+                this.ctx2d.fillStyle = this.settings.axisNumbers.background;
+                this.ctx2d.fillRect(bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight);
+
+                // actual text
+                this.ctx2d.textAlign = "left";
+                this.ctx2d.fillStyle = this.settings.axisNumbers.colour;
+                this.ctx2d.font = this.settings.axisNumbers.font;
+                this.ctx2d.fillText(normalText, bgBoxX + this.settings.axisNumbers.padding, y);
+
+                this.ctx2d.font = this.settings.axisNumbers.superscriptFont;
+                this.ctx2d.textBaseline = "top";
+                this.ctx2d.fillText(superText, bgBoxX + normalTextWidth, normalTextTop);
             }
         }
-
-        // background of text
-        this.ctx2d.fillRect(bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight);
-
-        // actual text
-        this.ctx2d.font = this.settings.axisNumbers.font;
-        this.ctx2d.fillStyle = this.settings.axisNumbers.colour;
-        this.ctx2d.fillText(text, x, y);
     }
 
     measureScaleNumbersWidth(text) {
@@ -399,7 +478,7 @@ class Graph {
     panGraph(xMovePix, yMovePix, start) {
 
         let allowPan = true;
-        
+
         // calculate how much to pan the graph
         let xMove = xMovePix / this.graphProperties.pixelIntervalX;
         let yMove = yMovePix / this.graphProperties.pixelIntervalY;
@@ -506,15 +585,15 @@ class Graph {
     getScaleNumber(num) {
         if (Util.isIntegerPosition(num)) {
             if (Math.log10(Math.abs(num)) > this.settings.axisNumbers.maxPlaces) {
-                return num.toExponential(this.settings.axisNumbers.percision);
+                return num.toExponential(this.settings.axisNumbers.percision).toString();
             } else {
-                return Math.round(num);
+                return Math.round(num).toString();
             }
         } else {
             if (Math.abs(Math.log10(Math.abs(num))) > this.settings.axisNumbers.maxPlaces) {
-                return num.toExponential(this.settings.axisNumbers.percision);
+                return num.toExponential(this.settings.axisNumbers.percision).toString();
             } else {
-                return parseFloat(num.toPrecision(this.settings.axisNumbers.percision));
+                return parseFloat(num.toPrecision(this.settings.axisNumbers.percision)).toString();
             }
         }
     }
@@ -636,7 +715,8 @@ const DEFAULT_SETTINGS = {
     },
     resizeAnimationLength: 0.2,
     axisNumbers: {
-        font: "13px KaTeX Math",
+        font: "14px KaTeX Math",
+        superscriptFont: "10px KaTeX Math",
         background: "#F0F0F0", // grey
         colour: "#000000", // black
         maxPlaces: 4,

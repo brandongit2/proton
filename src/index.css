@@ -1,6 +1,8 @@
 @font-face {
-    font-family: "KaTeX Math";
-    src: url("./res/KaTeX_Main-Regular.woff")
+    font-family:    "KaTeX Math";
+    src:            url("./res/KaTeX_Math-Regular.ttf") format('truetype'),
+                    url("./res/KaTeX_Main-Regular.woff") format('woff');
+                    
 }
 
 body {
