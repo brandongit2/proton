@@ -20,7 +20,6 @@ class Point {
  * Represents the properties of a graph.
  */
 class GraphProperties {
-
     /**
      * Creates a graph properties object.
      * @param {Number} topPoint         The uppermost Y coordinate.
@@ -111,7 +110,6 @@ class GraphProperties {
  * Represents a graph and features methods relating to the graph.
  */
 class Graph {
-
     /**
      * @param {HTMLCanvasElement} canvas    The canvas to draw the graph on.
      * @param {Object} settings             The settings for the formatting of the graph.
@@ -149,7 +147,6 @@ class Graph {
      * @param {String} alignment    The alignment of the label relative to the point specified ("top", "bottom", "left", "right").
      */
     drawScaleNumbersWithBackground(text, x, y, axis, alignment) {
-
         let bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight;
 
         let regexMatch = EXPONENTIAL_FORM_REGEX.exec(text);
@@ -270,7 +267,7 @@ class Graph {
 
     /**
      * Measures the width of the supplied string of text using the font specified in this.ctx2d.font.
-     * 
+     *
      * @param {String} text
      */
     measureTextWidth(text) {
@@ -281,7 +278,6 @@ class Graph {
      * Sets up the graph variables, event listeners, and properties.
      */
     setupGraph() {
-
         this.canvas.height = this.height;
         this.canvas.width = this.width;
         this.ctx2d = this.canvas.getContext("2d");
@@ -346,7 +342,6 @@ class Graph {
      * Draws the graph to the canvas.
      */
     drawGraph() {
-
         // Clear tne canvas
         this.ctx2d.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -425,7 +420,6 @@ class Graph {
         let leftMostMajorLine = Math.floor((Math.floor(this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.optimalScaleX) / (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX)) * (this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX);
 
         for (let x = leftMostMajorLine; x < this.graphProperties.rightPoint; x += this.graphProperties.minorBetweenMajorX * this.graphProperties.optimalScaleX) {
-
             let labelXPos = this.graphProperties.originPos.x + x * (this.graphProperties.pixelIntervalX / this.graphProperties.optimalScaleX);
             let labelYPos = this.graphProperties.originPos.y;
             let labelHeight = parseInt(this.settings.axisNumbers.font);
@@ -454,9 +448,7 @@ class Graph {
 
         let topMostMajorLine = Math.floor((Math.floor(this.graphProperties.topPoint / this.graphProperties.optimalScaleY) * this.graphProperties.optimalScaleY) / (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY)) * (this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY);
 
-
         for (let y = topMostMajorLine; y > this.graphProperties.bottomPoint; y -= this.graphProperties.minorBetweenMajorY * this.graphProperties.optimalScaleY) {
-
             let labelYPos = this.graphProperties.originPos.y - y * (this.graphProperties.pixelIntervalY / this.graphProperties.optimalScaleY);
             let labelXPos = this.graphProperties.originPos.x;
 
@@ -512,7 +504,6 @@ class Graph {
      * @param {Number} yMovePix     Number of pixels to move down (negative to move up).
      */
     panGraph(xMovePix, yMovePix, start) {
-
         let allowPan = true;
 
         // calculate how much to pan the graph
@@ -536,7 +527,6 @@ class Graph {
         }
 
         if (allowPan) {
-
             let now = performance.now();
 
             if (!start) {
@@ -570,7 +560,6 @@ class Graph {
      * Called when panning of the graph is stopped and pan inertia should take over.
      */
     stopPanGraph() {
-
         if (this.panVelocity != undefined && (this.panVelocity.x != 0 || this.panVelocity.y != 0)) {
             this.panInertiaAnimation = TweenMax.to(
                 this.panVelocity,
@@ -643,7 +632,6 @@ class Graph {
      * @param {Number} centreY      The Y position of the centre point of resizing.
      */
     resize(xTimes, yTimes, centreX, centreY) {
-
         // prevent zooming if too far from origin
         let maxDisFromOrigin = Math.max(
             (this.graphProperties.leftPoint / this.graphProperties.optimalScaleX) * this.graphProperties.pixelIntervalX,
@@ -753,8 +741,8 @@ const DEFAULT_SETTINGS = {
     axisNumbers: {
         font: "14px KaTeX Math",
         superscriptFont: "10px KaTeX Math",
-        background: "#F0F0F0", 
-        colour: "#000000", 
+        background: "#F0F0F0",
+        colour: "#000000",
         maxPlaces: 4,
         percision: 3,
         padding: 2,
@@ -771,7 +759,6 @@ const DEFAULT_SETTINGS = {
 const EXPONENTIAL_FORM_REGEX = /(.+)e\+?(.+)/;
 
 function displayGraph() {
-
     let settings = DEFAULT_SETTINGS;
     let colorScheme = data.colors.light.graph;
 

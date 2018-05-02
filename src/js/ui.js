@@ -1,14 +1,29 @@
-
 var loadingStatus = {
-    ui: false,
+    ui:     false,
     colors: false,
     layout: false
 };
 
-var isMenuOpen = false;
+var data = {
+    ui:     null,
+    colors: null,
+    layout: null,
+    panels: null
+};
+
+var mouse = {
+    x: 0,
+    y: 0,
+    dX: 0,
+    dY: 0
+};
+
+var _ui = {
+    setColors:       function() {},
+    populateToolbar: function() {}
+};
 
 function checkLoadingComplete() {
-
     for (let loadTask in loadingStatus) {
         if (!loadingStatus[loadTask]) {
             setTimeout(checkLoadingComplete, 500);
@@ -16,175 +31,164 @@ function checkLoadingComplete() {
         }
     }
 
-    $("#loading-screen").fadeOut();
-    populateToolbar();
-    setColors();
+    $("#loading-screen").remove(); // Change this to add a class to '#loading-screen' which has a CSS animation bound to it
+    _ui.populateToolbar();
+    _ui.setColors();
     displayGraph();
 }
+checkLoadingComplete();
 
-/**
+(function() {
+    var isMenuOpen = false;
+
+    /**
      * Sets colors of different UI elements based on values set in colors.json.
      */
-function setColors() {
-    var toolbar = $('#toolbar');
-    var theme = data.colors.light;
-    toolbar.css('background-color', theme.toolbar.background);
-    toolbar.css('color', theme.toolbar.color);
-    document.getElementById('extra-styling').innerHTML = `
+    _ui.setColors = function() {
+        var toolbar = $('#toolbar');
+        var theme = data.colors.light;
+        toolbar.css('background-color', theme.toolbar.background);
+        toolbar.css('color', theme.toolbar.color);
+        document.getElementById('extra-styling').innerHTML = `
             .toolbar-item > span:hover {
                 background-color: ${theme.toolbar.item.hover.background};
                 color:            ${theme.toolbar.item.hover.text};
             }
         `;
 
-    var tools = $('#tools');
-    tools.css('background-color', theme.panels.background);
+        var tools = $('#tools');
+        tools.css('background-color', theme.panels.background);
 
-    var tool = $('.tool');
-    tool.css('color', theme.panels.tools.color);
-    tool.css('stroke', theme.panels.tools.color);
-    tool.css('fill', theme.panels.tools.color);
+        var tool = $('.tool');
+        tool.css('color', theme.panels.tools.color);
+        tool.css('stroke', theme.panels.tools.color);
+        tool.css('fill', theme.panels.tools.color);
 
-    // Replace all <img> SVGs with inline SVG so I can change their colors (code from Stack Overflow)
-    // https://stackoverflow.com/questions/11978995/how-to-change-color-of-svg-image-using-css-jquery-svg-image-replacement
-    $('img.svg').each(function () {
-        var $img = jQuery(this);
-        var imgID = $img.attr('id');
-        var imgClass = $img.attr('class');
-        var imgURL = $img.attr('src');
+        // Replace all <img> SVGs with inline SVG so I can change their colors (code from Stack Overflow)
+        // https://stackoverflow.com/questions/11978995/how-to-change-color-of-svg-image-using-css-jquery-svg-image-replacement
+        $('img.svg').each(function () {
+            var $img = jQuery(this);
+            var imgID = $img.attr('id');
+            var imgClass = $img.attr('class');
+            var imgURL = $img.attr('src');
 
-        jQuery.get(imgURL, function (data) {
-            // Get the SVG tag, ignore the rest
-            var $svg = jQuery(data).find('svg');
+            jQuery.get(imgURL, function (data) {
+                // Get the SVG tag, ignore the rest
+                var $svg = jQuery(data).find('svg');
 
-            // Add replaced image's ID to the new SVG
-            if (typeof imgID !== 'undefined') {
-                $svg = $svg.attr('id', imgID);
-            }
-            // Add replaced image's classes to the new SVG
-            if (typeof imgClass !== 'undefined') {
-                $svg = $svg.attr('class', imgClass + ' replaced-svg');
-            }
+                // Add replaced image's ID to the new SVG
+                if (typeof imgID !== 'undefined') {
+                    $svg = $svg.attr('id', imgID);
+                }
+                // Add replaced image's classes to the new SVG
+                if (typeof imgClass !== 'undefined') {
+                    $svg = $svg.attr('class', imgClass + ' replaced-svg');
+                }
 
-            // Remove any invalid XML tags as per http://validator.w3.org
-            $svg = $svg.removeAttr('xmlns:a');
+                // Remove any invalid XML tags as per http://validator.w3.org
+                $svg = $svg.removeAttr('xmlns:a');
 
-            // Replace image with new SVG
-            $img.replaceWith($svg);
+                // Replace image with new SVG
+                $img.replaceWith($svg);
 
-        }, 'xml');
+            }, 'xml');
 
-    });
-}
-
-/**
- * Populates the toolbar with items defined in ui.json.
- */
-function populateToolbar() {
-    var toolbar = document.getElementById('toolbar');
-    var items = data.ui.toolbar;
-    for (var item in items) {
-        $("#toolbar").append(`
-                <div class="toolbar-item">
-                    <span>${item}</span>
-                    <div class="toolbar-menu" id="menu-item-${item.toLowerCase()}"></div>
-                </div>
-            `);
-        var toolbarItem = document.querySelector('.toolbar-item:last-child');
-
-        // Opens menu
-        toolbarItem.addEventListener('mouseup', function (event) {
-            if (event.button == 0 && !isMenuOpen) {
-                var itemName = `menu-item-${event.target.innerText.toLowerCase()}`;
-                document.getElementById(itemName).classList.remove('menu-close');
-                document.getElementById(itemName).classList.add('menu-open');
-
-                var leaveMenu = document.createElement('div'); // Prevents clicks on other UI elements while menu is open
-                leaveMenu.style.height = '100%';
-                leaveMenu.style.width = '100%';
-                leaveMenu.style.position = 'absolute';
-                leaveMenu.style.zIndex = '1';
-                leaveMenu.setAttribute('id', 'leave-menu');
-                document.body.appendChild(leaveMenu);
-                setTimeout(function () {
-                    isMenuOpen = true;
-                }, 30);
-            }
         });
+    }
 
-        // Close current menu and open new one when moving mouse over another menu
-        toolbarItem.addEventListener('mouseleave', function (event) {
-            if (event.relatedTarget != null) {
-                if (isMenuOpen && event.relatedTarget.matches('.toolbar-item > span')) {
-                    var openMenus = document.getElementsByClassName('menu-open');
-                    for (var i = 0; i < openMenus.length; i++) {
-                        openMenus[i].classList.add('menu-close');
-                        openMenus[i].classList.remove('menu-open');
-                    }
+    /**
+     * Populates the toolbar with items defined in ui.json.
+     */
+     _ui.populateToolbar = function () {
+        var toolbar = document.getElementById('toolbar');
+        var items = data.ui.toolbar;
+        for (var item in items) {
+            $("#toolbar").append(`
+                    <div class="toolbar-item">
+                        <span>${item}</span>
+                        <div class="toolbar-menu" id="menu-item-${item.toLowerCase()}"></div>
+                    </div>
+                `);
+            var toolbarItem = document.querySelector('.toolbar-item:last-child');
 
-                    var itemName = `menu-item-${event.relatedTarget.innerText.toLowerCase()}`;
-                    if (document.getElementById(itemName) != null) {
-                        document.getElementById(itemName).classList.remove('menu-close');
-                        document.getElementById(itemName).classList.add('menu-open');
+            // Opens menu
+            toolbarItem.addEventListener('mouseup', function (event) {
+                if (event.button == 0 && !isMenuOpen) {
+                    var itemName = `menu-item-${event.target.innerText.toLowerCase()}`;
+                    document.getElementById(itemName).classList.remove('menu-close');
+                    document.getElementById(itemName).classList.add('menu-open');
+
+                    var leaveMenu = document.createElement('div'); // Prevents clicks on other UI elements while menu is open
+                    leaveMenu.style.height = '100%';
+                    leaveMenu.style.width = '100%';
+                    leaveMenu.style.position = 'absolute';
+                    leaveMenu.style.zIndex = '1';
+                    leaveMenu.setAttribute('id', 'leave-menu');
+                    document.body.appendChild(leaveMenu);
+                    setTimeout(function () {
+                        isMenuOpen = true;
+                    }, 30);
+                }
+            });
+
+            // Close current menu and open new one when moving mouse over another menu
+            toolbarItem.addEventListener('mouseleave', function (event) {
+                if (event.relatedTarget != null) {
+                    if (isMenuOpen && event.relatedTarget.matches('.toolbar-item > span')) {
+                        var openMenus = document.getElementsByClassName('menu-open');
+                        for (var i = 0; i < openMenus.length; i++) {
+                            openMenus[i].classList.add('menu-close');
+                            openMenus[i].classList.remove('menu-open');
+                        }
+
+                        var itemName = `menu-item-${event.relatedTarget.innerText.toLowerCase()}`;
+                        if (document.getElementById(itemName) != null) {
+                            document.getElementById(itemName).classList.remove('menu-close');
+                            document.getElementById(itemName).classList.add('menu-open');
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        for (var menuItem in items[item]) {
-            switch (items[item][menuItem]['type']) {
-                case 'button':
-                    $('.toolbar-menu').last().append(`
-                            <div></div>
-                            <span class="toolbar-menu-item">${menuItem}</span>
-                            <div></div>`);
-                    break;
-                case 'toggle':
-                    $('.toolbar-menu').last().append(`
-                                <input type="checkbox" style="margin-left:8px;">
-                                <span class="toolbar-menu-item center">${menuItem}</span>
+            for (var menuItem in items[item]) {
+                switch (items[item][menuItem]['type']) {
+                    case 'button':
+                        $('.toolbar-menu').last().append(`
                                 <div></div>
-                            </div>
-                        `);
-                    break;
-                case 'line':
-                    $('.toolbar-menu').last().append('<hr style="margin:3px 2px; grid-column:1 / span 3;">');
-                    break;
-                case 'panel':
-                    $('.toolbar-menu').last().append('<div></div>');
+                                <span class="toolbar-menu-item">${menuItem}</span>
+                                <div></div>`);
+                        break;
+                    case 'toggle':
+                        $('.toolbar-menu').last().append(`
+                                    <input type="checkbox" style="margin-left:8px;">
+                                    <span class="toolbar-menu-item center">${menuItem}</span>
+                                    <div></div>
+                                </div>
+                            `);
+                        break;
+                    case 'line':
+                        $('.toolbar-menu').last().append('<hr style="margin:3px 2px; grid-column:1 / span 3;">');
+                        break;
+                    case 'panel':
+                        $('.toolbar-menu').last().append('<div></div>');
 
-                    var panelItem = document.createElement('div');
-                    panelItem.classList.add('toolbar-menu-item');
-                    panelItem.addEventListener('mouseover', function (event) {
-                        if ($(event.target.parentNode).hasClass('menu-open')) {
-                            event.target.append('<div class="menu-panel"></div>');
-                        }
-                    });
-                    panelItem.innerHTML = menuItem;
-                    document.getElementById('menu-item-' + item.toLowerCase()).appendChild(panelItem);
-                    $('.toolbar-menu').last().append(`<div></div>`);
+                        var panelItem = document.createElement('div');
+                        panelItem.classList.add('toolbar-menu-item');
+                        panelItem.addEventListener('mouseover', function (event) {
+                            if ($(event.target.parentNode).hasClass('menu-open')) {
+                                event.target.append('<div class="menu-panel"></div>');
+                            }
+                        });
+                        panelItem.innerHTML = menuItem;
+                        document.getElementById('menu-item-' + item.toLowerCase()).appendChild(panelItem);
+                        $('.toolbar-menu').last().append(`<div></div>`);
 
+                }
             }
         }
     }
-}
 
-(function () {
-    window.data = {
-        ui: null,
-        colors: null,
-        layout: null,
-        panels: null
-    };
-
-    window.mouse = {
-        x: 0,
-        y: 0,
-        dX: 0,
-        dY: 0
-    };
-
-    $(function () {
+    $(function() {
         // Obtain JSON files
         var request1 = new XMLHttpRequest();
         request1.responseType = 'json';
@@ -246,5 +250,5 @@ function populateToolbar() {
             }, 20);
         });
     });
-    setTimeout(checkLoadingComplete, 500);
+    setTimeout(_ui.checkLoadingComplete, 500);
 })(window);
