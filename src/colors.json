@@ -10,8 +10,9 @@
                 }
             }
         },
-        "canvas": {
-            "background": "#ffffff"
+        "graph": {
+            "background": "#f0f0f0",
+            "gridlines": "#000000"
         },
         "panels": {
             "background": "#4b4b4b",

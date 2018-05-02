@@ -1,99 +1,132 @@
 @font-face {
-    font-family:    "KaTeX Math";
-    src:            url("./res/KaTeX_Math-Regular.ttf") format('truetype'),
-                    url("./res/KaTeX_Main-Regular.woff") format('woff');
-                    
+    font-family: "KaTeX Math";
+    src: url("./res/KaTeX_Math-Regular.ttf") format('truetype'), url("./res/KaTeX_Main-Regular.woff") format('woff');
 }
 
 body {
-    font-family:    'IBM Plex Sans Condensed', sans-serif;
-    margin:         0px;
-    height:         100vh;
-    display:        flex;
+    font-family: 'IBM Plex Sans Condensed', sans-serif;
+    margin: 0px;
+    height: 100vh;
+    display: flex;
     flex-direction: column;
-    overflow:       hidden;
+    overflow: hidden;
+}
+
+#loading-screen {
+    height: 100%;
+    width: 100%;
+    z-index: 999;
+    background-color: lightgray;
+    position: absolute;
+    text-align: center;
+}
+
+#loading-content {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.loader {
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid #3498db;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    display: block;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 #toolbar {
-    height:           1.5rem;
-    width:            100%;
-    display:          flex;
-    flex-direction:   row;
-    align-items:      flex-start;
-    position:         relative;
-    z-index:          2;
+    height: 1.5rem;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    position: relative;
+    z-index: 2;
     background-color: #e3e3e3;
 }
 
-#toolbar > * {
+#toolbar>* {
     display: inline-block;
 }
 
 .toolbar-item {
-    height:              100%;
-    cursor:              default;
-    position:            relative;
-    user-select:         none;
+    height: 100%;
+    cursor: default;
+    position: relative;
+    user-select: none;
     -webkit-user-select: none;
-    -ms-user-select:     none;
-    -moz-user-select:    none;
+    -ms-user-select: none;
+    -moz-user-select: none;
 }
 
-.toolbar-item > span {
+.toolbar-item>span {
     transition: all 0.3s;
-    padding:    0px 8px;
-    display:    inline-block;
-    height:     100%;
+    padding: 0px 8px;
+    display: inline-block;
+    height: 100%;
 }
 
 .toolbar-menu {
-    position:              absolute;
-    top:                   100%;
-    left:                  0px;
-    padding:               2px 0px;
-    background-color:      white;
-    display:               grid;
+    position: absolute;
+    top: 100%;
+    left: 0px;
+    padding: 2px 0px;
+    background-color: white;
+    display: grid;
     grid-template-columns: auto auto auto;
-    grid-template-rows:    repeat(auto-fill, auto minmax(0, 200px) auto);
-    box-shadow:            2px 3px 3px rgba(0, 0, 0, 0.2);
-    opacity:               0;
-    max-height:            0px;
-    color:                 black;
-    z-index:               -1;
-    overflow:              hidden;
+    grid-template-rows: repeat(auto-fill, auto minmax(0, 200px) auto);
+    box-shadow: 2px 3px 3px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    max-height: 0px;
+    color: black;
+    z-index: -1;
+    overflow: hidden;
 }
 
 @keyframes open-menu {
     0% {
-        opacity:    0;
+        opacity: 0;
         max-height: 0px;
     }
     50% {
         opacity: 1;
     }
     100% {
-        opacity:    1;
+        opacity: 1;
         max-height: 500px;
     }
 }
 
 @keyframes close-menu {
     100% {
-        opacity:    0;
+        opacity: 0;
         max-height: 0px;
     }
     50% {
         opacity: 1;
     }
     0% {
-        opacity:    1;
+        opacity: 1;
         max-height: 100px;
     }
 }
 
 .menu-open {
     animation: 0.3s ease-in forwards open-menu;
-    z-index:   4;
+    z-index: 4;
 }
 
 .menu-close {
@@ -102,8 +135,8 @@ body {
 
 .toolbar-menu-item {
     white-space: nowrap;
-    padding:     0px 8px;
-    transition:  all 0.1s;
+    padding: 0px 8px;
+    transition: all 0.1s;
 }
 
 .toolbar-menu-item:hover {
@@ -111,23 +144,23 @@ body {
 }
 
 #content {
-    position:       relative;
-    flex-grow:      1;
-    display:        flex;
+    position: relative;
+    flex-grow: 1;
+    display: flex;
     flex-direction: row;
 }
 
 #tools {
-    width:  124px;
+    width: 124px;
 }
 
 .tool {
-    width:         40px;
-    height:        40px;
-    margin:        10px;
+    width: 40px;
+    height: 40px;
+    margin: 10px;
     border-radius: 5px;
-    transition:    all 0.2s;
-    display:       inline-block;
+    transition: all 0.2s;
+    display: inline-block;
 }
 
 .tool:hover {

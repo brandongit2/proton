@@ -7,6 +7,16 @@ NOTES:
 */
 
 /**
+ * Represents one point on the graph in terms of its X and Y coordinate.
+ */
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+/**
  * Represents the properties of a graph.
  */
 class GraphProperties {
@@ -347,7 +357,7 @@ class Graph {
         this.ctx2d.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Set up gridlines
-        this.ctx2d.strokeStyle = BLACK;
+        this.ctx2d.strokeStyle = this.settings.axisNumbers.colors;
         this.ctx2d.lineWidth = this.settings.minorGridlineWidth;
 
         // draw vertical lines
@@ -743,8 +753,8 @@ const DEFAULT_SETTINGS = {
     axisNumbers: {
         font: "14px KaTeX Math",
         superscriptFont: "10px KaTeX Math",
-        background: "#F0F0F0", // grey
-        colour: "#000000", // black
+        background: "#F0F0F0", 
+        colour: "#000000", 
         maxPlaces: 4,
         percision: 3,
         padding: 2,
@@ -758,21 +768,24 @@ const DEFAULT_SETTINGS = {
     maxCoordinate: 1e300
 };
 
-const BLACK = "#000000";
-const RED = "#FF0000";
-
 const EXPONENTIAL_FORM_REGEX = /(.+)e\+?(.+)/;
 
 function displayGraph() {
 
-    console.log(data);
+    let settings = DEFAULT_SETTINGS;
+    let colorScheme = data.colors.light.graph;
+
+    settings.backgroundColour = colorScheme.background;
+    settings.gridlineColour = colorScheme.gridlines;
+    settings.axisNumbers.background = colorScheme.background;
+    settings.axisNumbers.colour = colorScheme.gridlines;
 
     var graphCanvas = $("#graph")[0];
-    var workspace = $("#content")[0];
-    var tools = $("#tools")[0];
+    let workspace = $("#content")[0];
+    let tools = $("#tools")[0];
 
-    var graphHeight = workspace.getBoundingClientRect().height;
-    var graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth / 2;
+    let graphHeight = workspace.getBoundingClientRect().height;
+    let graphWidth = workspace.getBoundingClientRect().width - tools.offsetWidth / 2;
     graphCanvas.offsetX = tools.offsetWidth;
     graphCanvas.graph = new Graph(graphCanvas, DEFAULT_SETTINGS, graphWidth, graphHeight);
 }
