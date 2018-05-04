@@ -14,6 +14,10 @@ class Equation {
 
             let curChar = equationStr.charAt(i);
 
+            if (curChar == " ") {
+                continue;
+            }
+
             if (Util.isNumber(token) && !Util.isNumber(curChar)) {
                 if (token != "") {
                     equationArr.push(token);
