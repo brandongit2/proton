@@ -29,3 +29,7 @@ Util.awayFromZero = function (number) {
 Util.towardZero = function (number) {
     return Math.sign(number) * Math.floor(Math.abs(number));
 };
+
+Util.isNumber = function(str) {
+    return /^\d+$/.test(str);
+}
