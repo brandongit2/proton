@@ -1,7 +1,12 @@
 
-const OPERATORS = ['+', '-', '*', '/'];
+const OPERATORS = ['+', '-', '*', '/', 'sin', 'tan', 'cos', '(', ')'];
 
 class Equation {
+
+    /**
+     * Turns a string representation of an equation and separates the operators and operands into individual strings in an array.
+     * @param {String} equationStr      String representation of the equation
+     */
     static parseEquation(equationStr) {
         let equationArr = [];
         let token = "";
