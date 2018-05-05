@@ -34,7 +34,8 @@ function checkLoadingComplete() {
     $("#loading-screen").remove(); // Change this to add a class to '#loading-screen' which has a CSS animation bound to it
     _ui.populateToolbar();
     _ui.setColors();
-    displayGraph();
+    createWorkspace();
+    //displayGraph();
 }
 checkLoadingComplete();
 
