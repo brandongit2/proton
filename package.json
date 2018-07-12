@@ -1,24 +1,44 @@
 {
   "name": "math",
-  "version": "0.0.1",
-  "description": "A math notebook.",
-  "main": "src/js/ui.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "version": "0.0.1-SNAPSHOT",
+  "description": "A math toolkit.",
+  "main": "src/index.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/brandongit2/math.git"
   },
-  "author": "Brandon Tsang, Michael Pu",
+  "author": "Brandon Tsang & Michael Pu",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/brandongit2/math/issues"
   },
   "homepage": "https://github.com/brandongit2/math#readme",
   "devDependencies": {
+    "@types/vinyl": "^2.0.2",
     "browserify": "^16.2.2",
+    "css-loader": "^1.0.0",
+    "globby": "^8.0.1",
+    "gulp": "^4.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-newer": "^1.4.0",
+    "gulp-replace": "^1.0.0",
+    "gulp-sass": "^4.0.1",
+    "gulp-typescript": "^5.0.0-alpha.3",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "merge-stream": "^1.0.1",
+    "rollupify": "^0.5.0",
+    "style-loader": "^0.21.0",
+    "through2": "^2.0.3",
+    "ts-loader": "^4.4.2",
     "tsify": "^4.0.0",
-    "typescript": "^2.9.2"
+    "typescript": "^2.9.2",
+    "vinyl-source-stream": "^2.0.0",
+    "webpack": "^4.15.1",
+    "webpack-stream": "^4.0.3"
+  },
+  "dependencies": {
+    "@types/node": "^10.5.2",
+    "module-graph": "file:src/module-graph"
   }
 }

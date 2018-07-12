@@ -1,4 +1,3 @@
-test.patch
 .vscode/
-.idea/
 node_modules/
+build/

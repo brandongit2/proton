@@ -1,7 +1,0 @@
-===0.0.1===
-Added:
-    - Grid
-        - Draggable
-        - Scalable
-    - Tools panel
-        - Empty for now
