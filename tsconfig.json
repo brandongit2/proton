@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
-        "outDir": "./build",
-        "noImplicitAny": true,
-        "allowJs": true
+        "target": "ES2017",
+        "jsx": "react",
+        "moduleResolution": "node",
+        "noImplicitAny": true
     }
 }

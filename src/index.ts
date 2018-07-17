@@ -1,5 +1,5 @@
 import * as graph from './module-graph';
 
-let a: string = 'hey';
+const a = 'AAAAAA';
 console.log(a);
 graph.hi();
