@@ -17,7 +17,7 @@
         "import-spacing": true,
         "indent": [true, "spaces", 4],
         "jsdoc-format": [true, "check-multiline-start"],
-        "linebreak-style": [true, "CRLF"],
+        "linebreak-style": [true, "LF"],
         "member-access": true,
         "member-ordering": [
             true,

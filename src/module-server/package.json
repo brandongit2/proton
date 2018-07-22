@@ -1,8 +1,0 @@
-{
-  "name": "module-server",
-  "version": "1.0.0",
-  "description": "The server module.",
-  "main": "server.ts",
-  "author": "Brandon Tsang",
-  "license": "MIT"
-}
