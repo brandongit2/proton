@@ -5,14 +5,16 @@ const replace = require('gulp-replace');
 const sass = require('gulp-sass');
 const sasslint = require('gulp-sass-lint');
 const gulpTslint = require('gulp-tslint');
-const uglify = require('gulp-uglify');
+const uglify = require('gulp-uglifyes');
 const watch = require('gulp-watch');
+const sourcemaps = require('gulp-sourcemaps');
 
 const del = require('del');
 const merge = require('merge-stream');
 const named = require('vinyl-named');
 const tslint = require('tslint');
 const webpack = require('webpack-stream');
+const through = require('through2');
 
 let src = 'src/';
 let out = 'build/';
@@ -74,6 +76,7 @@ var webpackBuild = function() {
     return gulp.src(webpack_files)
             .pipe(named())
             .pipe(webpack({
+                devtool: 'inline-source-map',
                 mode: 'development',
                 module: {
                     rules: [
@@ -81,7 +84,16 @@ var webpackBuild = function() {
                     ]
                 }
             }, require('webpack')))
+            .pipe(sourcemaps.init({loadMaps: true}))
+            .pipe(through.obj(function (file, enc, cb) {
+                // Dont pipe through any source map files as it will be handled
+                // by gulp-sourcemaps
+                const isSourceMap = /\.map$/.test(file.path);
+                if (!isSourceMap) this.push(file);
+                cb();
+              }))
             .pipe(uglify())
+            .pipe(sourcemaps.write())
             .pipe(gulp.dest(out));
 };
 
