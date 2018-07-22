@@ -1,3 +1,5 @@
 export function hi(): void {
-    console.log('lol');
+    alert('alert from module-graph js file called from outside');
 }
+
+alert('alert from module-graph js file');

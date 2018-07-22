@@ -77,7 +77,7 @@ var webpackBuild = function () {
     return gulp.src(webpack_files)
         .pipe(named())
         .pipe(webpack({
-            devtool: 'inline-source-map',
+            devtool: 'source-map',
             mode: 'development',
             module: {
                 rules: [
@@ -87,8 +87,7 @@ var webpackBuild = function () {
         }, require('webpack')))
         .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(through.obj(function (file, enc, cb) {
-            // Dont pipe through any source map files as it will be handled
-            // by gulp-sourcemaps
+            // Dont pipe through any source map files as it will be handled by gulp-sourcemaps
             const isSourceMap = /\.map$/.test(file.path);
             if (!isSourceMap) this.push(file);
             cb();
