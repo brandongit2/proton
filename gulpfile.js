@@ -52,23 +52,26 @@ gulp.task('lint', () => {
     return merge(_eslint, _tslint, _sasslint);
 });
 
-// Build all source files into build/ directory.
-gulp.task('build', gulp.series('clean', () => {
+// Watch for changes
+gulp.task('watch', () => {
+    _webpackWatch = watch(webpack_files, {read:false, verbose: true}, () => {return webpackBuild()});
+    _htmlWatch = watch(html_files, {read:false, verbose: true}, () => {return htmlBuild()});
+    _sassWatch = watch(sass_files, {read:false, verbose: true}, () => {return sassBuild()});
+    _remainingWatch = watch(remaining_files, {read:false, verbose: true}, () => {return remainingBuild()});
+});
 
-    //TODO: 
+// Build all source files into build/ directory.
+gulp.task('build', gulp.series(() => {
     _webpack = webpackBuild();
     _html = htmlBuild();
     _sass = sassBuild();
     _remaining = remainingBuild();
 
-    _webpackWatch = watch(webpack_files, {read:false, verbose: true}, () => {return webpackBuild()});
-    _htmlWatch = watch(html_files, {read:false, verbose: true}, () => {return htmlBuild()});
-    _sassWatch = watch(sass_files, {read:false, verbose: true}, () => {return sassBuild()});
-    _remainingWatch = watch(remaining_files, {read:false, verbose: true}, () => {return remainingBuild()});
+    return merge(_webpack, _html, _sass, _remaining);
 }));
 
 var webpackBuild = function() {
-    gulp.src(webpack_files)
+    return gulp.src(webpack_files)
             .pipe(named())
             .pipe(webpack({
                 mode: 'development',
@@ -81,6 +84,8 @@ var webpackBuild = function() {
             .pipe(uglify())
             .pipe(gulp.dest(out));
 };
+
+gulp.task('run', gulp.series('clean', 'build', 'watch'));
 
 var htmlBuild = function() {
     return gulp.src(html_files)

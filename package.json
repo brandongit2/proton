@@ -7,8 +7,10 @@
     "url": "git+https://github.com/brandongit2/math.git"
   },
   "scripts": {
-    "start": "npm run build",
-    "build": "./node_modules/.bin/ts-node ./index.ts"
+    "start": "npm run build & npm run serve & npm run watch",
+    "build": "gulp build",
+    "serve": "./node_modules/.bin/ts-node ./index.ts",
+    "watch": "gulp watch"
   },
   "author": "Brandon Tsang & Michael Pu",
   "license": "MIT",
