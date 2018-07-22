@@ -5,14 +5,16 @@ const replace = require('gulp-replace');
 const sass = require('gulp-sass');
 const sasslint = require('gulp-sass-lint');
 const gulpTslint = require('gulp-tslint');
-const uglify = require('gulp-uglify');
+const uglify = require('gulp-uglifyes');
 const watch = require('gulp-watch');
+const sourcemaps = require('gulp-sourcemaps');
 
 const del = require('del');
 const merge = require('merge-stream');
 const named = require('vinyl-named');
 const tslint = require('tslint');
 const webpack = require('webpack-stream');
+const through = require('through2');
 
 let src = 'src/';
 let out = 'build/';
@@ -54,10 +56,11 @@ gulp.task('lint', () => {
 
 // Watch for changes
 gulp.task('watch', () => {
-    let _webpackWatch = watch(webpack_files, {read:false, verbose: true}, () => {return webpackBuild();});
-    let _htmlWatch = watch(html_files, {read:false, verbose: true}, () => {return htmlBuild();});
-    let _sassWatch = watch(sass_files, {read:false, verbose: true}, () => {return sassBuild();});
-    let _remainingWatch = watch(remaining_files, {read:false, verbose: true}, () => {return remainingBuild();});
+    let _webpackWatch = watch(webpack_files, { read: false, verbose: true }, () => { return webpackBuild(); });
+    let _htmlWatch = watch(html_files, { read: false, verbose: true }, () => { return htmlBuild(); });
+    let _sassWatch = watch(sass_files, { read: false, verbose: true }, () => { return sassBuild(); });
+    let _remainingWatch = watch(remaining_files, { read: false, verbose: true }, () => { return remainingBuild(); });
+    return merge(_webpackWatch, _htmlWatch, _sassWatch, _remainingWatch);
 });
 
 // Build all source files into build/ directory.
@@ -70,10 +73,11 @@ gulp.task('build', gulp.series(() => {
     return merge(_webpack, _html, _sass, _remaining);
 }));
 
-var webpackBuild = function() {
+var webpackBuild = function () {
     return gulp.src(webpack_files)
         .pipe(named())
         .pipe(webpack({
+            devtool: 'inline-source-map',
             mode: 'development',
             module: {
                 rules: [
@@ -81,13 +85,22 @@ var webpackBuild = function() {
                 ]
             }
         }, require('webpack')))
+        .pipe(sourcemaps.init({ loadMaps: true }))
+        .pipe(through.obj(function (file, enc, cb) {
+            // Dont pipe through any source map files as it will be handled
+            // by gulp-sourcemaps
+            const isSourceMap = /\.map$/.test(file.path);
+            if (!isSourceMap) this.push(file);
+            cb();
+        }))
         .pipe(uglify())
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest(out));
 };
 
 gulp.task('run', gulp.series('clean', 'build', 'watch'));
 
-var htmlBuild = function() {
+var htmlBuild = function () {
     return gulp.src(html_files)
         .pipe(replace(/"(\S+)\.ts"/gi, '$1.js'))
         .pipe(replace(/"(\S+)\.scss"/gi, '$1.css'))
@@ -102,7 +115,7 @@ var sassBuild = function() {
         .pipe(gulp.dest(out));
 };
 
-var remainingBuild = function() {
+var remainingBuild = function () {
     return gulp.src(remaining_files)
         .pipe(gulp.dest(out));
 };
