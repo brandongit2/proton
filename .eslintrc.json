@@ -24,6 +24,10 @@
             "error",
             "windows"
         ],
+        "no-unused-vars": [
+            "warn",
+            {"args": "after-used"}
+        ],
         "quotes": [
             "error",
             "single"

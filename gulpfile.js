@@ -54,35 +54,35 @@ gulp.task('lint', () => {
 
 // Watch for changes
 gulp.task('watch', () => {
-    _webpackWatch = watch(webpack_files, {read:false, verbose: true}, () => {return webpackBuild()});
-    _htmlWatch = watch(html_files, {read:false, verbose: true}, () => {return htmlBuild()});
-    _sassWatch = watch(sass_files, {read:false, verbose: true}, () => {return sassBuild()});
-    _remainingWatch = watch(remaining_files, {read:false, verbose: true}, () => {return remainingBuild()});
+    let _webpackWatch = watch(webpack_files, {read:false, verbose: true}, () => {return webpackBuild();});
+    let _htmlWatch = watch(html_files, {read:false, verbose: true}, () => {return htmlBuild();});
+    let _sassWatch = watch(sass_files, {read:false, verbose: true}, () => {return sassBuild();});
+    let _remainingWatch = watch(remaining_files, {read:false, verbose: true}, () => {return remainingBuild();});
 });
 
 // Build all source files into build/ directory.
 gulp.task('build', gulp.series(() => {
-    _webpack = webpackBuild();
-    _html = htmlBuild();
-    _sass = sassBuild();
-    _remaining = remainingBuild();
+    let _webpack = webpackBuild();
+    let _html = htmlBuild();
+    let _sass = sassBuild();
+    let _remaining = remainingBuild();
 
     return merge(_webpack, _html, _sass, _remaining);
 }));
 
 var webpackBuild = function() {
     return gulp.src(webpack_files)
-            .pipe(named())
-            .pipe(webpack({
-                mode: 'development',
-                module: {
-                    rules: [
-                        { test: /\.(ts|tsx)$/, use: 'ts-loader' }
-                    ]
-                }
-            }, require('webpack')))
-            .pipe(uglify())
-            .pipe(gulp.dest(out));
+        .pipe(named())
+        .pipe(webpack({
+            mode: 'development',
+            module: {
+                rules: [
+                    { test: /\.(ts|tsx)$/, use: 'ts-loader' }
+                ]
+            }
+        }, require('webpack')))
+        .pipe(uglify())
+        .pipe(gulp.dest(out));
 };
 
 gulp.task('run', gulp.series('clean', 'build', 'watch'));
@@ -92,7 +92,7 @@ var htmlBuild = function() {
         .pipe(replace(/"(\S+)\.ts"/gi, '$1.js'))
         .pipe(replace(/"(\S+)\.scss"/gi, '$1.css'))
         .pipe(gulp.dest(out));
-}
+};
 
 var sassBuild = function() {
     return gulp.src(sass_files)
@@ -100,9 +100,9 @@ var sassBuild = function() {
         .pipe(sasslint.format())
         .pipe(sass().on('error', sass.logError))
         .pipe(gulp.dest(out));
-}
+};
 
 var remainingBuild = function() {
     return gulp.src(remaining_files)
         .pipe(gulp.dest(out));
-}
+};
