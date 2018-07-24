@@ -19,7 +19,7 @@ const through = require('through2');
 let src = 'src/';
 let out = 'build/';
 
-let webpack_files = [src + '!(module-)*/*.@(ts|tsx)', src + '*.@(ts|tsx)'];
+let webpack_files = [src + '**/*.@(ts|tsx)'];
 let html_files = [src + '!(module-)*/*.html', src + '*.html'];
 let sass_files = [src + '!(module-)*/*.scss', src + '*.scss'];
 let remaining_files = [src + '!(module-)*/*.!(ts|tsx|html|scss)', src + '*.!(ts|tsx|html|scss)'];
