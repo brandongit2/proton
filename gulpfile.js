@@ -13,7 +13,8 @@ const del = require('del');
 const merge = require('merge-stream');
 const named = require('vinyl-named');
 const tslint = require('tslint');
-const webpack = require('webpack-stream');
+const webpack = require('webpack');
+const gulpWebpack = require('webpack-stream');
 const through = require('through2');
 
 let src = 'src/';
@@ -76,13 +77,21 @@ gulp.task('build', gulp.series(() => {
 var webpackBuild = function () {
     return gulp.src(webpack_files)
         .pipe(named())
-        .pipe(webpack({
+        .pipe(gulpWebpack({
             devtool: 'source-map',
             mode: 'development',
             module: {
                 rules: [
                     { test: /\.(ts|tsx)$/, use: 'ts-loader' }
                 ]
+            },
+            plugins: [
+                new webpack.DefinePlugin({
+                    'process.env.NODE_ENV': JSON.stringify('production')
+                })
+            ],
+            optimization: {
+                minimize: true
             }
         }, require('webpack')))
         .pipe(sourcemaps.init({ loadMaps: true }))
