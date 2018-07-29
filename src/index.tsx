@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
+import { Greeting } from './modules';
 import { cube } from './math';
 import './style.css';
 
@@ -9,8 +10,6 @@ element.innerHTML = '5 cubed is ' + cube(5);
 document.body.appendChild(element);
 
 ReactDOM.render(
-    <div>
-        <h1>This is a React element.</h1>
-    </div>,
+    <Greeting name='Math App'/>,
     document.getElementById('app')
 );
