@@ -13,10 +13,10 @@ const del = require('del');
 const merge = require('merge-stream');
 const named = require('vinyl-named');
 const tslint = require('tslint');
-const webpack = require('webpack');
 const gulpWebpack = require('webpack-stream');
 const through = require('through2');
-const mode = process.env.NODE_ENV;
+
+const mode = process.env.NODE_ENV || 'development';
 
 let src = 'src/';
 let out = 'build/';
