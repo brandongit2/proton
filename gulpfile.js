@@ -66,7 +66,7 @@ gulp.task('watch', () => {
 });
 
 // Build all source files into build/ directory.
-gulp.task('build', gulp.series(() => {
+gulp.task('build', gulp.series('clean', () => {
     let _webpack = webpackBuild();
     let _html = htmlBuild();
     let _sass = sassBuild();
@@ -79,13 +79,21 @@ var webpackBuild = function () {
     return gulp.src(webpack_files)
         .pipe(named())
         .pipe(gulpWebpack({
+            entry: './src/app.tsx',
             devtool: 'source-map',
+            resolve: {
+                extensions: ['.ts', '.tsx', '.js', '.json']
+            },
             mode: mode,
             module: {
                 rules: [
                     { test: /\.(ts|tsx)$/, use: 'ts-loader' }
                 ]
             },
+            externals: {
+                'react': 'React',
+                'react-dom': 'ReactDOM'
+            }
         }, require('webpack')))
         .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(through.obj(function (file, enc, cb) {
@@ -98,8 +106,6 @@ var webpackBuild = function () {
         .pipe(sourcemaps.write())
         .pipe(gulp.dest(out));
 };
-
-gulp.task('run', gulp.series('clean', 'build', 'watch'));
 
 var htmlBuild = function () {
     return gulp.src(html_files)

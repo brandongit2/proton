@@ -1,8 +1,0 @@
-{
-  "name": "module-graph",
-  "version": "0.0.1-SNAPSHOT",
-  "description": "The graphing module.",
-  "main": "index.ts",
-  "author": "Brandon Tsang",
-  "license": "MIT"
-}
