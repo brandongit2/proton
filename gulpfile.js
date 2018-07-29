@@ -5,13 +5,18 @@ const replace = require('gulp-replace');
 const sass = require('gulp-sass');
 const sasslint = require('gulp-sass-lint');
 const gulpTslint = require('gulp-tslint');
+const uglify = require('gulp-uglifyes');
 const watch = require('gulp-watch');
+const sourcemaps = require('gulp-sourcemaps');
 
 const del = require('del');
 const merge = require('merge-stream');
 const named = require('vinyl-named');
 const tslint = require('tslint');
+const webpack = require('webpack');
 const gulpWebpack = require('webpack-stream');
+const through = require('through2');
+
 let src = 'src/';
 let out = 'build/';
 
@@ -74,18 +79,30 @@ var webpackBuild = function () {
         .pipe(named())
         .pipe(gulpWebpack({
             devtool: 'source-map',
-            mode: 'production',
+            mode: 'development',
             module: {
                 rules: [
                     { test: /\.(ts|tsx)$/, use: 'ts-loader' }
                 ]
             },
+            plugins: [
+                new webpack.DefinePlugin({
+                    'process.env.NODE_ENV': JSON.stringify('production')
+                })
+            ],
             optimization: {
                 minimize: true
             }
         }, require('webpack')))
-        //.pipe(sourcemaps.init({ loadMaps: true }))
-        //.pipe(sourcemaps.write())
+        .pipe(sourcemaps.init({ loadMaps: true }))
+        .pipe(through.obj(function (file, enc, cb) {
+            // Dont pipe through any source map files as it will be handled by gulp-sourcemaps
+            const isSourceMap = /\.map$/.test(file.path);
+            if (!isSourceMap) this.push(file);
+            cb();
+        }))
+        .pipe(uglify())
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest(out));
 };
 
@@ -98,7 +115,7 @@ var htmlBuild = function () {
         .pipe(gulp.dest(out));
 };
 
-var sassBuild = function () {
+var sassBuild = function() {
     return gulp.src(sass_files)
         .pipe(sasslint())
         .pipe(sasslint.format())
