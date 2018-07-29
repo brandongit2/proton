@@ -16,6 +16,7 @@ const tslint = require('tslint');
 const webpack = require('webpack');
 const gulpWebpack = require('webpack-stream');
 const through = require('through2');
+const mode = process.env.NODE_ENV;
 
 let src = 'src/';
 let out = 'build/';
@@ -79,20 +80,12 @@ var webpackBuild = function () {
         .pipe(named())
         .pipe(gulpWebpack({
             devtool: 'source-map',
-            mode: 'development',
+            mode: mode,
             module: {
                 rules: [
                     { test: /\.(ts|tsx)$/, use: 'ts-loader' }
                 ]
             },
-            plugins: [
-                new webpack.DefinePlugin({
-                    'process.env.NODE_ENV': JSON.stringify('production')
-                })
-            ],
-            optimization: {
-                minimize: true
-            }
         }, require('webpack')))
         .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(through.obj(function (file, enc, cb) {
