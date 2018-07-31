@@ -1,15 +1,20 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { Greeting } from './modules';
-import { cube } from './math';
 import './style.css';
 
-let element = document.createElement('div');
-element.innerHTML = '5 cubed is ' + cube(5);
-document.body.appendChild(element);
+const Box = ({color}: {color: string}) => <div style={{
+    background: color,
+    width: '20px',
+    height: '20px'
+}} />;
 
 ReactDOM.render(
-    <Greeting name='Math App'/>,
-    document.getElementById('app')
+    <div>
+        <p>body text</p>
+        <Box color="#ff0000" />
+        <Box color="#00ff00" />
+        <Box color="#0000ff" />
+    </div>,
+    document.getElementById('root')
 );

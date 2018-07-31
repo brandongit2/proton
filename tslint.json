@@ -5,6 +5,7 @@
     ],
     "rules": {
         "align": [true, "arguments", "members", "paramaters", "statements"],
+        "arrow-parens": false,
         "arrow-return-shorthand": true,
         "binary-expression-operand-order": true,
         "class-name": true,
@@ -16,6 +17,7 @@
         "file-name-casing": [true, "camel-case"],
         "import-spacing": true,
         "indent": [true, "spaces", 4],
+        "interface-name": false,
         "jsdoc-format": [true, "check-multiline-start"],
         "linebreak-style": [true, "LF"],
         "member-access": true,
@@ -72,8 +74,8 @@
         "trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
         "triple-equals": [true, "allow-null-check", "allow-undefined-check"],
         "use-isnan": true,
-        "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-trailing-underscore"],
-        "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-module", "check-separator", "check-rest-spread", "check-type", "check-typecast", "check-type-operator", "check-preblock"]
+        "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-pascal-case", "allow-trailing-underscore"],
+        "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-rest-spread", "check-type", "check-typecast", "check-type-operator", "check-preblock"]
     },
     "rulesDirectory": []
 }

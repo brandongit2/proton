@@ -27,6 +27,7 @@
     "optimize-css-assets-webpack-plugin": "5.0.0",
     "postcss-loader": "2.1.6",
     "style-loader": "0.21.0",
+    "tslint": "5.11.0",
     "ts-loader": "4.4.2",
     "ts-node": "7.0.0",
     "typescript": "2.9.2",
