@@ -3,7 +3,6 @@
 ##  [0.0.2][v0.0.2]
 ###  Added
 - A `build` script. Execute using the command `node build` in the project root. Has several arguments; use the `-h` flag to see them.
-    - Also accessible through the `npm start` command.
     - Uses `webpack-dev-middleware` and `webpack-hot-middleware`
 - A new Express server which serves a directory called `testfiles` in addition to the Webpack output.
     - In this commit, running `node build -sw` and navigating to `localhost:2000/testfiles/graphing.json` will show you the contents of `src/testfiles/graphing.json`.

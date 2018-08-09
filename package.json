@@ -6,10 +6,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/brandongit2/math.git"
-  },
-  "scripts": {
-    "start": "node build"
-  },
+},
   "author": "Brandon Tsang & Michael Pu",
   "license": "MIT",
   "bugs": {

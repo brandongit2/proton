@@ -5,8 +5,6 @@ const merge = require('webpack-merge');
 const path = require('path');
 const webpack = require('webpack');
 
-//process.argv.splice(2, 1);
-
 commander
     .version('0.0.1', '-v, --version')
     .option('-w, --watch', 'watch for file changes.')
