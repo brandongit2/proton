@@ -1,16 +1,17 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-    entry: {
-        app: './src/index.tsx',
-    },
+    entry: [
+        './src/index.tsx'
+    ],
     plugins: [
         new CleanWebpackPlugin(['build']),
         new HtmlWebpackPlugin({
-            template: 'src/index.html'
-        }),
+            title: 'math toolkit'
+        })
     ],
     module: {
         rules: [
@@ -29,7 +30,7 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.(png|svg|jpg|gif)/,
+                test: /\.(png|svg|jpg|gif)$/,
                 use: 'file-loader'
             }
         ]
@@ -37,8 +38,17 @@ module.exports = {
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.json']
     },
+    optimization: {
+        noEmitOnErrors: true
+    },
     output: {
         filename: '[name].bundle.js',
-        path: path.resolve(__dirname, 'build')
+        path: path.resolve(__dirname, 'build'),
+        publicPath: '/'
     },
+    node: {
+        net: 'empty',
+        fs: 'empty',
+        tls: 'empty'
+    }
 };

@@ -1,20 +1,18 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import * as request from 'request-promise';
+
+import {buildUi} from './uiBuilder';
 
 import './style.css';
 
-const Box = ({color}: {color: string}) => <div style={{
-    background: color,
-    width: '20px',
-    height: '20px'
-}} />;
+if (module.hot) {
+    module.hot.accept();
+}
 
-ReactDOM.render(
-    <div>
-        <p>body text</p>
-        <Box color="#ff0000" />
-        <Box color="#00ff00" />
-        <Box color="#0000ff" />
-    </div>,
-    document.getElementById('root')
-);
+request({
+    method: 'GET',
+    uri: 'http://localhost:2000/testfiles/graphing.json',
+    json: true
+})
+    .then((res) => {
+        console.log(res);
+    });

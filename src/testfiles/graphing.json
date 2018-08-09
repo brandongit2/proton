@@ -1,0 +1,26 @@
+{
+    "panels": {
+        "rows": [
+            {
+                "type": "toolbar",
+                "resizeable": false
+            },
+            {
+                "type": "container",
+                "rows": [
+                    {
+                        "type": "equations",
+                        "id": 0,
+                        "equations": [
+
+                        ]
+                    },
+                    {
+                        "type": "graph",
+                        "input": 0
+                    }
+                ]
+            }
+        ]
+    }
+}
