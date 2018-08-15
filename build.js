@@ -44,7 +44,7 @@ if (commander.server) {
         app.use(require('webpack-hot-middleware')(compiler));
     }
 
-    app.use('/testfiles', express.static(path.join(__dirname, 'src/testfiles')));
+    app.use('/workspaces', express.static(path.join(__dirname, 'src/workspaces')));
 
     const server = http.createServer(app);
     server.listen(commander.port, () => {

@@ -77,7 +77,27 @@
         ],
         "guard-for-in": "warn",
         "implicit-arrow-linebreak": "error",
-        "indent": "error",
+        "indent": [
+            "error",
+            4,
+            {
+                "ArrayExpression": "first",
+                "CallExpression": {
+                    "arguments": "first"
+                },
+                "FunctionDeclaration": {
+                    "parameters": "first",
+                    "body": 1
+                },
+                "FunctionExpression": {
+                    "parameters": "first",
+                    "body": 1
+                },
+                "ImportDeclaration": "first",
+                "ObjectExpression": "first",
+                "SwitchCase": 1
+            }
+        ],
         "jsx-quotes": "error",
         "key-spacing": [
             "error",
@@ -125,7 +145,7 @@
             "all",
             {
                 "enforceForArrowConditionals": false,
-                "ignoreJSX": "multi-line",
+                "ignoreJSX": "all",
                 "nestedBinaryExpressions": false
             }
         ],
