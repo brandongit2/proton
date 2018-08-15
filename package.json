@@ -6,51 +6,44 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/brandongit2/math.git"
-},
+  },
   "author": "Brandon Tsang & Michael Pu",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/brandongit2/math/issues"
   },
+  "postcss": {
+    "plugins": {
+      "stylelint": {},
+      "postcss-reporter": {}
+    }
+  },
   "homepage": "https://github.com/brandongit2/math#readme",
   "devDependencies": {
-    "@types/webpack-env": "1.13.6",
-    "autoprefixer": "9.0.2",
-    "clean-webpack-plugin": "0.1.19",
-    "css-loader": "1.0.0",
-    "error-overlay-webpack-plugin": "0.1.5",
-    "eslint": "5.1.0",
-    "eslint-plugin-react": "7.10.0",
-    "html-webpack-plugin": "3.2.0",
-    "mini-css-extract-plugin": "0.4.1",
-    "nodemon": "1.18.3",
-    "optimize-css-assets-webpack-plugin": "5.0.0",
-    "postcss-loader": "2.1.6",
-    "postcss-preset-env": "5.3.0",
-    "style-loader": "0.21.0",
-    "ts-loader": "4.4.2",
-    "ts-node": "7.0.0",
-    "tslint": "5.11.0",
-    "typescript": "2.9.2",
-    "uglifyjs-webpack-plugin": "1.2.7",
-    "webpack": "4.16.0",
-    "webpack-cli": "3.1.0",
-    "webpack-dev-middleware": "3.1.3",
-    "webpack-hot-middleware": "2.22.3",
-    "webpack-merge": "4.1.3"
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "clean-webpack-plugin": "^0.1.19",
+    "css-loader": "^1.0.0",
+    "eslint": "^5.3.0",
+    "eslint-plugin-react": "^7.11.1",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.4.1",
+    "optimize-css-assets-webpack-plugin": "^5.0.0",
+    "react-hot-loader": "^4.3.4",
+    "style-loader": "^0.22.1",
+    "uglifyjs-webpack-plugin": "^1.2.7",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-middleware": "^3.1.3",
+    "webpack-hot-middleware": "^2.22.3",
+    "webpack-merge": "^4.1.4"
   },
   "dependencies": {
-    "@types/express": "4.16.0",
-    "@types/node": "10.5.2",
-    "@types/react": "16.4.7",
-    "@types/react-dom": "16.0.6",
-    "@types/request-promise": "4.1.42",
-    "express": "4.16.3",
-    "http": "0.0.0",
-    "npm": "6.2.0",
-    "react": "16.4.1",
-    "react-dom": "16.4.1",
-    "request": "2.87.0",
-    "request-promise": "4.2.2"
+    "express": "^4.16.3",
+    "npm": "^6.3.0",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
   }
 }

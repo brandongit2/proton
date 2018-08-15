@@ -4,51 +4,48 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-    entry: [
-        './src/index.tsx'
-    ],
+    entry:   ['./src/index.jsx'],
     plugins: [
         new CleanWebpackPlugin(['build']),
         new HtmlWebpackPlugin({
-            title: 'math toolkit'
+            template: path.resolve(__dirname, 'src/index.html')
         })
     ],
     module: {
         rules: [
             {
-                test: /\.(ts|tsx)?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
+                test:    /\.js(x)?$/u,
+                use:     'babel-loader',
+                exclude: /node_modules/u
             },
             {
-                test: /\.css$/,
-                use: [
+                test: /\.css$/u,
+                use:  [
                     'style-loader',
-                    'css-loader',
-                    'postcss-loader'
+                    'css-loader'
                 ],
-                exclude: /node_modules/
+                exclude: /node_modules/u
             },
             {
-                test: /\.(png|svg|jpg|gif)$/,
-                use: 'file-loader'
+                test: /\.(png|svg|jpg|gif)$/u,
+                use:  'file-loader'
             }
         ]
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js', '.json']
+        extensions: ['.js', '.jsx', '.json']
     },
     optimization: {
         noEmitOnErrors: true
     },
     output: {
-        filename: '[name].bundle.js',
-        path: path.resolve(__dirname, 'build'),
+        filename:   '[name].bundle.js',
+        path:       path.resolve(__dirname, 'build'),
         publicPath: '/'
     },
     node: {
         net: 'empty',
-        fs: 'empty',
+        fs:  'empty',
         tls: 'empty'
     }
 };
