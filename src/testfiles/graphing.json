@@ -2,21 +2,26 @@
     "panels": {
         "rows": [
             {
-                "type": "toolbar",
-                "resizeable": false
+                "height": 5,
+                "panels": [
+                    {
+                        "type": "toolbar",
+                        "width": 100
+                    }
+                ]
             },
             {
-                "type": "container",
-                "rows": [
+                "height": 95,
+                "panels": [
                     {
                         "type": "equations",
+                        "width": 20,
                         "id": 0,
-                        "equations": [
-
-                        ]
+                        "equations": []
                     },
                     {
                         "type": "graph",
+                        "width": 80,
                         "input": 0
                     }
                 ]

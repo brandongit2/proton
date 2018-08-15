@@ -7,7 +7,7 @@ const webpack = require('webpack');
 
 commander
     .version('0.0.1', '-v, --version')
-    .option('-w, --watch', 'watch for file changes.')
+    .option('-w, --watch', 'Watch for file changes.')
     .option('-s, --server', 'Start a local server.')
     .option('-d, --dev', 'Run in development mode.')
     .option('-p, --prod', 'Run in production mode.')
@@ -15,10 +15,10 @@ commander
     .parse(process.argv);
 
 if (commander.port) {
-    if (typeof commander.port != 'number') {
+    try {
+        commander.port = parseInt(commander.port);
+    } catch (e) {
         throw new Error('Please enter a number for the port.');
-    } else if (!commander.port.isInteger()) {
-        throw new Error('Please enter an integer for the port.');
     }
 }
 if (!commander.port) {
@@ -28,11 +28,9 @@ if (!commander.port) {
 let config = require(`./webpack.${commander.prod ? 'prod' : 'dev'}.js`);
 if (commander.watch) {
     config = merge(config, {
-        entry: ['webpack-hot-middleware/client'],
-        watch: true,
-        plugins: [
-            new webpack.HotModuleReplacementPlugin()
-        ]
+        entry:   ['webpack-hot-middleware/client'],
+        watch:   true,
+        plugins: [new webpack.HotModuleReplacementPlugin()]
     });
 }
 
