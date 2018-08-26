@@ -8,12 +8,14 @@
         "eslint:recommended",
         "plugin:react/recommended"
     ],
+    "parser": "babel-eslint",
     "parserOptions": {
         "sourceType": "module",
         "ecmaFeatures": {
+            "experimentalObjectRestSpread": true,
             "jsx": true
         },
-        "ecmaVersion": 2016
+        "ecmaVersion": 2018
     },
     "plugins": [
         "react"
@@ -39,11 +41,6 @@
             "error",
             "1tbs",
             {"allowSingleLine": true}
-        ],
-        "capitalized-comments": [
-            "error",
-            "always",
-            {"ignoreConsecutiveComments": true}
         ],
         "comma-dangle": [
             "error",
@@ -109,10 +106,6 @@
             "unix"
         ],
         "lines-between-class-members": "error",
-        "multiline-comment-style": [
-            "error",
-            "starred-block"
-        ],
         "new-cap": "warn",
         "new-parens": "error",
         "no-async-promise-executor": "error",

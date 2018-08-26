@@ -20,10 +20,11 @@ if (commander.port) {
     } catch (e) {
         throw new Error('Please enter a number for the port.');
     }
-}
-if (!commander.port) {
+} else {
     commander.port = 2000;
 }
+
+if (!commander.prod) commander.dev = true;
 
 let config = require(`./webpack.${commander.prod ? 'prod' : 'dev'}.js`);
 if (commander.watch) {
@@ -34,20 +35,37 @@ if (commander.watch) {
     });
 }
 
+console.log(require('util').inspect(config, {depth: Infinity}));
 const compiler = webpack(config);
+
+if (commander.prod) {
+    compiler.run((err, stats) => {
+        console.log(stats.toString({colors: true}));
+    });
+}
 
 if (commander.server) {
     const app = express();
 
-    app.use(require('webpack-dev-middleware')(compiler, {publicPath: '/'}));
-    if (commander.watch) {
-        app.use(require('webpack-hot-middleware')(compiler));
+    if (commander.dev) {
+        app.use(require('webpack-dev-middleware')(compiler, {
+            publicPath: '/',
+            stats:      {
+                colors: true
+            }
+        }));
+
+        if (commander.watch) {
+            app.use(require('webpack-hot-middleware')(compiler));
+        }
+    } else {
+        app.use('/', express.static(path.resolve(__dirname, 'build')));
     }
 
-    app.use('/workspaces', express.static(path.join(__dirname, 'src/workspaces')));
+    app.use('/workspaces', express.static(path.resolve(__dirname, 'src/workspaces')));
 
     const server = http.createServer(app);
-    server.listen(commander.port, () => {
+    server.listen(commander.port, '0.0.0.0', () => {
         console.log(`Server listening on port ${commander.port}`);
     });
 }

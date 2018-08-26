@@ -1,26 +1,34 @@
-import * as PropTypes from 'prop-types';
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {hot} from 'react-hot-loader';
-import * as request from 'request-promise';
+import request from 'request-promise';
+import {generate} from 'shortid';
 
-import {Row} from './uiComponents/index';
+import {Divider, Row} from './uiComponents';
 
-import './index.css';
+require('./index.scss');
 
 if (module.hot) {
     module.hot.accept();
 }
 
-window.panelCount = 0;
+let App = ({json}) => {
+    let rowId = 0;
 
-let App = ({json}) => (
-    <div>
-        {json.panels.rows.map(
-            (row, i) => <Row key={i} height={row.height} panels={row.panels}></Row>
-        )}
-    </div>
-);
+    return (
+        <div className="app">
+            {json.panels.rows.map(
+                row => (
+                    <React.Fragment key={generate()}>
+                        <Row style={{flexGrow: row.height}} id={rowId++} panels={row.panels} />
+                        <Divider className="divider horizontal" onMove={() => {}} id={generate()} />
+                    </React.Fragment>
+                )
+            )}
+        </div>
+    );
+};
 
 App.propTypes = {
     json: PropTypes.object.isRequired
@@ -30,7 +38,7 @@ App = hot(module)(App);
 
 request({
     method:  'GET',
-    baseUrl: 'http://localhost:2000',
+    baseUrl: `http://${window.location.hostname}:${window.location.port}`,
     uri:     '/workspaces/graphing.json',
     json:    true
 })

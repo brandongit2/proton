@@ -1,15 +1,15 @@
 const path = require('path');
 
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const StyleLintWebpackPlugin = require('stylelint-webpack-plugin');
 
 module.exports = {
     entry:   ['./src/index.jsx'],
     plugins: [
-        new CleanWebpackPlugin(['build']),
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, 'src/index.html')
-        })
+        }),
+        new StyleLintWebpackPlugin()
     ],
     module: {
         rules: [
@@ -19,29 +19,27 @@ module.exports = {
                 exclude: /node_modules/u
             },
             {
-                test: /\.css$/u,
-                use:  [
-                    'style-loader',
-                    'css-loader'
-                ],
-                exclude: /node_modules/u
-            },
-            {
                 test: /\.(png|svg|jpg|gif)$/u,
                 use:  'file-loader'
             }
         ]
     },
     resolve: {
-        extensions: ['.js', '.jsx', '.json']
+        // Waiting on https://github.com/developit/preact/pull/1080 to be pulled and released
+        // so that Preact can be used in place of React.
+        //
+        // alias: {
+        //     react:       'preact-compat',
+        //     'react-dom': 'preact-compat'
+        // },
+        extensions: ['.js', '.jsx']
     },
     optimization: {
         noEmitOnErrors: true
     },
     output: {
-        filename:   '[name].bundle.js',
-        path:       path.resolve(__dirname, 'build'),
-        publicPath: '/'
+        filename: '[name].[hash].js',
+        path:     path.resolve(__dirname, 'build')
     },
     node: {
         net: 'empty',

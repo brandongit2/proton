@@ -1,0 +1,55 @@
+body {
+    margin: 0px;
+
+    overflow: hidden;
+}
+
+p {
+    margin: 0px;
+}
+
+.app {
+    height: 100vh;
+    display: flex;
+
+    flex-direction: column;
+}
+
+.row {
+    width: 100vw;
+    display: flex;
+}
+
+.panel {
+    background: #777;
+    min-width: 0px;
+    display: inline-block;
+
+    box-sizing: border-box;
+
+    p {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.divider {
+    background: white;
+
+    &.horizontal {
+        min-height: 3px;
+
+        cursor: ns-resize;
+    }
+
+    &.vertical {
+        min-width: 3px;
+
+        cursor: ew-resize;
+    }
+
+    &:last-child {
+        max-width: 0px;
+        max-height: 0px;
+    }
+}
