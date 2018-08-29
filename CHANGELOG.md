@@ -1,6 +1,8 @@
 # Changelog
-## Click [here][unreleased] for unreleased diff
-##  [0.0.2][v0.0.2]
+
+## [Unreleased]
+
+##  [0.0.2] - 2018-08-08
 ###  Added
 - A `build` script. Execute using the command `node build` in the project root. Has several arguments; use the `-h` flag to see them.
     - Uses `webpack-dev-middleware` and `webpack-hot-middleware`
@@ -11,7 +13,8 @@
 ### Developer notes
 In order for hot module replacement to work for your dependencies, you will need to use the `module.hot.accept()` command in the code. See [this link](https://survivejs.com/webpack/appendices/hmr/) for details on how to do this.
 Also note that `if (module.hot) {}` blocks are automatically removed during production builds.
-## 0.0.1
+
+## 0.0.1 - 2018-07-30
 ### Added
 - Build system
     - Uses NPM as package manager.
@@ -26,5 +29,5 @@ Also note that `if (module.hot) {}` blocks are automatically removed during prod
     - Use `npm start` or `npm run dev` to start the build process, along with watching. Also starts a server. Only use for development.
     - Use `npm run prod` to build for production. Creates a `build/` directory for built files. Otherwise essentially the same as `npm run dev` except it builds slower and runs faster.
 
-[v0.0.2]: https://github.com/brandongit2/math/compare/v0.0.1...v0.0.2
-[unreleased]: https://github.com/brandongit2/math/compare/v0.0.1...HEAD
+[0.0.2]: https://github.com/brandongit2/math/compare/v0.0.1...v0.0.2
+[Unreleased]: https://github.com/brandongit2/math/compare/v0.0.2...HEAD
