@@ -1,47 +1,33 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {hot} from 'react-hot-loader';
 import request from 'request-promise';
-import {generate} from 'shortid';
+import {hot} from 'react-hot-loader';
+import {Provider} from 'react-redux';
 
-import {Divider, Row} from './uiComponents';
+import App from './containers/App';
+import {hydrateUI} from './actions';
+import store from './store';
 
 require('./index.scss');
 
-if (module.hot) {
-    module.hot.accept();
-}
+const HotApp = hot(module)(App);
 
-let App = ({json}) => {
-    let rowId = 0;
-
-    return (
-        <div className="app">
-            {json.panels.rows.map(
-                row => (
-                    <React.Fragment key={generate()}>
-                        <Row style={{flexGrow: row.height}} id={rowId++} panels={row.panels} />
-                        <Divider className="divider horizontal" onMove={() => {}} id={generate()} />
-                    </React.Fragment>
-                )
-            )}
-        </div>
-    );
-};
-
-App.propTypes = {
-    json: PropTypes.object.isRequired
-};
-
-App = hot(module)(App);
+ReactDOM.render(
+    <Provider store={store}>
+        <HotApp />
+    </Provider>,
+    document.getElementById('root')
+);
 
 request({
     method:  'GET',
     baseUrl: `http://${window.location.hostname}:${window.location.port}`,
     uri:     '/workspaces/graphing.json',
     json:    true
-})
-    .then(res => {
-        ReactDOM.render(<App json={res} />, document.getElementById('root'));
-    });
+}).then(res => {
+    store.dispatch(hydrateUI(res));
+});
+
+if (module.hot) {
+    module.hot.accept();
+}

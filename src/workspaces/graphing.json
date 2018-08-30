@@ -3,7 +3,7 @@
         "rows": [
             {
                 "height": 5,
-                "panels": [
+                "columns": [
                     {
                         "type": "toolbar",
                         "width": 100
@@ -12,17 +12,21 @@
             },
             {
                 "height": 95,
-                "panels": [
+                "columns": [
                     {
                         "type": "equations",
                         "width": 20,
-                        "id": 0,
-                        "equations": []
+                        "properties": {
+                            "id": 0,
+                            "equations": []
+                        }
                     },
                     {
                         "type": "graph",
                         "width": 80,
-                        "input": 0
+                        "properties": {
+                            "input": 0
+                        }
                     }
                 ]
             }

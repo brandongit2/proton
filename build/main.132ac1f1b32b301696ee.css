@@ -1,1 +1,0 @@
-body{overflow:hidden}body,p{margin:0}.app{flex-direction:column;height:100vh}.app,.row{display:flex}.row{width:100vw}.panel{background:red;box-sizing:border-box;display:inline-block}.divider{background:#fff}.divider.horizontal{cursor:ns-resize;height:3px}.divider.vertical{cursor:ew-resize;width:3px}.divider:last-child{height:0;width:0}
