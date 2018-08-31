@@ -1,0 +1,1 @@
+body{overflow:hidden}body,p{margin:0}.app{height:100vh;width:100vw}.app,.columns,.rows{display:flex}.rows{flex-direction:row}.columns{flex-direction:column}.divider{background:#000}.divider.horizontal{cursor:ns-resize;min-height:3px}.divider.vertical{cursor:ew-resize;min-width:3px}.divider:last-child{min-height:0;min-width:0}

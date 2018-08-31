@@ -6,17 +6,19 @@ let store = createStore(
     rootReducer,
     {
         layout: {
-            rows: [
-                {
-                    height:  100,
+            'root-panel': {
+                type:       'columns',
+                properties: {
                     columns: [
                         {
                             type:       'empty',
-                            width:      100
+                            properties: {
+                                size: 100
+                            }
                         }
                     ]
                 }
-            ]
+            }
         }
     },
     window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()

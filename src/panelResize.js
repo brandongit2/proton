@@ -1,43 +1,38 @@
-import {generate} from 'shortid';
+import {resizePanel} from './actions';
+import store from './store';
 
-export function createInitialState(panels, direction) {
-    let initialState;
-    if (direction === 'row') {
-        initialState = {
-            childHeights: {}, // Maps child IDs to their heights.
-            idList:       []  // Stores the order of the IDs.
-        };
-    } else if (direction === 'panel') {
-        initialState = {
-            childWidths: {}, // Maps child IDs to their widths.
-            idList:      []  // Stores the order of the IDs.
-        };
+export class PanelList {
+    constructor(direction, path) {
+        this.direction = direction;
+        this.path = path;
+        this.idList = [];
+
+        this.addId = this.addId.bind(this);
+        this.onDividerClick = this.onDividerClick.bind(this);
     }
 
-    for (let panel of panels) {
-        const id1 = generate(); // For the row/panel.
-        const id2 = generate(); // For the divider.
-
-        initialState.idList.push(id1, id2);
-
-        initialState.childWidths[id1] = direction === 'row' ? panel.height : panel.width;
-    }
-
-    return initialState;
-}
-
-export function onChildMove(id, mouseDelta) {
-    const {childHeights, idList} = this.state;
-
-    // Get previous and next row IDs.
-    const prevRowId = idList[idList.findIndex(element => element === id) - 1];
-    const nextRowId = idList[idList.findIndex(element => element === id) + 1];
-
-    this.setState({
-        childHeights: {
-            ...childHeights,
-            [prevRowId]: childHeights.prevRowId + mouseDelta,
-            [nextRowId]: childHeights.nextRowId - mouseDelta
+    // eslint-disable-next-line no-unused-vars
+    addId(id) {
+        for (let argument of arguments) {
+            this.idList.push(argument);
+            console.log(`${this.path}: ${this.idList}`);
         }
-    });
+    }
+
+    onDividerClick(id, mouseDelta) {
+        let dividerIndex = this.idList.findIndex(el => el === id);
+
+        if (dividerIndex > 0 && dividerIndex < this.idList.length - 1) {
+            console.log(dividerIndex);
+            let indexOfPanelBefore = dividerIndex - 1;
+            let indexOfPanelAfter = dividerIndex + 1;
+            store.dispatch(resizePanel(
+                indexOfPanelBefore,
+                indexOfPanelAfter,
+                this.direction === 'horizontal' ? 'vertical' : 'horizontal',
+                this.path,
+                mouseDelta
+            ));
+        }
+    }
 }

@@ -10,31 +10,23 @@ p {
 
 .app {
     height: 100vh;
-    display: flex;
+    width: 100vw;
+}
 
+.app, .rows, .columns {
+    display: flex;
+}
+
+.rows {
+    flex-direction: row;
+}
+
+.columns {
     flex-direction: column;
 }
 
-.row {
-    width: 100vw;
-    display: flex;
-}
-
-.panel {
-    background: #777;
-    min-width: 0px;
-    display: inline-block;
-
-    box-sizing: border-box;
-
-    p {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-}
-
 .divider {
-    background: white;
+    background: black;
 
     &.horizontal {
         min-height: 3px;

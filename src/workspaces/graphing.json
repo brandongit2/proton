@@ -1,35 +1,91 @@
 {
-    "panels": {
-        "rows": [
-            {
-                "height": 5,
-                "columns": [
-                    {
-                        "type": "toolbar",
-                        "width": 100
+    "root-panel": {
+        "type": "columns",
+        "properties": {
+            "size": 100,
+            "columns": [
+                {
+                    "type": "toolbar",
+                    "properties": {
+                        "size": 5
                     }
-                ]
-            },
-            {
-                "height": 95,
-                "columns": [
-                    {
-                        "type": "equations",
-                        "width": 20,
-                        "properties": {
-                            "id": 0,
-                            "equations": []
-                        }
-                    },
-                    {
-                        "type": "graph",
-                        "width": 80,
-                        "properties": {
-                            "input": 0
-                        }
+                },
+                {
+                    "type": "rows",
+                    "properties": {
+                        "size": 95,
+                        "rows": [
+                            {
+                                "type": "equation-list",
+                                "properties": {
+                                    "size": 20,
+                                    "id": 0,
+                                    "equations": []
+                                }
+                            },
+                            {
+                                "type": "columns",
+                                "properties": {
+                                    "size": 80,
+                                    "columns": [
+                                        {
+                                            "type": "rows",
+                                            "properties": {
+                                                "size": 40,
+                                                "rows": [
+                                                    {
+                                                        "type": "text",
+                                                        "properties": {
+                                                            "size": 70,
+                                                            "text": "block 1"
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "text",
+                                                        "properties": {
+                                                            "size": 30,
+                                                            "text": "block 2"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "type": "rows",
+                                            "properties": {
+                                                "size": 60,
+                                                "rows": [
+                                                    {
+                                                        "type": "text",
+                                                        "properties": {
+                                                            "size": 33,
+                                                            "text": "block 3"
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "text",
+                                                        "properties": {
+                                                            "size": 34,
+                                                            "text": "block 4"
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "text",
+                                                        "properties": {
+                                                            "size": 33,
+                                                            "text": "block 5"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
                     }
-                ]
-            }
-        ]
+                }
+            ]
+        }
     }
 }

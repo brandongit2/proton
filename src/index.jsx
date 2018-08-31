@@ -4,7 +4,7 @@ import request from 'request-promise';
 import {hot} from 'react-hot-loader';
 import {Provider} from 'react-redux';
 
-import App from './containers/App';
+import {App} from './containers';
 import {hydrateUI} from './actions';
 import store from './store';
 
