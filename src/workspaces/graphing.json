@@ -24,62 +24,9 @@
                                 }
                             },
                             {
-                                "type": "columns",
+                                "type": "graph",
                                 "properties": {
-                                    "size": 80,
-                                    "columns": [
-                                        {
-                                            "type": "rows",
-                                            "properties": {
-                                                "size": 40,
-                                                "rows": [
-                                                    {
-                                                        "type": "text",
-                                                        "properties": {
-                                                            "size": 70,
-                                                            "text": "block 1"
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "text",
-                                                        "properties": {
-                                                            "size": 30,
-                                                            "text": "block 2"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        {
-                                            "type": "rows",
-                                            "properties": {
-                                                "size": 60,
-                                                "rows": [
-                                                    {
-                                                        "type": "text",
-                                                        "properties": {
-                                                            "size": 33,
-                                                            "text": "block 3"
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "text",
-                                                        "properties": {
-                                                            "size": 34,
-                                                            "text": "block 4"
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "text",
-                                                        "properties": {
-                                                            "size": 33,
-                                                            "text": "block 5"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
+                                    "size": 80
                                 }
                             }
                         ]
