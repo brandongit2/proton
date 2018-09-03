@@ -17,7 +17,8 @@
         "ecmaVersion": 2018
     },
     "plugins": [
-        "react"
+        "react",
+        "babel"
     ],
     "rules": {
         "array-bracket-newline": "error",
@@ -148,7 +149,8 @@
             "error",
             "both"
         ],
-        "no-invalid-this": "error",
+        "no-invalid-this": "off",
+        "babel/no-invalid-this": "error",
         "no-irregular-whitespace": [
             "error",
             {

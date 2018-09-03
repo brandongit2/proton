@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {Point} from './Point';
 import {Util} from './Util';
+import {TweenMax, Expo} from 'gsap/all';
 
 /*
 NOTES:
@@ -16,6 +17,10 @@ export class Graph extends React.Component {
         super(props);
 
         this.self = React.createRef();
+        this.panInertiaAnimation = null;
+        this.panVelocity = new Point(0, 0);
+        this.lastPanTime = null;
+        this.lastPanPos = new Point(0, 0);
 
         const canvasElement = (<canvas width={10} height={10} ref={c => { this.canvas = c; }} />);
 
@@ -39,6 +44,10 @@ export class Graph extends React.Component {
         if (this.canvas.width !== this.canvas.offsetWidth || this.canvas.height !== this.canvas.offsetHeight) {
             this.canvas.width = this.canvas.offsetWidth;
             this.canvas.height = this.canvas.offsetHeight;
+
+            this.canvas.addEventListener('mousedown', this.handleMouseDown);
+            this.canvas.addEventListener('wheel', this.handleMouseWheel);
+
             const ctx = this.canvas.getContext('2d');
             this.setState({
                 context: ctx,
@@ -349,7 +358,7 @@ export class Graph extends React.Component {
                     // label is off screen on top
                     labelYPos = properties.axisNumbers.margin;
                     labelYAlign = 'top';
-                } else if (labelYPos + labelHeight + (properties.axisNumbers.margin * 2) > this.height) {
+                } else if (labelYPos + labelHeight + (properties.axisNumbers.margin * 2) > height) {
                     // label is off the screen on bottom
                     labelYPos = height - properties.axisNumbers.margin;
                     labelYAlign = 'bottom';
@@ -365,12 +374,286 @@ export class Graph extends React.Component {
                 }
             }
 
+            // Draw labels for Y axis
+            let topMostMajorLine = Math.floor((Math.floor(display.topPoint / display.optimalScaleY) * display.optimalScaleY) / (display.minorBetweenMajorY * display.optimalScaleY)) * (display.minorBetweenMajorY * display.optimalScaleY);
+
+            for (let y = topMostMajorLine; y > display.bottomPoint; y -= display.minorBetweenMajorY * display.optimalScaleY) {
+                let labelYPos = display.originPos.y - y * (display.pixelIntervalY / display.optimalScaleY);
+                let labelXPos = display.originPos.x;
+
+                // get width of label
+                let labelWidth;
+                let label = this.getScaleNumber(y);
+
+                let regexMatch = EXPONENTIAL_FORM_REGEX.exec(label);
+
+                if (regexMatch === null) {
+                    labelWidth = ctx.measureText(label).width;
+                } else {
+                    let mantissa = regexMatch[1];
+                    let exponent = regexMatch[2];
+
+                    let normalText = `${mantissa} \u{22C5} 10 `;
+                    ctx.font = properties.axisNumbers.font;
+                    let normalTextWidth = ctx.measureText(normalText).width;
+
+                    let superText = exponent;
+                    ctx.font = properties.axisNumbers.superscriptFont;
+                    let superTextWidth = ctx.measureText(superText).width;
+
+                    labelWidth = normalTextWidth + superTextWidth;
+                }
+
+                let labelXAlign;
+
+                if ((labelXPos - labelWidth - (properties.axisNumbers.margin * 2)) < 0) {
+                    // label is off the screen on the left
+                    labelXPos = properties.axisNumbers.margin;
+                    labelXAlign = 'left';
+                } else if (labelXPos > width) {
+                    // label is off the screen on the right
+                    labelXPos = width - properties.axisNumbers.margin;
+                    labelXAlign = 'right';
+                } else {
+                    // label is on the left of the axis
+                    labelXPos = display.originPos.x - properties.axisNumbers.margin;
+                    labelXAlign = 'right';
+                }
+
+                if (Math.abs(y * (display.pixelIntervalY / display.optimalScaleY)) > 1) {
+                    this.drawScaleNumbersWithBackground(label, labelXPos, labelYPos, 'vertical', labelXAlign);
+                }
+            }
+
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, 10, 10);
             ctx.fillRect(this.canvas.width - 10, 0, 10, 10);
             ctx.fillRect(0, this.canvas.height - 10, 10, 10);
             ctx.fillRect(this.canvas.width - 10, this.canvas.height - 10, 10, 10);
         });
+    }
+
+    panGraph(xMovePix, yMovePix, start) {
+        let {properties} = {...this.props};
+        let {display} = {...this.state};
+        let allowPan = true;
+
+        // Calculate how much to pan the graph
+        let xMove = xMovePix / display.pixelIntervalX;
+        let yMove = yMovePix / display.pixelIntervalY;
+
+        let newLeftPoint = display.leftPoint + xMove * display.optimalScaleX;
+        let newRightPoint = display.rightPoint + xMove * display.optimalScaleX;
+        let newTopPoint = display.topPoint + yMove * display.optimalScaleY;
+        let newBottomPoint = display.bottomPoint + yMove * display.optimalScaleY;
+
+        // Check if the pan will go off the safe boundaries of the graph
+        if (newLeftPoint < -properties.maxCoordinate && xMovePix < 0) {
+            allowPan = false;
+        } else if (newRightPoint > properties.maxCoordinate && xMovePix > 0) {
+            allowPan = false;
+        } else if (newTopPoint > properties.maxCoordinate && yMovePix > 0) {
+            allowPan = false;
+        } else if (newBottomPoint < -properties.maxCoordinate && yMovePix < 0) {
+            allowPan = false;
+        }
+
+        if (allowPan) {
+            let now = performance.now();
+
+            if (!start) {
+                // stop pan inertia if any already exists
+                if (this.panInertiaAnimation) {
+                    this.panInertiaAnimation.kill();
+                }
+                // get the velocity that the mouse moved at
+                let timeElapsed = now - this.lastPanTime;
+                this.panVelocity = new Point();
+                this.panVelocity.x = xMovePix / (timeElapsed / 1000);
+                this.panVelocity.y = yMovePix / (timeElapsed / 1000);
+            }
+
+            // update the last time that the mouse velocity was updated
+            this.lastPanTime = now;
+
+            // update the boundaries of the graph after the pan
+            display.leftPoint = newLeftPoint;
+            display.rightPoint = newRightPoint;
+            display.topPoint = newTopPoint;
+            display.bottomPoint = newBottomPoint;
+
+            // draw the graph after the pan
+            this.drawGraph();
+        }
+    }
+
+    /**
+     *  Called when panning of the graph is stopped and pan inertia should take over.
+     */
+    stopPanGraph() {
+        if (this.panVelocity && (this.panVelocity.x !== 0 || this.panVelocity.y !== 0)) {
+            this.panInertiaAnimation = TweenMax.to(
+                this.panVelocity,
+                this.props.properties.panInertia.animationLength,
+                {
+                    x:             0,
+                    y:             0,
+                    ease:          Expo.easeOut,
+                    onUpdate:      this.continuePanGraph,
+                    onUpdateScope: this,
+                }
+            );
+        }
+    }
+
+    /**
+     * Called each time pan inertia will cause the graph to be panned.
+     */
+    continuePanGraph() {
+        let now = performance.now();
+        let timeElapsed = now - this.lastPanTime;
+        this.lastPanTime = now;
+
+        // stops panning when the pan inertia velociy is too low (below stopPanValue)
+
+        let moveX;
+        if (Math.abs(this.panVelocity.x) > this.props.properties.panInertia.stopPanValue) {
+            moveX = this.panVelocity.x * (timeElapsed / 1000);
+        } else {
+            moveX = 0;
+        }
+
+        let moveY;
+        if (Math.abs(this.panVelocity.y) > this.props.properties.panInertia.stopPanValue) {
+            moveY = this.panVelocity.y * (timeElapsed / 1000);
+        } else {
+            moveY = 0;
+        }
+
+        this.panGraph(moveX, moveY, true);
+    }
+
+    handleMouseDown = e => {
+        this.canvas.style.cursor = 'move';
+        this.lastPanPos.x = e.x;
+        this.lastPanPos.y = e.y;
+        this.panGraph(0, 0, true);
+
+        this.canvas.addEventListener('mousemove', this.handleMouseMove);
+        this.canvas.addEventListener('mouseup', this.handleMouseUp);
+        this.canvas.addEventListener('mouseleave', this.handleMouseUp);
+    }
+
+    handleMouseMove = e => {
+        this.panGraph(this.lastPanPos.x - e.x, e.y - this.lastPanPos.y, false);
+        this.lastPanPos.x = e.x;
+        this.lastPanPos.y = e.y;
+    }
+
+    handleMouseUp = () => {
+        this.stopPanGraph();
+        this.canvas.style.cursor = 'default';
+        this.canvas.removeEventListener('mousemove', this.handleMouseMove);
+        this.canvas.removeEventListener('mouseup', this.handleMouseUp);
+        this.canvas.removeEventListener('mouseleave', this.handleMouseUp);
+    }
+
+    handleMouseWheel = e => {
+        if (e.deltaY > 0) {
+            this.canvas.style.cursor = 'zoom-out';
+            this.resize(this.props.properties.scrollMultiplier, this.props.properties.scrollMultiplier, e.offsetX, e.offsetY);
+        } else {
+            this.canvas.style.cursor = 'zoom-in';
+            this.resize(1 / this.props.properties.scrollMultiplier, 1 / this.props.properties.scrollMultiplier, e.offsetX, e.offsetY);
+        }
+    }
+
+    getPointFromCoordinates(xCoord, yCoord) {
+        let curPoint = new Point();
+        curPoint.x = this.state.display.leftPoint + ((xCoord / this.state.display.pixelIntervalX) * this.state.display.optimalScaleX);
+        curPoint.y = this.state.display.topPoint - ((yCoord / this.state.display.pixelIntervalY) * this.state.display.optimalScaleY);
+        return curPoint;
+    }
+
+    resize(xTimes, yTimes, centreX, centreY) {
+        let {properties} = {...this.props};
+        let {display} = {...this.state};
+        let width = this.canvas.width;
+        let height = this.canvas.height;
+
+        let maxDisFromOrigin = Math.max(
+            (display.leftPoint / display.optimalScaleX) * display.pixelIntervalX,
+            (display.rightPoint / display.optimalScaleX) * display.pixelIntervalX,
+            (display.topPoint / display.optimalScaleY) * display.pixelIntervalY,
+            (display.bottomPoint / display.optimalScaleY) * display.pixelIntervalY
+        );
+
+        let maxCoordinate = Math.max(
+            display.leftPoint,
+            display.rightPoint,
+            display.topPoint,
+            display.bottomPoint
+        );
+
+        if ((maxCoordinate < properties.maxCoordinate || (xTimes < 1 && yTimes < 1)) && (maxDisFromOrigin < properties.maxZoomLimitPixelsFromOrigin || (xTimes > 1 && yTimes > 1))) {
+            // stop pan inertia if any already exists
+            if (this.panInertiaAnimation) {
+                this.panInertiaAnimation.kill();
+            }
+
+            let mousePoint = this.getPointFromCoordinates(centreX, centreY);
+
+            // percent of the height covered above the mouse
+            let topPercent = centreY / height;
+            // percent of the width covered left of the mosue
+            let leftPercent = centreX / width;
+            // width of the graph in terms of coordinates
+            let pointWidth = display.rightPoint - display.leftPoint;
+            // height of the graph in terms of coordiantes
+            let pointHeight = display.topPoint - display.bottomPoint;
+
+            // determine target boundaries of graph after the zoom
+            let animationTarget = {
+                topPoint:    mousePoint.y + (pointHeight * topPercent * yTimes),
+                bottomPoint: mousePoint.y - (pointHeight * (1 - topPercent) * yTimes),
+                leftPoint:   mousePoint.x - (pointWidth * leftPercent * xTimes),
+                rightPoint:  mousePoint.x + (pointWidth * (1 - leftPercent) * xTimes),
+            };
+
+            this.animationDisplay = {
+                topPoint:    this.state.display.topPoint,
+                bottomPoint: this.state.display.bottomPoint,
+                leftPoint:   this.state.display.leftPoint,
+                rightPoint:  this.state.display.rightPoint
+            };
+
+            // animate the zoom
+            TweenMax.to(
+                this.animationDisplay,
+                properties.resizeAnimationLength,
+                {
+                    topPoint:    animationTarget.topPoint,
+                    bottomPoint: animationTarget.bottomPoint,
+                    leftPoint:   animationTarget.leftPoint,
+                    rightPoint:  animationTarget.rightPoint,
+                    onUpdate:    () => {
+                        let curState = this.state;
+                        curState.display.topPoint = this.animationDisplay.topPoint;
+                        curState.display.bottomPoint = this.animationDisplay.bottomPoint;
+                        curState.display.leftPoint = this.animationDisplay.leftPoint;
+                        curState.display.rightPoint = this.animationDisplay.rightPoint;
+                        this.setState(curState, () => {
+                            this.drawGraph();
+                        });
+                    },
+                    onUpdateScope: this,
+                    onComplete:    function () {
+                        this.canvas.style.cursor = 'default';
+                    },
+                    onCompleteScope: this
+                }
+            );
+        }
     }
 
     render() {
