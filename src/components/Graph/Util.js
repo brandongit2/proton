@@ -19,7 +19,7 @@ Util.floatEqualsZero = function (float1) {
 };
 
 Util.getMantissa = function (number) {
-    return number / (Math.pow(10, Math.floor(Math.log10(number))));
+    return number / Math.pow(10, Math.floor(Math.log10(number)));
 };
 
 Util.awayFromZero = function (number) {
@@ -31,5 +31,5 @@ Util.towardZero = function (number) {
 };
 
 Util.isNumber = function (str) {
-    return /^\d+$/.test(str);
+    return /^\d+$/u.test(str);
 };

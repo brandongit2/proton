@@ -9,6 +9,8 @@ NOTES:
     - "position" or "Pos" refers to the number of pixels from the upper-left corner of the canvas
 */
 
+const EXPONENTIAL_FORM_REGEX = /(.+)e\+?(.+)/u;
+
 export class Graph extends React.Component {
     constructor(props) {
         super(props);
@@ -117,6 +119,141 @@ export class Graph extends React.Component {
         this.setState(curState, cb);
     }
 
+    getScaleNumber(num) {
+        if (Util.isIntegerPosition(num)) {
+            if (Math.log10(Math.abs(num)) > this.props.properties.axisNumbers.maxPlaces) {
+                return num.toExponential(this.props.properties.axisNumbers.percision).toString();
+            } else {
+                return Math.round(num).toString();
+            }
+        } else if (Math.abs(Math.log10(Math.abs(num))) > this.props.properties.axisNumbers.maxPlaces) {
+            return num.toExponential(this.props.properties.axisNumbers.percision).toString();
+        } else {
+            return parseFloat(num.toPrecision(this.props.properties.axisNumbers.percision)).toString();
+        }
+    }
+
+    drawScaleNumbersWithBackground(text, x, y, axis, alignment) {
+        let ctx = this.state.context;
+        let {properties} = {...this.props};
+        let bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight;
+
+        let regexMatch = EXPONENTIAL_FORM_REGEX.exec(text);
+
+        if (regexMatch === null) {
+            // label is NOT in exponential form
+
+            ctx.font = properties.axisNumbers.font;
+            let textWidth = ctx.measureText(text).width;
+
+            if (axis === 'horizontal') {
+                // horizontal axis
+                ctx.textAlign = 'center';
+                ctx.textBaseline = alignment;
+                bgBoxX = x - (textWidth / 2) - properties.axisNumbers.padding;
+                bgBoxWidth = textWidth + (properties.axisNumbers.padding * 2);
+                bgBoxHeight = parseInt(properties.axisNumbers.font) + (properties.axisNumbers.padding * 2);
+                if (alignment === 'top') {
+                    bgBoxY = y - properties.axisNumbers.padding;
+                } else if (alignment === 'bottom') {
+                    bgBoxY = y - parseInt(properties.axisNumbers.font) - properties.axisNumbers.padding * 2;
+                }
+            } else {
+                // vertical axis
+                ctx.textAlign = alignment;
+                ctx.textBaseline = 'middle';
+                bgBoxY = y - (parseInt(properties.axisNumbers.font) / 2) - properties.axisNumbers.padding;
+                bgBoxWidth = textWidth + (properties.axisNumbers.padding * 2);
+                bgBoxHeight = parseInt(properties.axisNumbers.font) + (properties.axisNumbers.padding * 2);
+                if (alignment === 'right') {
+                    bgBoxX = x - textWidth - properties.axisNumbers.padding;
+                } else if (alignment === 'left') {
+                    bgBoxX = x - properties.axisNumbers.padding;
+                }
+            }
+
+            // background of text
+            ctx.fillStyle = properties.axisNumbers.background;
+            ctx.fillRect(bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight);
+
+            // actual text
+            ctx.font = properties.axisNumbers.font;
+            ctx.fillStyle = properties.axisNumbers.colour;
+            ctx.fillText(text, x, y);
+        } else {
+            // label is in exponential form
+            let mantissa = regexMatch[1];
+            let exponent = regexMatch[2];
+
+            let normalText = `${mantissa} \u{22C5} 10 `;
+            ctx.font = properties.axisNumbers.font;
+            let normalTextWidth = ctx.measureText(normalText).width;
+            let normalTextTop;
+
+            let superText = exponent;
+            ctx.font = properties.axisNumbers.superscriptFont;
+            let superTextWidth = ctx.measureText(superText).width;
+
+            if (axis === 'horizontal') {
+                // horizontal axis
+                ctx.textAlign = 'center';
+                ctx.textBaseline = alignment;
+                bgBoxX = x - (normalTextWidth / 2) - properties.axisNumbers.padding;
+                bgBoxWidth = normalTextWidth + superTextWidth + (properties.axisNumbers.padding * 2);
+                bgBoxHeight = parseInt(properties.axisNumbers.font) + (properties.axisNumbers.padding * 2);
+                if (alignment === 'top') {
+                    bgBoxY = y - properties.axisNumbers.padding;
+                } else if (alignment === 'bottom') {
+                    bgBoxY = y - parseInt(properties.axisNumbers.font) - properties.axisNumbers.padding * 2;
+                }
+                // top of normal sized text to be reference point for the top of the superscripted text
+                normalTextTop = bgBoxY + properties.axisNumbers.padding;
+
+                // background of text
+                ctx.fillStyle = properties.axisNumbers.background;
+                ctx.fillRect(bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight);
+
+                // actual text
+                ctx.fillStyle = properties.axisNumbers.colour;
+                ctx.font = properties.axisNumbers.font;
+                ctx.fillText(normalText, x, y);
+
+                ctx.font = properties.axisNumbers.superscriptFont;
+                ctx.textBaseline = 'top';
+                ctx.textAlign = 'left';
+                ctx.fillText(superText, x + normalTextWidth / 2 - properties.axisNumbers.padding, normalTextTop);
+            } else {
+                // vertical axis
+                ctx.textAlign = alignment;
+                ctx.textBaseline = 'middle';
+                bgBoxY = y - (parseInt(properties.axisNumbers.font) / 2) - properties.axisNumbers.padding * 2;
+                bgBoxWidth = normalTextWidth + superTextWidth + (properties.axisNumbers.padding * 2);
+                bgBoxHeight = parseInt(properties.axisNumbers.font) + (properties.axisNumbers.padding * 2);
+                if (alignment === 'right') {
+                    bgBoxX = x - normalTextWidth - superTextWidth - properties.axisNumbers.padding * 2;
+                } else if (alignment === 'left') {
+                    bgBoxX = x - properties.axisNumbers.padding;
+                }
+                // top of normal sized text to be reference point for the top of the superscripted text
+                normalTextTop = bgBoxY + properties.axisNumbers.padding;
+
+                // background of text
+                ctx.fillStyle = properties.axisNumbers.background;
+                ctx.fillRect(bgBoxX, bgBoxY, bgBoxWidth, bgBoxHeight);
+
+                // actual text
+                ctx.textAlign = 'left';
+                ctx.fillStyle = properties.axisNumbers.colour;
+                ctx.font = properties.axisNumbers.font;
+                ctx.fillText(normalText, bgBoxX + properties.axisNumbers.padding, y);
+
+                ctx.font = properties.axisNumbers.superscriptFont;
+                ctx.textBaseline = 'top';
+                ctx.fillText(superText, bgBoxX + normalTextWidth, normalTextTop);
+            }
+        }
+    }
+
     drawGraph() {
         // Calculate gridlines
         this.calculate(() => {
@@ -197,6 +334,35 @@ export class Graph extends React.Component {
                 ctx.moveTo(0, Math.round(display.originPos.y));
                 ctx.lineTo(width, Math.round(display.originPos.y));
                 ctx.stroke();
+            }
+
+            // Draw labels for X axis
+            let leftMostMajorLine = Math.floor((Math.floor(display.leftPoint / display.optimalScaleX) * display.optimalScaleX) / (display.minorBetweenMajorX * display.optimalScaleX)) * (display.minorBetweenMajorX * display.optimalScaleX);
+
+            for (let x = leftMostMajorLine; x < display.rightPoint; x += display.minorBetweenMajorX * display.optimalScaleX) {
+                let labelXPos = display.originPos.x + x * (display.pixelIntervalX / display.optimalScaleX);
+                let labelYPos = display.originPos.y;
+                let labelHeight = parseInt(properties.axisNumbers.font);
+                let labelYAlign;
+
+                if (labelYPos < 0) {
+                    // label is off screen on top
+                    labelYPos = properties.axisNumbers.margin;
+                    labelYAlign = 'top';
+                } else if (labelYPos + labelHeight + (properties.axisNumbers.margin * 2) > this.height) {
+                    // label is off the screen on bottom
+                    labelYPos = height - properties.axisNumbers.margin;
+                    labelYAlign = 'bottom';
+                } else {
+                    // label is on the screen, positioned at bottom of axis
+                    labelYPos = display.originPos.y + properties.axisNumbers.margin;
+                    labelYAlign = 'top';
+                }
+
+                if (Math.abs(x * (display.pixelIntervalX / display.optimalScaleX)) > 1) {
+                    // only draw label if it is not 0
+                    this.drawScaleNumbersWithBackground(this.getScaleNumber(x), labelXPos, labelYPos, 'horizontal', labelYAlign);
+                }
             }
 
             ctx.fillStyle = '#000000';

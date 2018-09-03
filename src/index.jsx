@@ -9,6 +9,7 @@ import {hydrateUI} from './actions';
 import store from './store';
 
 require('./index.scss');
+require('./fonts/fonts.scss');
 
 const HotApp = hot(module)(App);
 
