@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 export const EquationList = ({properties}) => (
-    <div className="equations" style={{flexGrow: properties.size}}>
+    <div className="panel equations" style={{flexGrow: properties.size}}>
         equations
     </div>
 );

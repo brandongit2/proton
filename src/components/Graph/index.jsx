@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 export const Graph = ({properties}) => (
-    <div className="graph" style={{flexGrow: properties.size}}>
+    <div className="panel graph" style={{flexGrow: properties.size}}>
         graph
     </div>
 );

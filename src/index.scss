@@ -19,10 +19,16 @@ p {
 
 .rows {
     flex-direction: row;
+    flex-basis: 0px;
 }
 
 .columns {
     flex-direction: column;
+    flex-basis: 0px;
+}
+
+.panel {
+    flex-basis: 0px;
 }
 
 .divider {

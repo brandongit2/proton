@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 export const Text = ({properties}) => (
-    <div style={{flexGrow: properties.size}}>
+    <div className="panel text" style={{flexGrow: properties.size}}>
         {properties.text}
     </div>
 );
