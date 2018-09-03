@@ -71,7 +71,7 @@
                 "after": true
             }
         ],
-        "guard-for-in": "warn",
+        "guard-for-in": "off",
         "implicit-arrow-linebreak": "error",
         "indent": [
             "error",

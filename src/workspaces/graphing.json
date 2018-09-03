@@ -26,7 +26,39 @@
                             {
                                 "type": "graph",
                                 "properties": {
-                                    "size": 80
+                                    "size": 80,
+                                    "backgroundColour": "#F0F0F0",
+                                    "xScale": 1,
+                                    "yScale": 1,
+                                    "gridlineColour": "#000000",
+                                    "minorGridlineWidth": 0.2,
+                                    "majorGridlineWidth": 0.7,
+                                    "axisGridlineWidth": 2,
+                                    "scrollMultiplier": 1.5,
+                                    "optimalPixelsBetweenIntervals": 30,
+                                    "optimalIntervals": {
+                                        "1": 5,
+                                        "2": 4,
+                                        "5": 5,
+                                        "10": 5
+                                    },
+                                    "resizeAnimationLength": 0.2,
+                                    "axisNumbers": {
+                                        "font": "14px KaTeX Math",
+                                        "superscriptFont": "10px KaTeX Math",
+                                        "background": "#F0F0F0",
+                                        "colour": "#000000",
+                                        "maxPlaces": 4,
+                                        "percision": 3,
+                                        "padding": 2,
+                                        "margin": 5
+                                    },
+                                    "panInertia": {
+                                        "animationLength": 1,
+                                        "stopPanValue": 100
+                                    },
+                                    "maxZoomLimitPixelsFromOrigin": 1e10,
+                                    "maxCoordinate": 1e300
                                 }
                             }
                         ]
