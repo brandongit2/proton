@@ -29,6 +29,10 @@ p {
 
 .panel {
     flex-basis: 0px;
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .divider {
