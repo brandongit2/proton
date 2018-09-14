@@ -22,3 +22,4 @@ export const Columns = ({properties}) => (
 Columns.propTypes = {
     properties: PropTypes.object.isRequired
 };
+

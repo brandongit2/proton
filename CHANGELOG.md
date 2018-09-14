@@ -1,6 +1,12 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Added unit testing using Jest and Enzyme
+- Completed implementation of Graph component
+### Developer Notes
+- Run `npm start` to run server in development watch mode
+- Run `npm test` to run unit tests
 
 ##  [0.0.2] - 2018-08-08
 ###  Added
