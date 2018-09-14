@@ -17,3 +17,14 @@ export const resizePanel = (
     path,
     mouseDelta
 });
+
+export const addEquation = id => ({
+    type: 'ADD_EQUATION',
+    id
+});
+
+export const changeEquation = (id, value) => ({
+    type: 'CHANGE_EQUATION',
+    id,
+    value
+});

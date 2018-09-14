@@ -20,7 +20,7 @@ let store = createStore(
                 }
             }
         },
-        equations: ['sin(x)']
+        equations: {}
     },
     window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );

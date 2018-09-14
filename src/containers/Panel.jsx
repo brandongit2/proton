@@ -8,7 +8,7 @@ import {
     Graph,
     Text,
     Toolbar
-} from '../components';
+} from '../panels';
 
 export const Panel = ({type, properties}) => {
     let panel;

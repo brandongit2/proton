@@ -3,7 +3,7 @@ import React, {Fragment} from 'react';
 import {generate} from 'shortid';
 
 import {Panel} from './';
-import {Divider} from '../components';
+import {Divider} from '../panels';
 
 export const Columns = ({properties}) => (
     <div className="columns" style={{flexGrow: properties.size}}>
