@@ -22,10 +22,10 @@ export class EquationList extends React.Component {
     }
 
     render() {
-        let {dispatch, properties, equations} = this.props;
+        let {dispatch, panelStyle, properties, equations} = this.props;
 
         return (
-            <div className="panel equationList" style={{flexGrow: properties.size}}>
+            <div className="panel equationList" style={panelStyle}>
                 {Object.keys(equations).map(id => {
                     console.log(equations, id, equations.id);
                     return (
@@ -50,6 +50,7 @@ export class EquationList extends React.Component {
 
 EquationList.propTypes = {
     dispatch:   PropTypes.func.isRequired,
+    panelStyle: PropTypes.object.isRequired,
     properties: PropTypes.object.isRequired,
     equations:  PropTypes.object.isRequired
 };

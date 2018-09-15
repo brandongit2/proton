@@ -7,14 +7,18 @@ let store = createStore(
     {
         layout: {
             'root-panel': {
-                type:       'columns',
+                type:  'columns',
+                style: {
+                    flexGrow: 100
+                },
                 properties: {
                     columns: [
                         {
-                            type:       'empty',
-                            properties: {
-                                size: 100
-                            }
+                            type:  'empty',
+                            style: {
+                                flexGrow: 100
+                            },
+                            properties: {}
                         }
                     ]
                 }

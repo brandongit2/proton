@@ -62,6 +62,7 @@ if (commander.server) {
         app.use('/', express.static(path.resolve(__dirname, 'build')));
     }
 
+    app.use('/res', express.static(path.resolve(__dirname, 'src/res')));
     app.use('/workspaces', express.static(path.resolve(__dirname, 'src/workspaces')));
 
     const server = http.createServer(app);

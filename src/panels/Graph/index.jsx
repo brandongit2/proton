@@ -658,7 +658,7 @@ export class Graph extends React.Component {
 
     render() {
         return (
-            <div className="graph" ref={this.self} style={{flexGrow: this.props.properties.size}}>
+            <div className="graph" ref={this.self} style={this.props.panelStyle}>
                 {this.state.canvas}
             </div>
         );
@@ -666,5 +666,6 @@ export class Graph extends React.Component {
 }
 
 Graph.propTypes = {
+    panelStyle: PropTypes.object.isRequired,
     properties: PropTypes.object.isRequired
 };

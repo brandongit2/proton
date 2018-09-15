@@ -8,6 +8,7 @@ export let App = ({rootPanel}) => (
     <div className="app">
         <Panel
             type={rootPanel.type}
+            panelStyle={rootPanel.style}
             properties={rootPanel.properties}
         />
     </div>
@@ -21,5 +22,4 @@ const mapStateToProps = state => ({
     rootPanel: state.layout['root-panel']
 });
 
-// eslint-disable-next-line no-func-assign
 App = connect(mapStateToProps)(App);

@@ -1,32 +1,41 @@
 {
     "root-panel": {
         "type": "columns",
+        "style": {
+            "flexGrow": 100
+        },
         "properties": {
-            "size": 100,
             "columns": [
                 {
                     "type": "toolbar",
-                    "properties": {
-                        "size": 5
-                    }
+                    "style": {
+                        "flexBasis": "3rem"
+                    },
+                    "properties": {}
                 },
                 {
                     "type": "rows",
+                    "style": {
+                        "flexGrow": 95
+                    },
                     "properties": {
-                        "size": 95,
                         "rows": [
                             {
                                 "type": "equation-list",
+                                "style": {
+                                    "flexGrow": 20
+                                },
                                 "properties": {
-                                    "size": 20,
                                     "id": 0,
                                     "equations": []
                                 }
                             },
                             {
                                 "type": "graph",
+                                "style": {
+                                    "flexGrow": 80
+                                },
                                 "properties": {
-                                    "size": 80,
                                     "backgroundColour": "#F0F0F0",
                                     "xScale": 1,
                                     "yScale": 1,

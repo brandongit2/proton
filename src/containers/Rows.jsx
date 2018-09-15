@@ -5,12 +5,13 @@ import {generate} from 'shortid';
 import {Panel} from './';
 import {Divider} from '../panels';
 
-export const Rows = ({properties}) => (
-    <div className="rows" style={{flexGrow: properties.size}}>
+export const Rows = ({panelStyle, properties}) => (
+    <div className="rows" style={panelStyle}>
         {properties.rows.map(row => (
             <Fragment key={generate()}>
                 <Panel
                     type={row.type}
+                    panelStyle={row.style}
                     properties={row.properties}
                 />
                 <Divider direction="vertical" />
@@ -20,5 +21,6 @@ export const Rows = ({properties}) => (
 );
 
 Rows.propTypes = {
+    panelStyle: PropTypes.object.isRequired,
     properties: PropTypes.object.isRequired
 };
