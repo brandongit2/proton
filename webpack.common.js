@@ -23,7 +23,7 @@ module.exports = {
                 use:  'file-loader'
             },
             {
-                test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/u,
+                test: /\.(woff2?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/u,
                 use:  [
                     {
                         loader:  'file-loader',
@@ -37,8 +37,8 @@ module.exports = {
         ]
     },
     resolve: {
-        // Waiting on https://github.com/developit/preact/pull/1080 to be pulled and released
-        // so that Preact can be used in place of React.
+        // Waiting on https://github.com/developit/preact/pull/1080 to be pulled
+        // and released so that Preact can be used in place of React.
         //
         // alias: {
         //     react:       'preact-compat',

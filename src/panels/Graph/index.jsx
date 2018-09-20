@@ -658,7 +658,7 @@ export class Graph extends React.Component {
 
     render() {
         return (
-            <div className="graph" ref={this.self} style={this.props.panelStyle}>
+            <div className="panel graph" ref={this.self} style={this.props.panelStyle}>
                 {this.state.canvas}
             </div>
         );

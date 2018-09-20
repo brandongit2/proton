@@ -13,28 +13,13 @@ module.exports = merge(common, {
     optimization: {
         minimizer: [
             new UglifyJsPlugin({
-                cache:         true,
-                parallel:      true,
-                sourceMap:     true,
-                uglifyOptions: {
-                    compress: {
-                        ecma: 6
-                    }
-                }
+                cache:     true,
+                parallel:  true,
+                sourceMap: true
             }),
             new OptimizeCSSAssetsPlugin({}),
             new BundleAnalyzerPlugin()
-        ],
-        runtimeChunk: 'single',
-        splitChunks:  {
-            cacheGroups: {
-                vendor: {
-                    test:   /[\\/]node_modules[\\/]/u,
-                    name:   'vendors',
-                    chunks: 'all'
-                }
-            }
-        }
+        ]
     },
     module: {
         rules: [
