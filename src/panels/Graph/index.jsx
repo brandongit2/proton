@@ -22,7 +22,7 @@ export class Graph extends React.Component {
         this.lastPanTime = null;
         this.lastPanPos = new Point(0, 0);
 
-        const canvasElement = (<canvas width={10} height={10} ref={c => { this.canvas = c; }} />);
+        const canvasElement = (<canvas ref={c => { this.canvas = c; }} />);
 
         this.state = {
             display: {
@@ -41,14 +41,18 @@ export class Graph extends React.Component {
     }
 
     updateCanvas() {
-        if (this.canvas.width !== this.canvas.offsetWidth || this.canvas.height !== this.canvas.offsetHeight) {
-            this.canvas.width = this.canvas.offsetWidth;
-            this.canvas.height = this.canvas.offsetHeight;
+        let dpr = window.devicePixelRatio || 1;
+        console.log(dpr);
+        let rect = this.canvas.getBoundingClientRect();
+        if (this.canvas.width !== rect.width || this.canvas.height !== rect.height) {
+            this.canvas.width = rect.width * dpr;
+            this.canvas.height = rect.height * dpr;
 
             this.canvas.addEventListener('mousedown', this.handleMouseDown);
             this.canvas.addEventListener('wheel', this.handleMouseWheel);
 
             const ctx = this.canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
             this.setState({
                 context: ctx,
                 display: {
