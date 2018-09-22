@@ -1,6 +1,9 @@
 {
     "rules": {
-        "at-rule-empty-line-before": "always",
+        "at-rule-empty-line-before": [
+            "always",
+            {"except": ["blockless-after-same-name-blockless"]}
+        ],
         "at-rule-name-case": "lower",
         "at-rule-name-newline-after": "always-multi-line",
         "at-rule-name-space-after": "always-single-line",

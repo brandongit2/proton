@@ -4,24 +4,25 @@ import React from 'react';
 export class EquationItem extends React.Component {
     constructor(props) {
         super(props);
+
         this.input = React.createRef();
     }
 
-    componentDidUpdate() {
-        this.input.value = this.props.value;
+    componentDidMount() {
+        this.input.current.value = this.props.value;
     }
 
     render() {
         let {onEquationChange, onChildBlur} = this.props;
-        console.log('hiihihi');
-
         return (
-            <input
-                type="text"
-                onChange={e => { onEquationChange(e.target.value); }}
-                onBlur={onChildBlur}
-                ref={this.input}
-            />
+            <div className="equation-item">
+                <input
+                    type="text"
+                    onChange={e => { onEquationChange(e.target.value); }}
+                    onBlur={onChildBlur}
+                    ref={this.input}
+                />
+            </div>
         );
     }
 }
@@ -29,5 +30,5 @@ export class EquationItem extends React.Component {
 EquationItem.propTypes = {
     onEquationChange: PropTypes.func.isRequired,
     onChildBlur:      PropTypes.func.isRequired,
-    value:            PropTypes.string
+    value:            PropTypes.string.isRequired
 };

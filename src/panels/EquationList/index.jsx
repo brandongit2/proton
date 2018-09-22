@@ -8,41 +8,30 @@ import {AddEquation} from './AddEquation';
 import {EquationItem} from './EquationItem';
 
 export class EquationList extends React.Component {
-    constructor(props) {
-        super(props);
-        this.onChildBlur = this.onChildBlur.bind(this);
-    }
-
     shouldComponentUpdate() {
         return false;
     }
 
-    onChildBlur() {
-        this.forceUpdate();
-    }
-
     render() {
-        let {dispatch, panelStyle, properties, equations} = this.props;
-
+        let {dispatch, panelStyle, equations} = this.props;
         return (
             <div className="panel equationList" style={panelStyle}>
+                <AddEquation onAddEquation={() => {
+                    dispatch(addEquation(generate()));
+                    this.forceUpdate();
+                }} /> {/* eslint-disable-line */}
                 {Object.keys(equations).map(id => {
-                    console.log(equations, id, equations.id);
                     return (
                         <EquationItem
                             key={generate()}
                             onEquationChange={value => {
                                 dispatch(changeEquation(id, value));
                             }}
-                            onChildBlur={this.onChildBlur}
+                            onChildBlur={() => { this.forceUpdate(); }}
                             value={equations[id]}
                         />
                     );
                 })}
-                <AddEquation onAddEquation={() => {
-                    dispatch(addEquation(generate()));
-                    this.forceUpdate();
-                }} /> {/* eslint-disable-line */}
             </div>
         );
     }
