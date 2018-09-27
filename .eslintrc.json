@@ -231,7 +231,6 @@
         ],
         "no-multi-str": "error",
         "no-multiple-empty-lines": "warn",
-        "no-negated-condition": "error",
         "no-nested-ternary": "error",
         "no-octal-escape": "error",
         "no-path-concat": "error",

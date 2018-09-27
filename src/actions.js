@@ -28,3 +28,9 @@ export const changeEquation = (id, value) => ({
     id,
     value
 });
+
+export const moveCaret = (id, position) => ({
+    type: 'MOVE_CARET',
+    id,
+    position
+});

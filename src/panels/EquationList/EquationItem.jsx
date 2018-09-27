@@ -1,34 +1,12 @@
-import PropTypes from 'prop-types';
+import katex from 'katex';
 import React from 'react';
 
-export class EquationItem extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.input = React.createRef();
-    }
-
-    componentDidMount() {
-        this.input.current.value = this.props.value;
-    }
-
-    render() {
-        let {onEquationChange, onChildBlur} = this.props;
-        return (
-            <div className="equation-item">
-                <input
-                    type="text"
-                    onChange={e => { onEquationChange(e.target.value); }}
-                    onBlur={onChildBlur}
-                    ref={this.input}
-                />
-            </div>
-        );
-    }
-}
-
-EquationItem.propTypes = {
-    onEquationChange: PropTypes.func.isRequired,
-    onChildBlur:      PropTypes.func.isRequired,
-    value:            PropTypes.string.isRequired
-};
+export let EquationItem = () => (
+    <div className="equation-item">
+        {/* eslint-disable react/jsx-closing-bracket-location, react/jsx-closing-tag-location, react/no-danger */}
+        <span dangerouslySetInnerHTML={{
+            __html: katex.renderToString(String.raw`x`)
+        }}></span>
+        {/* eslint-enable react/jsx-closing-bracket-location, react/jsx-closing-tag-location, react/no-danger */}
+    </div>
+);

@@ -3,39 +3,33 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {generate} from 'shortid';
 
-import {addEquation, changeEquation} from '../../actions';
+import {addEquation, changeEquation, moveCaret} from '../../actions';
 import {AddEquation} from './AddEquation';
 import {EquationItem} from './EquationItem';
 
-export class EquationList extends React.Component {
-    shouldComponentUpdate() {
-        return false;
-    }
-
-    render() {
-        let {dispatch, panelStyle, equations} = this.props;
-        return (
-            <div className="panel equationList" style={panelStyle}>
-                <AddEquation onAddEquation={() => {
-                    dispatch(addEquation(generate()));
-                    this.forceUpdate();
-                }} /> {/* eslint-disable-line */}
-                {Object.keys(equations).map(id => {
-                    return (
-                        <EquationItem
-                            key={generate()}
-                            onEquationChange={value => {
-                                dispatch(changeEquation(id, value));
-                            }}
-                            onChildBlur={() => { this.forceUpdate(); }}
-                            value={equations[id]}
-                        />
-                    );
-                })}
-            </div>
-        );
-    }
-}
+export let EquationList = ({dispatch, panelStyle, equations}) => (
+    <div className="panel equationList" style={panelStyle}>
+        <AddEquation onAddEquation={() => {
+            dispatch(addEquation(generate()));
+        }} /> {/* eslint-disable-line */}
+        <div>
+            {Object.keys(equations).map(id => {
+                return (
+                    <EquationItem
+                        key={generate()}
+                        changeEquation={value => {
+                            dispatch(changeEquation(id, value));
+                        }}
+                        moveCaret={position => {
+                            dispatch(moveCaret(id, position));
+                        }}
+                        value={equations[id]}
+                    />
+                );
+            })}
+        </div>
+    </div>
+);
 
 EquationList.propTypes = {
     dispatch:   PropTypes.func.isRequired,

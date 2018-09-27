@@ -42,7 +42,6 @@ export class Graph extends React.Component {
 
     updateCanvas() {
         let dpr = window.devicePixelRatio || 1;
-        console.log(dpr);
         let rect = this.canvas.getBoundingClientRect();
         if (this.canvas.width !== rect.width || this.canvas.height !== rect.height) {
             this.canvas.width = rect.width * dpr;

@@ -47,12 +47,14 @@ p, span, h1, h2, h3, h4, h5, h6, a {
 
     &.horizontal {
         min-height: 3px;
+        padding: 1px 0px;
 
         cursor: ns-resize;
     }
 
     &.vertical {
         min-width: 3px;
+        padding: 0px 1px;
 
         cursor: ew-resize;
     }

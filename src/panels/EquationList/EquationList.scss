@@ -1,5 +1,9 @@
 .panel.equationList {
-    & > div {
+    display: flex;
+
+    flex-direction: column;
+
+    .equation-item, #add-equation {
         height: 3rem;
         width: 100%;
     }
@@ -7,7 +11,9 @@
     #add-equation {
         position: relative;
         background: #555;
-        font-size: 16pt;
+
+        flex-flow: 1;
+        font-size: 14pt;
 
         img {
             position: absolute;
