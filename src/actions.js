@@ -23,10 +23,21 @@ export const addEquation = id => ({
     id
 });
 
-export const changeEquation = (id, value) => ({
-    type: 'CHANGE_EQUATION',
+export const addToEquation = (id, chars) => ({
+    type: 'ADD_TO_EQAUTION',
     id,
-    value
+    chars
+});
+
+export const backspace = (id, numChars) => ({
+    type: 'BACKSPACE',
+    id,
+    numChars
+});
+
+export const focusEquation = id => ({
+    type: 'FOCUS_EQUATION',
+    id
 });
 
 export const moveCaret = (id, position) => ({

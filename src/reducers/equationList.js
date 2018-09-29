@@ -1,47 +1,52 @@
+function rawToKatex(raw) {
+    return raw;
+}
+
 function equationList(state = {}, action) {
     switch (action.type) {
         case 'ADD_EQUATION':
             return {
                 ...state,
                 [action.id]: {
-                    curr:     '',
-                    prev:     '',
+                    raw:      '',
+                    katex:    '',
                     caretPos: 0
                 }
             };
-        case 'CHANGE_EQUATION': {
-            let tentativeState = {
+        case 'ADD_TO_EQAUTION': {
+            let caretPos = state[action.id].caretPos;
+            let newValue =
+                state[action.id].raw.substring(0, caretPos)
+                + action.chars
+                + state[action.id].raw.substring(caretPos);
+            return {
                 ...state,
                 [action.id]: {
-                    curr:     action.value,
-                    prev:     state[action.id].curr,
-                    caretPos: state[action.id].caretPos
+                    ...state[action.id],
+                    raw:   newValue,
+                    katex: rawToKatex(newValue)
                 }
             };
-            let equation = tentativeState[action.id];
-
-            /* eslint-disable indent */
-            let longerString =
-                equation.curr.length > equation.prev.length
-                ? equation.curr.length
-                : equation.prev.length;
-            /* eslint-enable indent */
-            for (let i = 0; i < longerString; i++) {
-                if (equation.curr.charAt(i) !== equation.prev.charAt(i)) {
-                    if (equation.curr.substring(i + 1) === equation.prev.substring(i)) {
-                        switch (equation.curr.charAt(i)) {
-                            case '(':
-                                tentativeState[action.id].curr += ')';
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            return tentativeState;
         }
-
+        case 'BACKSPACE': {
+            let caretPos = state[action.id].caretPos;
+            let newValue =
+                state[action.id].raw.substring(0, caretPos - action.numChars)
+                + state[action.id].raw.substring(caretPos);
+            return {
+                ...state,
+                [action.id]: {
+                    ...state[action.id],
+                    raw:   newValue,
+                    katex: rawToKatex(newValue)
+                }
+            };
+        }
+        case 'FOCUS_EQUATION':
+            return {
+                ...state,
+                focused: action.id
+            };
         case 'MOVE_CARET':
             return {
                 ...state,

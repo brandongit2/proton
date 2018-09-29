@@ -8,6 +8,7 @@ import {App} from './containers';
 import {hydrateUI} from './actions';
 import store from './store';
 
+require('!style-loader!css-loader!katex/dist/katex.min.css');
 require('./index.scss');
 require('./fonts/fonts.scss');
 

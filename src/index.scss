@@ -11,7 +11,7 @@ p {
     margin: 0px;
 }
 
-p, span, h1, h2, h3, h4, h5, h6, a {
+p, span:not(.katex *), h1, h2, h3, h4, h5, h6, a {
     font-family: 'Open Sans', sans-serif;
 }
 
