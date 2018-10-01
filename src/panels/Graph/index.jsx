@@ -25,7 +25,8 @@ export class Graph extends React.Component {
         const canvasElement = (<canvas ref={c => { this.canvas = c; }} />);
 
         this.state = {
-            display: {
+            boundingRect: null,
+            display:      {
                 topPoint:    null,
                 bottomPoint: null,
                 leftPoint:   null,
@@ -42,7 +43,6 @@ export class Graph extends React.Component {
 
     updateCanvas() {
         let dpr = window.devicePixelRatio || 1;
-        console.log(dpr);
         let rect = this.canvas.getBoundingClientRect();
         if (this.canvas.width !== rect.width || this.canvas.height !== rect.height) {
             this.canvas.width = rect.width * dpr;
@@ -52,10 +52,12 @@ export class Graph extends React.Component {
             this.canvas.addEventListener('wheel', this.handleMouseWheel);
 
             const ctx = this.canvas.getContext('2d');
-            ctx.scale(dpr, dpr);
+
             this.setState({
-                context: ctx,
-                display: {
+                boundingRect: rect,
+                dpr,
+                context:      ctx,
+                display:      {
                     topPoint:    this.canvas.height / this.props.properties.optimalPixelsBetweenIntervals,
                     bottomPoint: -this.canvas.height / this.props.properties.optimalPixelsBetweenIntervals,
                     leftPoint:   -this.canvas.width / this.props.properties.optimalPixelsBetweenIntervals,
