@@ -52,7 +52,7 @@ export class Graph extends React.Component {
             this.canvas.addEventListener('wheel', this.handleMouseWheel);
 
             const ctx = this.canvas.getContext('2d');
-            
+
             this.setState({
                 boundingRect: rect,
                 dpr,
@@ -436,7 +436,6 @@ export class Graph extends React.Component {
             ctx.fillRect(this.canvas.width - 10, 0, 10, 10);
             ctx.fillRect(0, this.canvas.height - 10, 10, 10);
             ctx.fillRect(this.canvas.width - 10, this.canvas.height - 10, 10, 10);
-            ctx.scale(this.state.dpr, this.state.dpr);
         });
     }
 
