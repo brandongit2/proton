@@ -55,22 +55,10 @@ function rawToKatex([raw, caretPos]) {
     originalKatex = katex;
 
     // Common functions
-    let levels = 0; // Levels of recursion
-    do { // On this spot at 7:57 PM on 19 October 2018, Brandon Tsang used his first ever do while loop.
-        originalKatex = katex;
-        
-        katex = katex.replace(
-            new RegExp(String.raw`(\{.*){${levels}}(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?(\([^)]*)`, 'gu'),
-            String.raw`\$1$3`
-        );
-        if (originalKatex === katex) { // For distinguishing 'sin(x)' from 'sin x'
-            katex = katex.replace(
-                new RegExp(String.raw`(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?([^+\-*]*)`, 'gu'),
-                String.raw`\$1{$3}`
-            );
-        }
-        levels++;
-    } while (originalKatex !== katex);
+    katex = katex.replace(/(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?(\([^)]*)/gu, String.raw`\$1$3`);
+    if (originalKatex === katex) { // For distinguishing 'sin(x)' from 'sin x'
+        katex = katex.replace(/(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?([^+\-*]*)/gu, String.raw`\$1{$3}`);
+    }
     originalKatex = katex;
 
     katex = katex.replace(/\*/gu, String.raw`\cdot `);
