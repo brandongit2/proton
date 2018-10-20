@@ -11,7 +11,9 @@ export class Katex extends React.Component {
 
     componentDidMount() {
         if (typeof this.props.code !== 'undefined') {
-            katex.render(this.props.code, this.input.current);
+            katex.render(this.props.code, this.input.current, {
+                throwOnError: false
+            });
         }
     }
 

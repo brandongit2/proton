@@ -26,9 +26,11 @@
     }
 
     & > #list {
+        width: 100%;
+
         flex-basis: 0px;
         flex-grow: 1;
-        overflow: auto;
+        overflow-y: auto;
     }
 
     .equation-item {
@@ -36,6 +38,7 @@
         height: 3rem;
 
         border-bottom: 1px solid #555;
+        overflow-x: auto;
 
         .katex-component {
             position: absolute;
@@ -44,5 +47,43 @@
 
             transform: translateY(-50%);
         }
+    }
+
+    @keyframes cursor-blink {
+        0% {
+            opacity: 1;
+        }
+
+        5% {
+            opacity: 1;
+        }
+
+        45% {
+            opacity: 1;
+        }
+
+        55% {
+            opacity: 0;
+        }
+
+        95% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    #cursor {
+        position: relative;
+        top: 50%;
+        width: 1.5px;
+        height: 50%;
+        margin-left: 1rem;
+        background: black;
+
+        animation: cursor-blink 1s linear infinite;
+        transform: translateY(-50%);
     }
 }

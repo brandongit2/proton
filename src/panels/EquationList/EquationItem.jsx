@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
+import {DummyKatex} from './DummyKatex';
 import {Katex} from '../../components';
 
 export class EquationItem extends React.Component {
@@ -63,7 +64,7 @@ export class EquationItem extends React.Component {
                 j:                  false,
                 k:                  false,
                 l:                  false,
-                ':':                false,
+                ';':                false,
                 '\'':               false,
                 Enter:              false,
                 Shift:              false,
@@ -120,7 +121,7 @@ export class EquationItem extends React.Component {
                 J:                  false,
                 K:                  false,
                 L:                  false,
-                ';':                false,
+                ':':                false,
                 '"':                false,
                 Z:                  false,
                 X:                  false,
@@ -144,7 +145,9 @@ export class EquationItem extends React.Component {
                 PageUp:             false,
                 PageDown:           false,
                 End:                false
-            }
+            },
+            dummyKatex:       '',
+            cursorPixelsLeft: 0
         };
 
         this.item = React.createRef();
@@ -154,9 +157,7 @@ export class EquationItem extends React.Component {
     }
 
     componentDidMount() {
-        console.log(this.props.isFocused);
         if (this.props.isFocused) {
-            console.log('focusing');
             this.item.current.focus();
         }
     }
@@ -173,15 +174,28 @@ export class EquationItem extends React.Component {
         let {raw, caretPos, addToEquation, backspace, moveCaret} = this.props;
 
         switch (e.key) {
-            case 'Backspace':
+            case 'Escape': case 'F1': case 'F2': case 'F3': case 'F4':
+            case 'F5': case 'F6': case 'F7': case 'F8': case 'F9': case 'F10':
+            case 'F11': case 'F12': case 'PrintScreen': case 'Insert':
+            case 'Delete': case 'Tab': case 'CapsLock': case 'Enter':
+            case 'Shift': case 'Control': case 'Meta': case 'Alt':
+            case 'ArrowUp': case 'ArrowDown': case 'AudioVolumeMute':
+            case 'AudioVolumeDown': case 'AudioVolumeUp':
+            case 'MediaTrackPrevious': case 'MediaPlayPause':
+            case 'MediaTrackNext': case 'ScrollLock': case 'ContextMenu':
+            case 'Home': case 'PageUp': case 'PageDown': case 'End':
+                break;
+            case 'Backspace': // KEEP BACKSPACE ABOVE ARROWLEFT
                 backspace(1);
-                moveCaret(caretPos - 1 >= 0 ? caretPos - 1 : caretPos);
-                break;
+                /* eslint-disable no-fallthrough */
             case 'ArrowLeft':
-                moveCaret(caretPos - 1 >= 0 ? caretPos - 1 : caretPos);
+                e.preventDefault();
+                this.moveCursor(caretPos - 1 >= 0 ? caretPos - 1 : caretPos);
                 break;
+                /* eslint-enable no-fallthrough */
             case 'ArrowRight':
-                moveCaret(caretPos + 1 <= raw.length ? caretPos + 1 : caretPos);
+                e.preventDefault();
+                this.moveCursor(caretPos + 1 <= raw.length ? caretPos + 1 : caretPos);
                 break;
             default:
                 addToEquation(e.key);
@@ -200,6 +214,15 @@ export class EquationItem extends React.Component {
         });
     }
 
+    moveCursor(pos) {
+        this.props.moveCaret(pos);
+        let pixelsLeft = 0;
+        this.setState({
+            ...this.state,
+            cursorPixelsLeft: pixelsLeft
+        });
+    }
+
     render() {
         return (
             <div
@@ -211,6 +234,8 @@ export class EquationItem extends React.Component {
                 onKeyUp={this.keyUp}
             >
                 <Katex code={this.props.katex} />
+                <div id="cursor" style={{left: this.state.cursorPixelsLeft}} />
+                <DummyKatex code={this.state.dummyKatex} />
             </div>
         );
     }
