@@ -55,9 +55,14 @@ function rawToKatex([raw, caretPos]) {
     originalKatex = katex;
 
     // Common functions
-    katex = katex.replace(/(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?(\([^)]*)/gu, String.raw`\$1$3`);
+    while (katex.match(/(?<!\\)(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?(\([^)]*)/gu)) {
+        katex = katex.replace(/(?<!\\)(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?(\([^)]*)/gu, String.raw`\$1$3`);
+    }
     if (originalKatex === katex) { // For distinguishing 'sin(x)' from 'sin x'
-        katex = katex.replace(/(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?([^+\-*]*)/gu, String.raw`\$1{$3}`);
+        while (katex.match(/(?<!\\)(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?([^+\-*]*)/gu)) {
+            katex = katex.replace(/(?<!\\)(sin|cos|tan|csc|sec|cot)(\^[0-9]+)?([^+\-*]*)/gu, String.raw`\$1{$3}`);
+            console.log(katex);
+        }
     }
     originalKatex = katex;
 
@@ -72,8 +77,8 @@ function equationList(state = {}, action) {
             return {
                 ...state,
                 [action.id]: {
-                    raw:      '',
-                    katex:    '',
+                    raw: '',
+                    katex: '',
                     caretPos: 0
                 }
             };
@@ -86,12 +91,13 @@ function equationList(state = {}, action) {
                 + state[action.id].raw.substring(caretPos);
             let processed = processInput(newValue, lastTypedChar);
             processed = rawToKatex(processed);
+            console.log(`processed: ${processed}`);
             return {
                 ...state,
                 [action.id]: {
                     ...state[action.id],
-                    raw:      processed[0],
-                    katex:    processed[1],
+                    raw: processed[0],
+                    katex: processed[1],
                     caretPos: processed[2]
                 }
             };
@@ -115,8 +121,8 @@ function equationList(state = {}, action) {
                 ...state,
                 [action.id]: {
                     ...state[action.id],
-                    raw:      newValue,
-                    katex:    rawToKatex(processInput(newValue))[1],
+                    raw: newValue,
+                    katex: rawToKatex(processInput(newValue))[1],
                     caretPos: caretPos - numCharsForDeletionBehind
                 }
             };
