@@ -68,8 +68,14 @@ function rawToKatex([raw, caretPos]) {
         originalKatex = katex;
 
         // Common functions
-        katex = katex.replace(/(sin|cos|tan|asin|acos|atan|csc|sec|cot|log|ln)(?!(\^|\())(\w*)/gu, String.raw`\$1{$2}`);
-        katex = katex.replace(/(sin|cos|tan|asin|acos|atan|csc|sec|cot|log|ln)((\^|_)\w+)?(\(.*\))?/gu, String.raw`\$1$2$4`);
+        katex = katex.replace(/(sin|cos|tan|asin|acos|atan|csc|sec|cot|log|ln)/gu, String.raw`\$1`);
+        let i = 0;
+        do {
+            katex = katex.replace(/(sin|cos|tan|asin|acos|atan|csc|sec|cot|log|ln)((\^|_)\w+)?(?!\{)(\(.*\))?/gu, String.raw`$1$2$4`); // For functions with brackets
+            console.log(katex, originalKatex);
+            i++;
+        } while (katex !== originalKatex && i < 5);
+        katex = katex.replace(/(sin|cos|tan|asin|acos|atan|csc|sec|cot|log|ln)(?! *(\^|\(|\{))((\w|\^)*)/gu, String.raw`$1{$3}`); // For functions without brackets
 
         katex = katex.replace(/\^(\w*)/gu, String.raw`^{$1}`);
         katex = katex.replace(/\*/gu, String.raw`\cdot `);
