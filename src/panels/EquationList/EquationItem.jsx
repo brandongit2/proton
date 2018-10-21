@@ -224,7 +224,6 @@ export class EquationItem extends React.Component {
     }
 
     render() {
-        console.log(`CODE ${this.props.katex}`);
         return (
             <div
                 ref={this.item}
