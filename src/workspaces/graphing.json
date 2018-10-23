@@ -23,7 +23,7 @@
                             {
                                 "type": "equation-list",
                                 "style": {
-                                    "flexGrow": 20
+                                    "flexBasis": "20rem"
                                 },
                                 "properties": {
                                     "id": 0,

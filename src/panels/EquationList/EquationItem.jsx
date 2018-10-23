@@ -198,8 +198,10 @@ export class EquationItem extends React.Component {
                 this.moveCursor(caretPos + 1 <= raw.length ? caretPos + 1 : caretPos);
                 break;
             default:
-                addToEquation(e.key);
-                moveCaret(caretPos + 1);
+                if (!(this.state.keysPressed.Control || this.state.keysPressed.Alt)) {
+                    addToEquation(e.key);
+                    moveCaret(caretPos + 1);
+                }
                 break;
         }
     }
@@ -233,9 +235,16 @@ export class EquationItem extends React.Component {
                 onKeyDown={this.keyDown}
                 onKeyUp={this.keyUp}
             >
+                <div className="gutter">
+                    <div className="line-background" />
+                    <div className="line" />
+                </div>
+                <img id="delete-equation" src="../../res/icon-delete.svg" />
                 <Katex code={this.props.katex} />
                 <div id="cursor" style={{left: this.state.cursorPixelsLeft}} />
                 <DummyKatex code={this.state.dummyKatex} />
+                {/* This is used instead of a regular border since the 'line' must go over it. */}
+                <div id="bottom-border" />
             </div>
         );
     }

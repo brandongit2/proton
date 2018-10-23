@@ -7,11 +7,26 @@ function processInput(raw, lastTypedChar = '', caretPos = 0) {
         case '(':
             newRaw += ')';
             break;
+        case ')':
+            if (raw.charAt(caretPos + 1) === ')') {
+                newRaw = raw.substring(0, caretPos) + raw.substring(caretPos + 1);
+            }
+            break;
         case '{':
             newRaw += '}';
             break;
+        case '}':
+            if (raw.charAt(caretPos + 1) === '}') {
+                newRaw = raw.substring(0, caretPos) + raw.substring(caretPos + 1);
+            }
+            break;
         case '[':
             newRaw += ']';
+            break;
+        case ']':
+            if (raw.charAt(caretPos + 1) === ']') {
+                newRaw = raw.substring(0, caretPos) + raw.substring(caretPos + 1);
+            }
             break;
     }
 
@@ -25,6 +40,7 @@ function rawToKatex([raw, caretPos]) {
         let katex = str;
         let originalKatex = katex;
 
+        katex = katex.replace(/\\/gu, String.raw`\backslash `);
         katex = katex.replace(/\{/gu, String.raw`\{`);
         katex = katex.replace(/\}/gu, String.raw`\}`);
 
@@ -68,16 +84,31 @@ function rawToKatex([raw, caretPos]) {
         originalKatex = katex;
 
         // Common functions
-        katex = katex.replace(/(sin|cos|tan|asin|acos|atan|csc|sec|cot|log|ln)/gu, String.raw`\$1`);
+        let funcs = '(sin|cos|tan|asin|acos|atan|csc|sec|cot|log|ln|sqrt)';
+        katex = katex.replace(new RegExp(funcs, 'gu'), String.raw`\$1`);
         let i = 0;
         do {
-            katex = katex.replace(/(sin|cos|tan|asin|acos|atan|csc|sec|cot|log|ln)((\^|_)\w+)?(?!\{)(\(.*\))?/gu, String.raw`$1$2$4`); // For functions with brackets
-            console.log(katex, originalKatex);
+            originalKatex = katex;
+            katex = katex.replace(new RegExp(String.raw`${funcs}((\^|_)\w+)?(?!\{)(\(.*\))?`, 'u'), String.raw`$1$2$4`); // For functions with brackets
             i++;
-        } while (katex !== originalKatex && i < 5);
-        katex = katex.replace(/(sin|cos|tan|asin|acos|atan|csc|sec|cot|log|ln)(?! *(\^|\(|\{))((\w|\^)*)/gu, String.raw`$1{$3}`); // For functions without brackets
+        } while (katex !== originalKatex && i < 100); // In order to prevent nesting from going too deeply and crashing
+        if (i >= 100) console.error('infinite loop');
+        i = 0;
+        do {
+            originalKatex = katex;
+            katex = katex.replace(new RegExp(String.raw`${funcs}(?! *(\^|_|\(|\{))((\w|\^|\\)*)`, 'u'), String.raw`$1{$3}`); // For functions without brackets
+            i++;
+        } while (katex !== originalKatex && i < 100); // In order to prevent nesting from going too deeply and crashing
+        if (i >= 100) console.error('infinite loop');
+        originalKatex = katex;
 
-        katex = katex.replace(/\^(\w*)/gu, String.raw`^{$1}`);
+        i = 0;
+        do {
+            originalKatex = katex;
+            katex = katex.replace(/\^(?!\{)((\w|\^)*)/u, String.raw`^{$1}`);
+            i++;
+        } while (katex !== originalKatex && i < 100); // In order to prevent nesting from going too deeply and crashing
+        if (i >= 100) console.error('infinite loop');
         katex = katex.replace(/\*/gu, String.raw`\cdot `);
 
         return katex;
@@ -106,7 +137,7 @@ function equationList(state = {}, action) {
                 state[action.id].raw.substring(0, caretPos)
                 + action.chars
                 + state[action.id].raw.substring(caretPos);
-            let processed = processInput(newValue, lastTypedChar);
+            let processed = processInput(newValue, lastTypedChar, caretPos);
             processed = rawToKatex(processed);
             return {
                 ...state,
