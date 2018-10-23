@@ -226,12 +226,13 @@ export class EquationItem extends React.Component {
     }
 
     render() {
+        let {deleteEquation, focus, katex, tabIndex} = this.props;
         return (
             <div
                 ref={this.item}
                 className="equation-item"
-                tabIndex={this.props.tabIndex}
-                onClick={this.props.focus}
+                tabIndex={tabIndex}
+                onClick={focus}
                 onKeyDown={this.keyDown}
                 onKeyUp={this.keyUp}
             >
@@ -239,8 +240,8 @@ export class EquationItem extends React.Component {
                     <div className="line-background" />
                     <div className="line" />
                 </div>
-                <img id="delete-equation" src="../../res/icon-delete.svg" />
-                <Katex code={this.props.katex} />
+                <img id="delete-equation" src="../../res/icon-delete.svg" onClick={deleteEquation} />
+                <Katex code={katex} />
                 <div id="cursor" style={{left: this.state.cursorPixelsLeft}} />
                 <DummyKatex code={this.state.dummyKatex} />
                 {/* This is used instead of a regular border since the 'line' must go over it. */}
@@ -251,13 +252,14 @@ export class EquationItem extends React.Component {
 }
 
 EquationItem.propTypes = {
-    tabIndex:      PropTypes.number.isRequired,
-    raw:           PropTypes.string.isRequired,
-    katex:         PropTypes.string.isRequired,
-    isFocused:     PropTypes.bool.isRequired,
-    caretPos:      PropTypes.number.isRequired,
-    focus:         PropTypes.func.isRequired,
-    addToEquation: PropTypes.func.isRequired,
-    backspace:     PropTypes.func.isRequired,
-    moveCaret:     PropTypes.func.isRequired
+    tabIndex:       PropTypes.number.isRequired,
+    raw:            PropTypes.string.isRequired,
+    katex:          PropTypes.string.isRequired,
+    isFocused:      PropTypes.bool.isRequired,
+    caretPos:       PropTypes.number.isRequired,
+    focus:          PropTypes.func.isRequired,
+    addToEquation:  PropTypes.func.isRequired,
+    backspace:      PropTypes.func.isRequired,
+    moveCaret:      PropTypes.func.isRequired,
+    deleteEquation: PropTypes.func.isRequired
 };

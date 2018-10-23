@@ -7,6 +7,7 @@ import {
     addEquation,
     addToEquation,
     backspace,
+    deleteEquation,
     focusEquation,
     moveCaret
 } from '../../actions';
@@ -18,7 +19,9 @@ export let EquationList = ({dispatch, panelStyle, equations}) => {
     return (
         <div className="panel equationList" style={panelStyle}>
             <AddEquation onAddEquation={() => {
-                dispatch(addEquation(generate()));
+                let id = generate();
+                dispatch(addEquation(id));
+                dispatch(focusEquation(id));
             }} /> {/* eslint-disable-line */}
             <div id="list">
                 {Object.keys(equations).map(id => {
@@ -42,6 +45,9 @@ export let EquationList = ({dispatch, panelStyle, equations}) => {
                                 }}
                                 moveCaret={pos => {
                                     dispatch(moveCaret(id, pos));
+                                }}
+                                deleteEquation={() => {
+                                    dispatch(deleteEquation(id));
                                 }}
                             />
                         );

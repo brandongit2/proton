@@ -45,3 +45,8 @@ export const moveCaret = (id, position) => ({
     id,
     position
 });
+
+export const deleteEquation = id => ({
+    type: 'DELETE_EQUATION',
+    id
+});
