@@ -3,6 +3,7 @@ import React from 'react';
 import {Point} from './Point';
 import {Util} from './Util';
 import {TweenMax, Expo} from 'gsap/all';
+import {connect} from 'react-redux';
 
 /*
 NOTES:
@@ -12,7 +13,7 @@ NOTES:
 
 const EXPONENTIAL_FORM_REGEX = /(.+)e\+?(.+)/u;
 
-export class Graph extends React.Component {
+class unconnectedGraph extends React.Component {
     constructor(props) {
         super(props);
 
@@ -31,13 +32,24 @@ export class Graph extends React.Component {
                 leftPoint:   null,
                 rightPoint:  null,
             },
-            canvas:  canvasElement,
-            context: null,
+            canvas:    canvasElement,
+            context:   null,
+            equations: null
         };
     }
 
     componentDidMount() {
         this.updateCanvas();
+    }
+
+    componentDidUpdate() {
+        if (this.props.equations !== this.state.equations) {
+            this.setState({
+                equations: this.props.equations
+            }, () => {
+                this.updateCanvas();
+            });
+        }
     }
 
     updateCanvas() {
@@ -61,7 +73,9 @@ export class Graph extends React.Component {
                     rightPoint:  this.canvas.width / this.props.properties.optimalPixelsBetweenIntervals,
                 }
             }, () => {
-                this.drawGraph();
+                this.drawGraph(() => {
+                    this.drawEquations();
+                });
             });
         }
     }
@@ -266,7 +280,7 @@ export class Graph extends React.Component {
         }
     }
 
-    drawGraph() {
+    drawGraph(cb) {
         // Calculate gridlines
         this.calculate(() => {
             let {properties} = {...this.props};
@@ -433,7 +447,47 @@ export class Graph extends React.Component {
             ctx.fillRect(this.canvas.width - 10, 0, 10, 10);
             ctx.fillRect(0, this.canvas.height - 10, 10, 10);
             ctx.fillRect(this.canvas.width - 10, this.canvas.height - 10, 10, 10);
+            if (cb) {
+                cb();
+            }
         });
+    }
+
+    drawEquations() {
+        let {display} = {...this.state};
+        let {properties} = {...this.props};
+        let ctx = this.state.context;
+        ctx.strokeStyle = '#f71616';
+        ctx.lineWidth = 1;
+        const equations = this.state.equations;
+        if (equations) {
+            for (const equationId in equations) {
+                if (equationId !== 'focused') {
+                    const rawEquation = equations[equationId]['raw'];
+                    const rawExpressionMatch = rawEquation.match(/^y=(.+)/u);
+                    if (rawExpressionMatch) {
+                        ctx.beginPath();
+                        const rawExpression = rawExpressionMatch[1];
+                        for (let graphX = 0; graphX < this.canvas.width; graphX += 2) {
+                            const x = (graphX - display.originPos.x) / (display.pixelIntervalX / display.optimalScaleX);
+                            try {
+                                const y = eval(rawExpression);
+                                const graphY = display.originPos.y - y * (display.pixelIntervalX / display.optimalScaleX);
+                                if (graphX === 0) {
+                                    ctx.moveTo(graphX, graphY);
+                                } else {
+                                    ctx.lineTo(graphX, graphY);
+                                }
+                            } catch {
+                                break;
+                            }
+                        }
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     panGraph(xMovePix, yMovePix, start) {
@@ -486,7 +540,9 @@ export class Graph extends React.Component {
             display.bottomPoint = newBottomPoint;
 
             // draw the graph after the pan
-            this.drawGraph();
+            this.drawGraph(() => {
+                this.drawEquations();
+            });
         }
     }
 
@@ -646,7 +702,9 @@ export class Graph extends React.Component {
                         curState.display.leftPoint = this.animationDisplay.leftPoint;
                         curState.display.rightPoint = this.animationDisplay.rightPoint;
                         this.setState(curState, () => {
-                            this.drawGraph();
+                            this.drawGraph(() => {
+                                this.drawEquations();
+                            });
                         });
                     },
                     onUpdateScope: this,
@@ -668,7 +726,14 @@ export class Graph extends React.Component {
     }
 }
 
-Graph.propTypes = {
+unconnectedGraph.propTypes = {
     panelStyle: PropTypes.object.isRequired,
-    properties: PropTypes.object.isRequired
+    properties: PropTypes.object.isRequired,
+    equations:  PropTypes.object.isRequired
 };
+
+const mapStateToProps = state => ({
+    equations: state.equations
+});
+
+export const Graph = connect(mapStateToProps)(unconnectedGraph);
